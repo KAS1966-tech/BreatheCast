@@ -16,6 +16,7 @@ from fastapi import (
 )
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 # =====================================================================
 # 2. System Core Configurations & Logging
