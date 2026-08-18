@@ -43,6 +43,16 @@ def get_user_by_id(
 )->Authentication | None:
     return db.get(Authentication, user_id)
 
+def get_user_by_google_id(
+    db: Session,
+    google_id: str,
+) -> Authentication | None:
+    query = sa.select(Authentication).where(
+        Authentication.google_id == google_id
+    )
+
+    return db.execute(query).scalar_one_or_none()
+
 def create_user(db: Session, user_data: SignupRequest)->tuple[Authentication, str, str]:
     """Create a new user with a hashed password."""
     hashed_password = hash_password(user_data.password)
@@ -78,16 +88,6 @@ def create_user(db: Session, user_data: SignupRequest)->tuple[Authentication, st
     except SQLAlchemyError:
         db.rollback()
         raise
-
-def get_user_by_google_id(
-    db: Session,
-    google_id: str,
-) -> Authentication | None:
-    query = sa.select(Authentication).where(
-        Authentication.google_id == google_id
-    )
-
-    return db.execute(query).scalar_one_or_none()
 
 def get_or_create_google_user(
     db: Session,
@@ -151,32 +151,6 @@ def get_or_create_google_user(
         db.rollback()
         raise
 
-def update_full_name(
-    db: Session,
-    user_id: int,
-    fullname: str,
-) -> Authentication:
-
-    user = get_user_by_id(db, user_id)
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    user.fullname = clean_text(fullname,case="title")
-
-    try:
-        db.commit()
-        db.refresh(user)
-
-        return user
-
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
 def verify_user(db:Session,userdata:LoginRequest)->dict:
 
     generic_error = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Incorrect email or password")
@@ -212,7 +186,142 @@ def verify_user(db:Session,userdata:LoginRequest)->dict:
         }
     }
 
-def update_user_username(
+def save_refresh_token(
+    db: Session,
+    user_id: int,
+    token: str,
+    expires_at: datetime,
+)->RefreshToken:
+    refresh = RefreshToken(
+        user_id=user_id,
+        token=token,
+        expires_at=expires_at,
+    )
+
+    try:
+        db.add(refresh)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+
+    return refresh
+
+def get_refresh_token(
+    db: Session,
+    token: str,
+):
+
+    refresh = (
+        db.query(RefreshToken)
+        .filter(
+            RefreshToken.token == token
+        )
+        .first()
+    )
+
+
+    if not refresh:
+        return None
+
+
+    if refresh.expires_at < datetime.now(timezone.utc):
+        db.delete(refresh)
+        db.commit()
+        return None
+
+
+    return refresh
+
+def delete_refresh_token(
+    db: Session,
+    token: str,
+):
+    refresh = get_refresh_token(db, token)
+
+    if refresh:
+        db.delete(refresh)
+        db.commit()
+
+def generate_user_tokens(db: Session, user: Authentication):
+
+    payload = {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email
+    }
+
+    access_token = create_access_token(payload)
+
+    refresh_token = create_refresh_token(payload)
+
+    expires_at = (
+        datetime.now(timezone.utc)
+        + timedelta(days=settings.REFRESH_TOKEN_EXPIRY_DAYS)
+    )
+
+    save_refresh_token(
+        db=db,
+        user_id=user.id,
+        token=refresh_token,
+        expires_at=expires_at,
+    )
+
+    return access_token, refresh_token
+
+def current_user(access_token: str = Cookie(None),db:Session = Depends(get_db)):
+    if not access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="token_not_found")
+    payload = decode_access_token(access_token)
+    
+    user_id = payload.get("sub")
+    
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+    
+    user = get_user_by_id(db,int(user_id))
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    return user
+
+def update_full_name(
+    db: Session,
+    user_id: int,
+    fullname: str,
+) -> Authentication:
+
+    user = get_user_by_id(db, user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    user.fullname = clean_text(fullname,case="title")
+
+    try:
+        db.commit()
+        db.refresh(user)
+
+        return user
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+
+
+
+def update_username(
     db: Session,
     user_id: int,
     username: str,
@@ -317,29 +426,6 @@ def change_user_password(
 
     return user
 
-def current_user(access_token: str = Cookie(None),db:Session = Depends(get_db)):
-    if not access_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="token_not_found")
-    payload = decode_access_token(access_token)
-    
-    user_id = payload.get("sub")
-    
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
-    
-    user = get_user_by_id(db,int(user_id))
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-
-    return user
-
 def add_prediction_history(
     db: Session,
     weather_data: WeatherAQIPrediction,
@@ -399,6 +485,24 @@ def get_user_history(
 
     return histories, total
 
+def get_all_user_history(db: Session, user_id: int):
+    query = db.query(History).filter(History.user_id == user_id)
+    return query.order_by(History.created_at.desc()).all(),query.count()
+
+def clear_user_history(
+    db: Session,
+    user_id: int,
+):
+    deleted = (
+        db.query(History)
+        .filter(History.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+
+    db.commit()
+
+    return deleted
+
 def create_uploaded_file(
     db: Session,
     user_id: int,
@@ -456,24 +560,6 @@ def get_user_uploaded_files(
 
     return files, total
 
-def get_all_user_history(db: Session, user_id: int):
-    query = db.query(History).filter(History.user_id == user_id)
-    return query.order_by(History.created_at.desc()).all(),query.count()
-
-
-def clear_user_history(
-    db: Session,
-    user_id: int,
-):
-    deleted = (
-        db.query(History)
-        .filter(History.user_id == user_id)
-        .delete(synchronize_session=False)
-    )
-
-    db.commit()
-
-    return deleted
 
 def delete_user(db: Session, user_id: int):
     user = get_user_by_id(db, user_id)
@@ -504,88 +590,3 @@ def delete_user(db: Session, user_id: int):
     except SQLAlchemyError:
         db.rollback()
         raise
-
-
-def save_refresh_token(
-    db: Session,
-    user_id: int,
-    token: str,
-    expires_at: datetime,
-)->RefreshToken:
-    refresh = RefreshToken(
-        user_id=user_id,
-        token=token,
-        expires_at=expires_at,
-    )
-
-    try:
-        db.add(refresh)
-        db.commit()
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
-
-    return refresh
-
-def get_refresh_token(
-    db: Session,
-    token: str,
-):
-
-    refresh = (
-        db.query(RefreshToken)
-        .filter(
-            RefreshToken.token == token
-        )
-        .first()
-    )
-
-
-    if not refresh:
-        return None
-
-
-    if refresh.expires_at < datetime.now(timezone.utc):
-        db.delete(refresh)
-        db.commit()
-        return None
-
-
-    return refresh
-
-def delete_refresh_token(
-    db: Session,
-    token: str,
-):
-    refresh = get_refresh_token(db, token)
-
-    if refresh:
-        db.delete(refresh)
-        db.commit()
-
-def generate_user_tokens(db: Session, user: Authentication):
-
-    payload = {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email
-    }
-
-    access_token = create_access_token(payload)
-
-    refresh_token = create_refresh_token(payload)
-
-    expires_at = (
-        datetime.now(timezone.utc)
-        + timedelta(days=settings.REFRESH_TOKEN_EXPIRY_DAYS)
-    )
-
-    save_refresh_token(
-        db=db,
-        user_id=user.id,
-        token=refresh_token,
-        expires_at=expires_at,
-    )
-
-    return access_token, refresh_token
