@@ -3,6 +3,7 @@
 # =====================================================================
 import io
 import pandas as pd
+from datetime import datetime, timedelta, timezone
 from fastapi import (
     APIRouter, 
     Depends, 
@@ -25,7 +26,7 @@ from app.core.logger import logger
 # =====================================================================
 # 3. Pydantic Schemas (Inputs vs Outputs)
 # =====================================================================
-from app.schemas.input_schemas import LoginRequest, SetPasswordRequest, SignupRequest, WeatherAQIPrediction,GoogleLoginRequest,UpdateNameRequest, UpdateUsernameRequest, SendOTPRequest, VerifyOTPRequest
+from app.schemas.input_schemas import LoginRequest, SetPasswordRequest, SignupRequest, WeatherAQIPrediction,GoogleLoginRequest,UpdateNameRequest, UpdateUsernameRequest,ChangePasswordRequest,SendOTPRequest, VerifyOTPRequest
 from app.schemas.output_schemas import LoginResponse, PredictionResponse, SignupResponse, User,GoogleLoginResponse
 from pydantic import ValidationError
 
@@ -33,7 +34,7 @@ from pydantic import ValidationError
 # 4. Database Layer (Connection, Operations & Lifecycle)
 # =====================================================================
 from app.database.database import get_db
-from app.database.connection import Authentication
+from app.database.connection import Authentication,PendingSignup
 from app.database.crud_db import (
     add_prediction_history,
     create_uploaded_file,
@@ -54,7 +55,8 @@ from app.database.crud_db import (
     update_username,
     set_user_password,
     change_user_password,
-    get_user_by_email
+    get_user_by_email,
+    get_user_by_username
 )
 
 # =====================================================================
@@ -68,7 +70,7 @@ from google.auth.transport import requests as google_requests
 # =====================================================================
 from app.core.artifact import modelService
 from app.services.predictor import predict,predict_batch
-from app.services.security import decode_refresh_token
+from app.services.security import decode_refresh_token,hash_password
 from app.services.email_service import send_otp_email
 from app.services.otp import create_otp,verify_otp
 
@@ -77,30 +79,200 @@ router = APIRouter()
 
 # Authentication
 
-@router.post("/auth/send-signup-otp")
-def send_signup_otp(
-    payload: SendOTPRequest,
+@router.post("/auth/verify-signup-otp")
+def verify_signup_otp(
+    payload: VerifyOTPRequest,
+    response: Response,
     db: Session = Depends(get_db),
 ):
     try:
-        if get_user_by_email(db, payload.email):
+
+        # ==========================
+        # Verify OTP
+        # ==========================
+
+        verify_otp(
+            db=db,
+            email=payload.email,
+            otp=payload.otp,
+        )
+
+        # ==========================
+        # Find pending signup
+        # ==========================
+
+        pending_signup = (
+            db.query(PendingSignup)
+            .filter(
+                PendingSignup.email == payload.email
+            )
+            .first()
+        )
+
+        if not pending_signup:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Signup session not found or expired.",
+            )
+
+        # ==========================
+        # Check expiration
+        # ==========================
+
+        if pending_signup.expires_at < datetime.now(timezone.utc):
+            db.delete(pending_signup)
+            db.commit()
+
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Signup session has expired. Please sign up again.",
+            )
+
+        # ==========================
+        # Create actual user
+        # ==========================
+
+        user = Authentication(
+            fullname=pending_signup.fullname,
+            username=pending_signup.username,
+            email=pending_signup.email,
+            hashed_password=pending_signup.hashed_password,
+        )
+
+        db.add(user)
+        db.flush()
+
+        # ==========================
+        # Generate tokens
+        # ==========================
+
+        access_token, refresh_token = generate_user_tokens(
+            db,
+            user,
+        )
+
+        # Remove pending signup
+        db.delete(pending_signup)
+
+        db.commit()
+        db.refresh(user)
+
+        # ==========================
+        # Set cookies
+        # ==========================
+
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            samesite="lax",
+            secure=settings.IS_PROD,
+            max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
+            path="/",
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            samesite="lax",
+            secure=settings.IS_PROD,
+            max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
+            path="/",
+        )
+
+        return {
+            "status": "success",
+            "message": "Account created successfully.",
+            "user": {
+                "id": user.id,
+                "fullname": user.fullname,
+                "email": user.email,
+                "username": user.username,
+                "created_at": user.created_at,
+            },
+        }
+
+    except HTTPException:
+        raise
+
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username or email already exists.",
+        )
+
+    except Exception as e:
+        db.rollback()
+
+        logger.exception(
+            f"Signup OTP verification failed | email={payload.email}"
+        )
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error,
+        )
+
+@router.post("/signup")
+def sign_up(
+    SignUpForm: SignupRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+
+        # Existing account
+        if get_user_by_email(db, SignUpForm.email):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="An account with this email already exists.",
             )
 
-        otp = create_otp(
-            db=db,
-            email=payload.email,
+        # Existing username
+        if get_user_by_username(db, SignUpForm.username):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username already exists.",
+            )
+
+        # Store pending signup
+        pending_signup = PendingSignup(
+            email=SignUpForm.email,
+            fullname=SignUpForm.fullname,
+            username=SignUpForm.username,
+            hashed_password=hash_password(SignUpForm.password),
+            expires_at=(
+                datetime.now(timezone.utc)
+                + timedelta(minutes=10)
+            ),
         )
 
+        db.add(pending_signup)
+
+        # Generate OTP
+        otp = create_otp(
+            db=db,
+            email=SignUpForm.email,
+        )
+
+        db.commit()
+
+        # Send OTP
         send_otp_email(
-            recipient_email=payload.email,
+            recipient_email=SignUpForm.email,
             otp=otp,
         )
 
         return {
-            "status": "success",
+            "status": "otp_required",
             "message": "Verification code sent successfully.",
         }
 
@@ -110,9 +282,7 @@ def send_signup_otp(
     except Exception as e:
         db.rollback()
 
-        logger.exception(
-            f"Failed to send signup OTP | email={payload.email}"
-        )
+        logger.exception("Signup failed")
 
         error = (
             str(e)
@@ -124,87 +294,6 @@ def send_signup_otp(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error,
         )
-    
-@router.post("/auth/verify-signup-otp")
-def verify_signup_otp(
-    payload: VerifyOTPRequest,
-    db: Session = Depends(get_db),
-):
-    try:
-        verify_otp(
-            db=db,
-            email=payload.email,
-            otp=payload.otp,
-        )
-
-        return {
-            "status": "success",
-            "message": "Email verified successfully.",
-        }
-
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        db.rollback()
-
-        logger.exception(
-            f"OTP verification failed | email={payload.email}"
-        )
-
-        error = (
-            str(e)
-            if settings.DEBUG
-            else settings.ERROR_MESSAGE
-        )
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error,
-        )
-
-
-@router.post("/signup",status_code=status.HTTP_201_CREATED,response_model=SignupResponse)
-def sign_up(SignUpForm:SignupRequest,response: Response,db:Session = Depends(get_db)):
-    try:
-        user, access_token, refresh_token = create_user(db, SignUpForm)
-
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            samesite="lax",
-            secure=settings.IS_PROD,
-            max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
-            path="/"
-        )
-
-
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            samesite="lax",
-            secure=settings.IS_PROD,
-            max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
-            path="/"
-        )
-
-        return {
-            "id": user.id,
-            "fullname":user.fullname,
-            "email": user.email,
-            "username":user.username,
-            "created_at": user.created_at
-        }
-    except HTTPException:
-        logger.exception("Signup failed")
-        raise
-
-    except Exception as e:
-        logger.exception("Signup failed")
-        error = str(e) if settings.DEBUG else settings.ERROR_MESSAGE
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=error)
 
 @router.post("/login",response_model=LoginResponse)
 def login(response : Response,formdata:LoginRequest,db:Session = Depends(get_db)):
@@ -632,6 +721,42 @@ def set_password(
 
     except Exception as e:
         logger.exception("Failed to set password")
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error,
+        )
+
+@router.patch("/password/change")
+def change_password(
+    formdata: ChangePasswordRequest,
+    user: Authentication = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        change_user_password(
+            db=db,
+            user=user,
+            current_password=formdata.current_password,
+            new_password=formdata.new_password,
+        )
+
+        return {
+            "status": "success",
+            "message": "Password changed successfully.",
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.exception("Failed to change password")
 
         error = (
             str(e)

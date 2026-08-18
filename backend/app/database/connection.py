@@ -480,3 +480,49 @@ class EmailOTP(Base):
             f"id={self.id}, "
             f"email={self.email})>"
         )
+
+class PendingSignup(Base):
+    __tablename__ = "pending_signups"
+
+    id: Mapped[int] = mapped_column(
+            sa.Integer,
+            primary_key=True,
+            autoincrement=True
+        )
+
+    fullname: Mapped[str] = mapped_column(
+            sa.String(settings.SHORT_STR),
+            unique=False,
+            nullable=False
+        )
+    
+    username: Mapped[str] = mapped_column(
+        sa.String(settings.SHORT_STR),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    email: Mapped[str] = mapped_column(
+        sa.String(settings.LONG_STR),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    hashed_password: Mapped[str | None] = mapped_column(
+            sa.String(settings.LONG_STR),
+            nullable=True
+        )
+
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        nullable=False,
+        index=True,
+        )
+
+    expires_at: Mapped[datetime] = mapped_column(
+            sa.DateTime(timezone=True),
+            nullable=False,
+        )
