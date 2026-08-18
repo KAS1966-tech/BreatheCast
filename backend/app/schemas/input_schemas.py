@@ -425,3 +425,50 @@ class ChangePasswordRequest(BaseModel):
                 "and be at least 8 characters long."
             )
         return value
+    
+class SendOTPRequest(BaseModel):
+    email: Annotated[
+        str,
+        Field(
+            min_length=5,
+            max_length=50,
+            examples=["user@gmail.com"],
+        ),
+    ]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if not modelService.validate_email(value):
+            raise ValueError("Invalid email address.")
+
+        return value.strip()
+
+
+class VerifyOTPRequest(BaseModel):
+    email: Annotated[
+        str,
+        Field(
+            min_length=5,
+            max_length=50,
+            examples=["user@gmail.com"],
+        ),
+    ]
+
+    otp: Annotated[
+        str,
+        Field(
+            min_length=6,
+            max_length=6,
+            pattern=r"^\d{6}$",
+            examples=["123456"],
+        ),
+    ]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if not modelService.validate_email(value):
+            raise ValueError("Invalid email address.")
+
+        return value.strip()

@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic import Field,computed_field
+from pydantic import Field,computed_field,EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +26,19 @@ class Settings(BaseSettings):
     API_TITLE: str = "AQI Prediction API"
 
     # ------------------------
+    # App Name
+    # ------------------------
+    APP_NAME: str = "BreatheCast"
+
+    # ------------------------
+    # Brevo api key and setup
+    # ------------------------
+    BREVO_API_KEY: str
+    BREVO_SENDER_EMAIL: EmailStr
+    OTP_EXPIRE_MINUTES: int = 5
+    OTP_MAX_ATTEMPTS: int = 5
+
+    # ------------------------
     # Messages
     # ------------------------
 
@@ -34,7 +47,7 @@ class Settings(BaseSettings):
     SHORT_STR: int = 30
     LONG_STR: int = 255
 
-    MAX_UPLOAD_SIZE_MB: int = 5
+    MAX_UPLOAD_SIZE_MB: int = 150
 
     # ------------------------
     # Database
@@ -68,6 +81,7 @@ class Settings(BaseSettings):
     # ------------------------
     # Google OAuth
     GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
 
     # ------------------------
     # Environment

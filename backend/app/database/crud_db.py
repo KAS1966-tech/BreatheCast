@@ -106,6 +106,11 @@ def get_or_create_google_user(
     user = get_user_by_email(db, email)
 
     if user:
+        if user.hashed_password is not None and user.google_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email already exists via standard signup. Please log in with your password.",
+            )
         user.google_id = google_id
 
         db.commit()

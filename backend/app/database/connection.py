@@ -428,3 +428,55 @@ class RefreshToken(Base):
 
     def __repr__(self):
         return f"<RefreshToken(id={self.id}, user_id={self.user_id})>"
+
+class EmailOTP(Base):
+    __tablename__ = "email_otps"
+
+    id: Mapped[int] = mapped_column(
+        sa.Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    email: Mapped[str] = mapped_column(
+        sa.String(settings.LONG_STR),
+        nullable=False,
+        index=True,
+    )
+
+    otp_hash: Mapped[str] = mapped_column(
+        sa.String(settings.LONG_STR),
+        nullable=False,
+    )
+
+    expires_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+    )
+
+    attempts: Mapped[int] = mapped_column(
+        sa.SmallInteger,
+        nullable=False,
+        default=0,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        sa.Index(
+            "ix_email_otps_email_created",
+            "email",
+            "created_at",
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<EmailOTP("
+            f"id={self.id}, "
+            f"email={self.email})>"
+        )

@@ -8,9 +8,7 @@ from typing import Any
 from app.core.config import settings
 from fastapi import HTTPException, status
 
-
 ALGORITHM = "HS256"
-
 password_hasher = PasswordHash.recommended()
 
 def hash_password(password: str) -> str:
@@ -131,3 +129,13 @@ def decode_refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
         )
+
+def hash_value(value: str) -> str:
+    return password_hasher.hash(value)
+
+
+def verify_value(value: str, hashed_value: str) -> bool:
+    try:
+        return password_hasher.verify(value, hashed_value)
+    except exceptions.InvalidHashError:
+        return False
