@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.schemas.input_schemas import WeatherAQIPrediction
+from app.schemas.output_schemas import PredictionResponse
 from app.services.predictor import predict
 
 
@@ -13,6 +14,7 @@ router = APIRouter(
 @router.post(
     "/predict",
     status_code=status.HTTP_200_OK,
+    response_model=PredictionResponse
 )
 def predict_aqi(payload: WeatherAQIPrediction):
     try:

@@ -1,6 +1,6 @@
 from typing import Annotated
-
-from pydantic import BaseModel, Field, BeforeValidator, computed_field
+from pydantic import BaseModel, Field, BeforeValidator, computed_field,field_validator
+from app.core.artifact import modelService
 
 
 # ============================================================
@@ -276,3 +276,152 @@ class WeatherAQIPrediction(BaseModel):
     @property
     def IsWeekend(self) -> int:
         return int(self.DayOfWeek in (5, 6))
+
+class SignupRequest(BaseModel):
+    fullname: Annotated[
+        str,
+        Field(
+            min_length=2,
+            max_length=50,
+            examples=["John Doe"],
+        ),
+    ]
+
+    username: Annotated[
+        str,
+        Field(
+            min_length=2,
+            max_length=50,
+            examples=["@user26"],
+        ),
+    ]
+
+    email: Annotated[
+        str,
+        Field(
+            min_length=5,
+            max_length=50,
+            examples=["user@gmail.com"],
+        ),
+    ]
+
+    password: Annotated[
+        str,
+        Field(
+            min_length=8,
+            examples=["Password@123"],
+        ),
+    ]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if not modelService.validate_email(value):
+            raise ValueError("Invalid email address.")
+        return value
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not modelService.validate_password(value):
+            raise ValueError(
+                "Password must contain at least one uppercase letter, "
+                "one lowercase letter, one digit, one special character, "
+                "and be at least 8 characters long."
+            )
+        return value
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str) -> str:
+        if not value.startswith("@"):
+            value = "@" + value
+
+        if not modelService.validate_username(value):
+            raise ValueError(
+                "Username must start with @ and contain only "
+                "letters, numbers, and underscores."
+            )
+
+        return value
+
+class LoginRequest(BaseModel):
+    email: Annotated[str,Field(min_length=5,max_length=50,examples=["user@gmail.com"])]
+    password : Annotated[str,Field(min_length=8,examples=["Password@123"])]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if not modelService.validate_email(value):
+            raise ValueError("Invalid email address.")
+        return value
+
+class GoogleLoginRequest(BaseModel):
+    credential: Annotated[str,Field(min_length=1)]
+
+# change this current to using annotated str with field validator for username validation
+class UpdateNameRequest(BaseModel):
+    fullname: Annotated[str, Field(min_length=2, max_length=50, examples=["John Doe"])]
+
+class UpdateUsernameRequest(BaseModel):
+    username: Annotated[
+        str,
+        Field(
+            min_length=2,
+            max_length=50,
+            examples=["@user26"],
+        ),
+    ]
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, value: str) -> str:
+        if not value.startswith("@"):
+            value = "@" + value
+
+        if not modelService.validate_username(value):
+            raise ValueError(
+                "Username must start with @ and contain only "
+                "letters, numbers, and underscores."
+            )
+
+        return value
+
+# use validate password function from modelService to validate password
+class SetPasswordRequest(BaseModel):
+    password:  Annotated[str, Field(min_length=8, examples=["Password@123"])]
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not modelService.validate_password(value):
+            raise ValueError(
+                "Password must contain at least one uppercase letter, "
+                "one lowercase letter, one digit, one special character, "
+                "and be at least 8 characters long."
+            )
+        return value
+
+class ChangePasswordRequest(BaseModel):
+    current_password: Annotated[
+        str,
+        Field(min_length=8),
+    ]
+
+    new_password: Annotated[
+        str,
+        Field(
+            min_length=8,
+            examples=["Password@123"],
+        ),
+    ]
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, value: str) -> str:
+        if not modelService.validate_password(value):
+            raise ValueError(
+                "Password must contain at least one uppercase letter, "
+                "one lowercase letter, one digit, one special character, "
+                "and be at least 8 characters long."
+            )
+        return value

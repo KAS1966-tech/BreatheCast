@@ -14,6 +14,7 @@ PASSWORD_REGEX: Final = re.compile(
         r"(?=.*[@$!%*?&^#()_+\-=\[\]{};':\"\\|,.<>/?])"  # special character
         r".{8,}$"            # minimum length 8
 )
+USERNAME_REGEX: Final = re.compile(r"^@[A-Za-z0-9_]{2,49}$")
 
 class Metadata(TypedDict):
     task: str
@@ -158,6 +159,8 @@ class ModelService:
         """
 
         return bool(PASSWORD_REGEX.fullmatch(password))
+    def validate_username(self, username: str) -> bool:
+        return bool(USERNAME_REGEX.fullmatch(username))
     
     def validate_auth_credentials(self,email:str,password:str)->ValidationResult:
         """
