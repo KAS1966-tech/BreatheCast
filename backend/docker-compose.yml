@@ -5,12 +5,12 @@ services:
     env_file:
       - .env
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=${DATABASE_USER:-postgres}
       - POSTGRES_DB=${DATABASE_DB}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - PGDATA=/var/lib/postgresql/data
     ports:
-      - "5432:5432" # 🛠️ FIXED: Hardcoded to prevent blank string errors on boot
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
