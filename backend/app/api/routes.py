@@ -781,7 +781,7 @@ def predict_aqi(
     db: Session = Depends(get_db),
 ):
     try:
-        prediction = predict(payload.model_dump())[0]
+        prediction = predict(payload.model_dump())
 
         logger.info(
             f"AQI prediction generated successfully | "

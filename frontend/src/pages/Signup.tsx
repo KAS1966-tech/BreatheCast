@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import toast from "react-hot-toast";
@@ -174,7 +174,7 @@ const Signup: React.FC = () => {
         return next;
     };
 
-    useEffect(() => {
+    useCallback(() => {
         if (submitAttempted) setErrors(validate(values));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values]);
@@ -538,37 +538,37 @@ const Signup: React.FC = () => {
           height: 4px;
         }
         .bc-strength-seg {
-          flex: 1;
-          border-radius: 999px;
-          background: var(--bc-border);
-          transition: background 0.25s ease;
+            flex: 1;
+            border-radius: 999px;
+            background: var(--bc-border);
+            transition: background 0.25s ease;
         }
         .bc-strength-label {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          margin-top: 6px;
-          font-size: 12px;
-          font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .bc-submit {
-          width: 100%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border: none;
-          border-radius: var(--bc-radius-sm);
-          background: var(--bc-accent-strong);
-          color: #F4FBF9;
-          font-size: 15px;
-          font-weight: 600;
-          padding: 13px 16px;
-          cursor: pointer;
-          margin-top: 6px;
-          transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-          box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--bc-accent-strong) 60%, transparent);
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            border-radius: var(--bc-radius-sm);
+            background: var(--bc-accent-strong);
+            color: #F4FBF9;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 13px 16px;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--bc-accent-strong) 60%, transparent);
         }
         .bc-submit:hover:not(:disabled) { transform: translateY(-1px); }
         .bc-submit:active:not(:disabled) { transform: translateY(0); }
@@ -576,34 +576,34 @@ const Signup: React.FC = () => {
         .bc-submit:focus-visible { outline: 2px solid var(--bc-ink); outline-offset: 3px; }
 
         .bc-submit-ghost {
-          width: 100%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border: 1.5px solid var(--bc-border);
-          border-radius: var(--bc-radius-sm);
-          background: transparent;
-          color: var(--bc-ink-soft);
-          font-size: 14px;
-          font-weight: 600;
-          padding: 11px 16px;
-          cursor: pointer;
-          margin-top: 10px;
-          transition: border-color 0.2s ease, color 0.2s ease;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1.5px solid var(--bc-border);
+            border-radius: var(--bc-radius-sm);
+            background: transparent;
+            color: var(--bc-ink-soft);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 11px 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: border-color 0.2s ease, color 0.2s ease;
         }
         .bc-submit-ghost:hover { color: var(--bc-ink); border-color: var(--bc-border-strong); }
         .bc-submit-ghost:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 2px; }
 
         .bc-divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 22px 0;
-          color: var(--bc-ink-faint);
-          font-size: 12px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0;
+            color: var(--bc-ink-faint);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
         .bc-divider::before, .bc-divider::after { content: ''; flex: 1; height: 1px; background: var(--bc-border); }
 
@@ -612,48 +612,48 @@ const Signup: React.FC = () => {
         .bc-footer-line { text-align: center; margin-top: 24px; font-size: 14px; color: var(--bc-ink-soft); }
 
         .bc-general-error {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          background: var(--bc-danger-bg);
-          border: 1px solid color-mix(in srgb, var(--bc-danger) 35%, transparent);
-          color: var(--bc-danger);
-          border-radius: var(--bc-radius-sm);
-          padding: 10px 12px;
-          font-size: 13px;
-          margin-bottom: 18px;
-          line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: var(--bc-danger-bg);
+            border: 1px solid color-mix(in srgb, var(--bc-danger) 35%, transparent);
+            color: var(--bc-danger);
+            border-radius: var(--bc-radius-sm);
+            padding: 10px 12px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            line-height: 1.5;
         }
 
         /* OTP stage */
         .bc-otp-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: color-mix(in srgb, var(--bc-accent) 14%, transparent);
-          color: var(--bc-accent-strong);
-          margin-bottom: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--bc-accent) 14%, transparent);
+            color: var(--bc-accent-strong);
+            margin-bottom: 16px;
         }
         .bc-otp-input {
-          text-align: center;
-          letter-spacing: 0.5em;
-          font-size: 20px;
-          font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-size: 20px;
+            font-weight: 600;
         }
         .bc-back-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: none;
-          border: none;
-          color: var(--bc-ink-soft);
-          font-size: 13px;
-          cursor: pointer;
-          padding: 0;
-          margin-bottom: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            color: var(--bc-ink-soft);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 18px;
         }
         .bc-back-link:hover { color: var(--bc-ink); }
         .bc-back-link:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 3px; border-radius: 4px; }
@@ -662,8 +662,8 @@ const Signup: React.FC = () => {
         @keyframes bc-drift { from { transform: translate3d(-6%, 0, 0); } to { transform: translate3d(6%, 0, 0); } }
         @keyframes bc-drift-slow { from { transform: translate3d(-4%, 0, 0); } to { transform: translate3d(5%, 0, 0); } }
         @keyframes bc-float {
-          0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
-          50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
+            0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
+            50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
         }
         @keyframes bc-wind-flow { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
         @keyframes bc-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
@@ -680,10 +680,10 @@ const Signup: React.FC = () => {
         .bc-arc-dot-group { animation: bc-arc-travel 20s linear infinite; transform-origin: 130px 130px; }
 
         @media (prefers-reduced-motion: reduce) {
-          .bc-cloud-a, .bc-cloud-b, .bc-particle, .bc-wind-path,
-          .bc-star, .bc-arc-glow, .bc-arc-dot-group { animation: none !important; }
+            .bc-cloud-a, .bc-cloud-b, .bc-particle, .bc-wind-path,
+            .bc-star, .bc-arc-glow, .bc-arc-dot-group { animation: none !important; }
         }
-      `}</style>
+        `}</style>
 
             <div className="bc-shell">
                 {/* ---------------- Form side ---------------- */}

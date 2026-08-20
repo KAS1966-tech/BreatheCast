@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import toast from "react-hot-toast";
@@ -16,14 +16,12 @@ import {
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
-
 import { login, googleLogin } from "../app/features/auth/authSlice"; // existing thunks, not recreated
 import { companyName } from "../core/config"; // existing companyName export
 import { useSEO } from "../utils/useSeo"; // existing SEO hook
 import { useGoogleFont } from "../utils/useGoogleFont"; // existing font loader
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { toggleTheme } from "../app/features/theme/themeSlice";
-
 // ---------------------------------------------------------------------------
 
 interface FieldErrors {
@@ -54,7 +52,6 @@ const Login: React.FC = () => {
     useGoogleFont("Fraunces");
     useGoogleFont("Plus Jakarta Sans");
 
-    // const [theme, setTheme] = useState<Theme>(getInitialTheme);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -64,11 +61,6 @@ const Login: React.FC = () => {
         password?: boolean;
     }>({});
     const [submitAttempted, setSubmitAttempted] = useState(false);
-
-    //   const reducedMotion = useRef(
-    //     typeof window !== "undefined" &&
-    //       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-    //   ).current;
 
     useEffect(() => {
         document.documentElement.setAttribute("data-breathecast-theme", mode);
@@ -110,7 +102,7 @@ const Login: React.FC = () => {
         return next;
     };
 
-    useEffect(() => {
+    useCallback(() => {
         if (submitAttempted) {
             setErrors(validate({ email, password }));
         }
@@ -208,23 +200,27 @@ const Login: React.FC = () => {
           width: 100%;
           font-family: var(--bc-font-body);
         }
+        
+        /* ✨ UPDATED FRESH "CLEAN AIR" DAY THEME ✨ */
         .bc-root[data-theme='day'] {
-          --bc-bg: #EEF5F3;
-          --bc-panel: #DCEEEA;
-          --bc-panel-2: #C7E6DD;
+          --bc-bg: #F8FAFC;
+          --bc-panel: #F0FDF4;
+          --bc-panel-2: #DCFCE7;
           --bc-surface: #FFFFFF;
-          --bc-ink: #12262B;
-          --bc-ink-soft: #4B6169;
-          --bc-ink-faint: #7C949A;
-          --bc-accent: #1F8A7A;
-          --bc-accent-strong: #146357;
-          --bc-accent-2: #E8A64C;
-          --bc-border: rgba(18, 38, 43, 0.12);
-          --bc-border-strong: rgba(18, 38, 43, 0.22);
-          --bc-danger: #C7462F;
-          --bc-danger-bg: rgba(199, 70, 47, 0.08);
-          --bc-focus-ring: rgba(31, 138, 122, 0.35);
+          --bc-ink: #0F2827;
+          --bc-ink-soft: #4A6665;
+          --bc-ink-faint: #8DA3A2;
+          --bc-accent: #10B981;
+          --bc-accent-strong: #059669;
+          --bc-accent-2: #F59E0B;
+          --bc-border: rgba(16, 185, 129, 0.15);
+          --bc-border-strong: rgba(16, 185, 129, 0.35);
+          --bc-danger: #DC2626;
+          --bc-danger-bg: rgba(220, 38, 38, 0.08);
+          --bc-focus-ring: rgba(16, 185, 129, 0.35);
         }
+        
+        /* Dark theme remains exactly as it was */
         .bc-root[data-theme='dark'] {
           --bc-bg: #0A1418;
           --bc-panel: #071013;
@@ -619,9 +615,9 @@ const Login: React.FC = () => {
                             <linearGradient id="bc-sky" x1="0" y1="0" x2="0" y2="1">
                                 {mode === "day" ? (
                                     <>
-                                        <stop offset="0%" stopColor="#F3F9F6" />
-                                        <stop offset="55%" stopColor="#DCEEEA" />
-                                        <stop offset="100%" stopColor="#C3E3D8" />
+                                        <stop offset="0%" stopColor="#F0FDFA" />
+                                        <stop offset="55%" stopColor="#CCFBF1" />
+                                        <stop offset="100%" stopColor="#99F6E4" />
                                     </>
                                 ) : (
                                     <>
@@ -634,12 +630,12 @@ const Login: React.FC = () => {
                             <radialGradient id="bc-glow" cx="72%" cy="18%" r="55%">
                                 <stop
                                     offset="0%"
-                                    stopColor={mode === "day" ? "#FCEBC7" : "#123B39"}
+                                    stopColor={mode === "day" ? "#FEF3C7" : "#123B39"}
                                     stopOpacity={mode === "day" ? 0.85 : 0.6}
                                 />
                                 <stop
                                     offset="100%"
-                                    stopColor={mode === "day" ? "#FCEBC7" : "#123B39"}
+                                    stopColor={mode === "day" ? "#FEF3C7" : "#123B39"}
                                     stopOpacity="0"
                                 />
                             </radialGradient>
@@ -665,9 +661,7 @@ const Login: React.FC = () => {
                                 />
                             ))}
 
-                        {/* Signature element: the AQI horizon arc — a slow-breathing
-                            gauge that reads as "live air quality" without becoming a
-                            literal chart. */}
+                        {/* Signature element: the AQI horizon arc */}
                         <g
                             transform="translate(72, 96)"
                             opacity={mode === "day" ? 0.9 : 0.85}
@@ -678,7 +672,7 @@ const Login: React.FC = () => {
                                 cy="130"
                                 r="104"
                                 fill="none"
-                                stroke={mode === "day" ? "#1F8A7A" : "#4FD8C4"}
+                                stroke={mode === "day" ? "#10B981" : "#4FD8C4"}
                                 strokeOpacity="0.16"
                                 strokeWidth="1"
                             />
@@ -687,7 +681,7 @@ const Login: React.FC = () => {
                                 cy="130"
                                 r="86"
                                 fill="none"
-                                stroke={mode === "day" ? "#146357" : "#4FD8C4"}
+                                stroke={mode === "day" ? "#059669" : "#4FD8C4"}
                                 strokeOpacity={mode === "day" ? 0.22 : 0.28}
                                 strokeWidth="1.5"
                                 strokeDasharray="1 7"
@@ -698,14 +692,14 @@ const Login: React.FC = () => {
                                     cx="130"
                                     cy="44"
                                     r="4.5"
-                                    fill={mode === "day" ? "#E8A64C" : "#F0B65E"}
+                                    fill={mode === "day" ? "#F59E0B" : "#F0B65E"}
                                 />
                             </g>
                         </g>
 
                         {/* Wind-flow lines */}
                         <g
-                            stroke={mode === "day" ? "#146357" : "#4FD8C4"}
+                            stroke={mode === "day" ? "#059669" : "#4FD8C4"}
                             strokeOpacity={mode === "day" ? 0.28 : 0.32}
                             strokeWidth="2"
                             fill="none"
@@ -769,7 +763,7 @@ const Login: React.FC = () => {
                                 cx={(p.cx / 100) * 480}
                                 cy={(p.cy / 100) * 640 + 260}
                                 r={p.r}
-                                fill={mode === "day" ? "#1F8A7A" : "#7EE9DA"}
+                                fill={mode === "day" ? "#10B981" : "#7EE9DA"}
                                 fillOpacity={mode === "day" ? 0.45 : 0.55}
                                 style={{
                                     animationDuration: `${p.dur}s`,
@@ -781,7 +775,7 @@ const Login: React.FC = () => {
                         {/* Horizon line */}
                         <path
                             d="M0 520 C 120 500, 360 542, 480 512 L480 640 L0 640 Z"
-                            fill={mode === "day" ? "#BFE2D6" : "#081215"}
+                            fill={mode === "day" ? "#A7F3D0" : "#081215"}
                             opacity={mode === "day" ? 0.7 : 0.9}
                         />
                     </svg>
@@ -947,16 +941,13 @@ const Login: React.FC = () => {
 
                         <div className="bc-divider">or</div>
 
-                        {/* <div className="bc-google-wrap"> */}
                         <GoogleLogin
                             key={`${instanceId}-${mode}`}
                             onSuccess={handleGoogleSuccess}
                             onError={handleGoogleError}
                             shape="rectangular"
-                            // width="100%"
                             text="continue_with"
                         />
-                        {/* </div> */}
 
                         <p className="bc-footer-line">
                             Don&apos;t have an account?{" "}

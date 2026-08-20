@@ -8,6 +8,8 @@ import { useEffect, useState } from "react"
 import { waitForBackend } from "./api/predictionApi"
 import { useAppDispatch } from "./app/redux"
 import { fetchCurrentUser } from "./app/features/auth/authSlice"
+import AqiPrediction from "./pages/AqiPrediction"
+import Loading from "./components/Loading"
 
 
 const App = () => {
@@ -27,11 +29,7 @@ const App = () => {
   }, [dispatch]);
 
   if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <Loading />
   }
 
   return (
@@ -43,6 +41,7 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/predict" element={<AqiPrediction />} />
         </Route>
       </Routes>
     </div>
