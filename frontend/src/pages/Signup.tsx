@@ -50,7 +50,7 @@ interface FormErrors {
 const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 const USERNAME_PATTERN = /^@[A-Za-z0-9_]{2,49}$/;
 const PASSWORD_PATTERN =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/?]).{8,}$/;
 
 function normalizeUsername(value: string): string {
     if (!value) return value;
@@ -61,15 +61,18 @@ type StrengthLevel = 0 | 1 | 2 | 3;
 
 function getPasswordStrength(password: string): { level: StrengthLevel; label: string } {
     if (!password) return { level: 0, label: "" };
+
     const rules = [
         /[a-z]/.test(password),
         /[A-Z]/.test(password),
         /\d/.test(password),
-        /[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+        /[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/?]/.test(password),
         password.length >= 8,
         password.length >= 12,
     ];
+
     const score = rules.filter(Boolean).length;
+
     if (score <= 3) return { level: 1, label: "Weak" };
     if (score <= 5) return { level: 2, label: "Fair" };
     return { level: 3, label: "Strong" };
@@ -85,18 +88,18 @@ const Signup: React.FC = () => {
         loading: googleLoading,
         error: googleError,
     } = useAppSelector((state) => state.auth);
-    const {mode} = useAppSelector((state) => state.theme);
+
+    const { mode } = useAppSelector((state) => state.theme);
 
     useSEO(
         `Create your account — ${companyName}`,
         `Create a free ${companyName} account for live AQI tracking, weather intelligence, and personalized environmental alerts.`
     );
+
     useGoogleFont("Fraunces");
     useGoogleFont("Plus Jakarta Sans");
 
-    // const [theme, setTheme] = useState<Theme>(getInitialTheme);
     const [stage, setStage] = useState<Stage>("form");
-
     const [values, setValues] = useState<FormValues>({
         fullName: "",
         username: "",
@@ -109,7 +112,6 @@ const Signup: React.FC = () => {
     const [submitAttempted, setSubmitAttempted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
     const [otp, setOtp] = useState("");
     const [otpError, setOtpError] = useState<string | undefined>();
     const [otpSubmitting, setOtpSubmitting] = useState(false);
@@ -140,6 +142,7 @@ const Signup: React.FC = () => {
 
     const validate = (v: FormValues): FormErrors => {
         const next: FormErrors = {};
+
         if (!v.fullName.trim()) {
             next.fullName = "Enter your full name.";
         } else if (v.fullName.trim().length < 2) {
@@ -201,8 +204,10 @@ const Signup: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitAttempted(true);
+
         const nextErrors = validate(values);
         setErrors(nextErrors);
+
         if (Object.keys(nextErrors).length > 0) {
             setTouched({
                 fullName: true,
@@ -223,6 +228,7 @@ const Signup: React.FC = () => {
                     password: values.password,
                 })
             ).unwrap();
+
             setPendingEmail(values.email.trim());
             toast.success("Account created. Check your email to verify your account.");
             setStage("otp");
@@ -234,15 +240,16 @@ const Signup: React.FC = () => {
     const handleOtpSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setOtpError(undefined);
+
         if (!otp.trim() || otp.trim().length < 4) {
             setOtpError("Enter the verification code from your email.");
             return;
         }
+
         setOtpSubmitting(true);
+
         try {
-            await dispatch(
-                verifySignupOtp({ email: pendingEmail, otp: otp.trim() })
-            ).unwrap();
+            await dispatch(verifySignupOtp({ email: pendingEmail, otp: otp.trim() })).unwrap();
             toast.success("Your account has been verified.");
             navigate("/home");
         } catch (err) {
@@ -259,6 +266,7 @@ const Signup: React.FC = () => {
             toast.error("Google sign-in didn't return a credential. Please try again.");
             return;
         }
+
         try {
             await dispatch(googleLogin(credentialResponse.credential)).unwrap();
             toast.success(`Welcome to ${companyName}.`);
@@ -301,8 +309,26 @@ const Signup: React.FC = () => {
         []
     );
 
+    const inputShellClass = (isInvalid: boolean) =>
+        [
+            "relative flex items-center border-[1.5px] rounded-[10px] bg-[var(--bc-surface)] transition-[border-color,box-shadow] duration-[180ms]",
+            isInvalid
+                ? "border-[var(--bc-danger)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--bc-danger)_22%,transparent)]"
+                : "border-[var(--bc-border)] focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+        ].join(" ");
+
+    const baseInputClass =
+        "flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]";
+
+    const submitClass =
+        "w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-[var(--bc-accent-strong)] text-[#F4FBF9] text-[15px] font-semibold px-4 py-[13px] cursor-pointer mt-1.5 transition-[transform,box-shadow,opacity] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]";
+
     return (
-        <div className="bc-root" data-theme={mode}>
+        <div
+            className="bc-root min-h-screen w-full"
+            data-theme={mode}
+            style={{ fontFamily: "var(--bc-font-body)" }}
+        >
             <style>{`
         .bc-root {
           --bc-radius: 18px;
@@ -310,10 +336,8 @@ const Signup: React.FC = () => {
           --bc-font-display: 'Fraunces', 'Georgia', serif;
           --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
           --bc-shadow: 0 20px 60px -25px rgba(9, 30, 34, 0.35);
-          min-height: 100vh;
-          width: 100%;
-          font-family: var(--bc-font-body);
         }
+
         .bc-root[data-theme='day'] {
           --bc-bg: #EEF5F3;
           --bc-panel: #DCEEEA;
@@ -334,6 +358,7 @@ const Signup: React.FC = () => {
           --bc-strength-2: #E8A64C;
           --bc-strength-3: #1F8A7A;
         }
+
         .bc-root[data-theme='dark'] {
           --bc-bg: #0A1418;
           --bc-panel: #071013;
@@ -355,343 +380,100 @@ const Signup: React.FC = () => {
           --bc-strength-3: #4FD8C4;
         }
 
-        .bc-shell {
-          min-height: 100vh;
-          display: grid;
-          grid-template-columns: 1fr;
-          background: var(--bc-bg);
-          color: var(--bc-ink);
-          transition: background 0.4s ease, color 0.4s ease;
-        }
-        @media (min-width: 960px) {
-          .bc-shell { grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); }
-        }
-        /* Mirrored order: form first on desktop, scene second. */
-        .bc-form-side { order: 2; }
-        .bc-scene { order: 1; }
-        @media (min-width: 960px) {
-          .bc-form-side { order: 1; }
-          .bc-scene { order: 2; }
+        @keyframes bc-drift {
+          from { transform: translate3d(-6%, 0, 0); }
+          to { transform: translate3d(6%, 0, 0); }
         }
 
-        .bc-scene {
-          position: relative;
-          overflow: hidden;
-          background: linear-gradient(180deg, var(--bc-panel) 0%, var(--bc-panel-2) 100%);
-          min-height: 220px;
-        }
-        @media (min-width: 960px) {
-          .bc-scene { min-height: 100vh; }
-        }
-        .bc-scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        .bc-scene-content {
-          position: relative;
-          z-index: 2;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 20px 24px;
-        }
-        @media (min-width: 960px) {
-          .bc-scene-content { justify-content: space-between; padding: 56px 56px 64px; }
+        @keyframes bc-drift-slow {
+          from { transform: translate3d(-4%, 0, 0); }
+          to { transform: translate3d(5%, 0, 0); }
         }
 
-        .bc-brand { display: inline-flex; align-items: center; gap: 10px; }
-        .bc-brand-mark {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: color-mix(in srgb, var(--bc-accent) 16%, transparent);
-          color: var(--bc-accent-strong);
-        }
-        .bc-brand-name {
-          font-family: var(--bc-font-display);
-          font-size: 20px;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          color: var(--bc-ink);
-        }
-
-        .bc-scene-copy { max-width: 420px; }
-        .bc-scene-eyebrow {
-          font-size: 12px;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--bc-accent-strong);
-          font-weight: 600;
-          margin: 0 0 10px;
-          display: none;
-        }
-        @media (min-width: 960px) { .bc-scene-eyebrow { display: block; } }
-        .bc-scene-heading {
-          display: none;
-          font-family: var(--bc-font-display);
-          font-size: clamp(28px, 3vw, 38px);
-          line-height: 1.15;
-          font-weight: 600;
-          margin: 0 0 14px;
-          color: var(--bc-ink);
-        }
-        @media (min-width: 960px) { .bc-scene-heading { display: block; } }
-        .bc-scene-sub { display: none; font-size: 15px; line-height: 1.6; color: var(--bc-ink-soft); margin: 0; }
-        @media (min-width: 960px) { .bc-scene-sub { display: block; } }
-
-        .bc-form-side {
-          display: flex;
-          flex-direction: column;
-          background: var(--bc-bg);
-          padding: 28px 20px 40px;
-        }
-        @media (min-width: 640px) { .bc-form-side { padding: 40px 48px 56px; } }
-        @media (min-width: 960px) { .bc-form-side { justify-content: center; padding: 48px 72px; } }
-
-        .bc-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-        @media (min-width: 960px) { .bc-topbar { justify-content: flex-end; margin-bottom: 40px; } }
-
-        .bc-theme-toggle {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          border: 1px solid var(--bc-border);
-          background: var(--bc-surface);
-          color: var(--bc-ink-soft);
-          border-radius: 999px;
-          padding: 6px 12px;
-          font-size: 13px;
-          cursor: pointer;
-          transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-        }
-        .bc-theme-toggle:hover { color: var(--bc-ink); border-color: var(--bc-border-strong); }
-        .bc-theme-toggle:active { transform: scale(0.97); }
-        .bc-theme-toggle:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 2px; }
-
-        .bc-form-wrap { width: 100%; max-width: 420px; margin: 0 auto; }
-
-        .bc-heading {
-          font-family: var(--bc-font-display);
-          font-size: clamp(26px, 4vw, 30px);
-          font-weight: 600;
-          margin: 0 0 8px;
-          color: var(--bc-ink);
-        }
-        .bc-subtext { font-size: 14.5px; color: var(--bc-ink-soft); margin: 0 0 26px; line-height: 1.55; }
-
-        .bc-field { margin-bottom: 16px; }
-        .bc-label { display: block; font-size: 13px; font-weight: 600; color: var(--bc-ink); margin-bottom: 7px; }
-        .bc-input-shell {
-          position: relative;
-          display: flex;
-          align-items: center;
-          border: 1.5px solid var(--bc-border);
-          border-radius: var(--bc-radius-sm);
-          background: var(--bc-surface);
-          transition: border-color 0.18s ease, box-shadow 0.18s ease;
-        }
-        .bc-input-shell:focus-within { border-color: var(--bc-accent); box-shadow: 0 0 0 4px var(--bc-focus-ring); }
-        .bc-input-shell.is-invalid { border-color: var(--bc-danger); }
-        .bc-input-shell.is-invalid:focus-within {
-          box-shadow: 0 0 0 4px color-mix(in srgb, var(--bc-danger) 22%, transparent);
-        }
-        .bc-input-icon { display: inline-flex; padding-left: 13px; color: var(--bc-ink-faint); flex-shrink: 0; }
-        .bc-input {
-          flex: 1;
-          border: none;
-          background: transparent;
-          outline: none;
-          padding: 12px 12px;
-          font-size: 15px;
-          color: var(--bc-ink);
-          font-family: var(--bc-font-body);
-          min-width: 0;
-        }
-        .bc-input::placeholder { color: var(--bc-ink-faint); }
-        .bc-input-toggle {
-          background: none;
-          border: none;
-          display: inline-flex;
-          padding: 8px 12px;
-          color: var(--bc-ink-faint);
-          cursor: pointer;
-          flex-shrink: 0;
-        }
-        .bc-input-toggle:hover { color: var(--bc-ink-soft); }
-        .bc-input-toggle:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: -2px; border-radius: 6px; }
-
-        .bc-field-error {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-top: 7px;
-          font-size: 12.5px;
-          color: var(--bc-danger);
-        }
-        .bc-field-hint { margin-top: 7px; font-size: 12px; color: var(--bc-ink-faint); }
-
-        .bc-strength { margin-top: 10px; }
-        .bc-strength-track {
-          display: flex;
-          gap: 4px;
-          height: 4px;
-        }
-        .bc-strength-seg {
-            flex: 1;
-            border-radius: 999px;
-            background: var(--bc-border);
-            transition: background 0.25s ease;
-        }
-        .bc-strength-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .bc-submit {
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: none;
-            border-radius: var(--bc-radius-sm);
-            background: var(--bc-accent-strong);
-            color: #F4FBF9;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 13px 16px;
-            cursor: pointer;
-            margin-top: 6px;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-            box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--bc-accent-strong) 60%, transparent);
-        }
-        .bc-submit:hover:not(:disabled) { transform: translateY(-1px); }
-        .bc-submit:active:not(:disabled) { transform: translateY(0); }
-        .bc-submit:disabled { opacity: 0.65; cursor: not-allowed; box-shadow: none; }
-        .bc-submit:focus-visible { outline: 2px solid var(--bc-ink); outline-offset: 3px; }
-
-        .bc-submit-ghost {
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: 1.5px solid var(--bc-border);
-            border-radius: var(--bc-radius-sm);
-            background: transparent;
-            color: var(--bc-ink-soft);
-            font-size: 14px;
-            font-weight: 600;
-            padding: 11px 16px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: border-color 0.2s ease, color 0.2s ease;
-        }
-        .bc-submit-ghost:hover { color: var(--bc-ink); border-color: var(--bc-border-strong); }
-        .bc-submit-ghost:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 2px; }
-
-        .bc-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 22px 0;
-            color: var(--bc-ink-faint);
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .bc-divider::before, .bc-divider::after { content: ''; flex: 1; height: 1px; background: var(--bc-border); }
-
-        .bc-google-wrap { display: flex; justify-content: center; width: 100%; }
-
-        .bc-footer-line { text-align: center; margin-top: 24px; font-size: 14px; color: var(--bc-ink-soft); }
-
-        .bc-general-error {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            background: var(--bc-danger-bg);
-            border: 1px solid color-mix(in srgb, var(--bc-danger) 35%, transparent);
-            color: var(--bc-danger);
-            border-radius: var(--bc-radius-sm);
-            padding: 10px 12px;
-            font-size: 13px;
-            margin-bottom: 18px;
-            line-height: 1.5;
-        }
-
-        /* OTP stage */
-        .bc-otp-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: color-mix(in srgb, var(--bc-accent) 14%, transparent);
-            color: var(--bc-accent-strong);
-            margin-bottom: 16px;
-        }
-        .bc-otp-input {
-            text-align: center;
-            letter-spacing: 0.5em;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .bc-back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: none;
-            color: var(--bc-ink-soft);
-            font-size: 13px;
-            cursor: pointer;
-            padding: 0;
-            margin-bottom: 18px;
-        }
-        .bc-back-link:hover { color: var(--bc-ink); }
-        .bc-back-link:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 3px; border-radius: 4px; }
-
-        /* Motion */
-        @keyframes bc-drift { from { transform: translate3d(-6%, 0, 0); } to { transform: translate3d(6%, 0, 0); } }
-        @keyframes bc-drift-slow { from { transform: translate3d(-4%, 0, 0); } to { transform: translate3d(5%, 0, 0); } }
         @keyframes bc-float {
-            0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
-            50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
+          0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
+          50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
         }
-        @keyframes bc-wind-flow { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
-        @keyframes bc-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
-        @keyframes bc-arc-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        @keyframes bc-arc-travel { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .bc-cloud-a { animation: bc-drift 50s ease-in-out infinite alternate; }
-        .bc-cloud-b { animation: bc-drift-slow 66s ease-in-out infinite alternate; }
-        .bc-particle { animation: bc-float linear infinite; transform-box: fill-box; transform-origin: center; }
-        .bc-wind-path { stroke-dasharray: 8 14; animation: bc-wind-flow 5.5s linear infinite; }
-        .bc-star { animation: bc-twinkle ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-        .bc-arc-glow { animation: bc-arc-pulse 6s ease-in-out infinite; }
-        .bc-arc-dot-group { animation: bc-arc-travel 20s linear infinite; transform-origin: 130px 130px; }
+        @keyframes bc-wind-flow {
+          from { stroke-dashoffset: 240; }
+          to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes bc-twinkle {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.9; }
+        }
+
+        @keyframes bc-arc-pulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes bc-arc-travel {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .bc-cloud-a {
+          animation: bc-drift 50s ease-in-out infinite alternate;
+        }
+
+        .bc-cloud-b {
+          animation: bc-drift-slow 66s ease-in-out infinite alternate;
+        }
+
+        .bc-particle {
+          animation: bc-float linear infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+
+        .bc-wind-path {
+          stroke-dasharray: 8 14;
+          animation: bc-wind-flow 5.5s linear infinite;
+        }
+
+        .bc-star {
+          animation: bc-twinkle ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+
+        .bc-arc-glow {
+          animation: bc-arc-pulse 6s ease-in-out infinite;
+        }
+
+        .bc-arc-dot-group {
+          animation: bc-arc-travel 20s linear infinite;
+          transform-origin: 130px 130px;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .bc-cloud-a, .bc-cloud-b, .bc-particle, .bc-wind-path,
-            .bc-star, .bc-arc-glow, .bc-arc-dot-group { animation: none !important; }
+          .bc-cloud-a,
+          .bc-cloud-b,
+          .bc-particle,
+          .bc-wind-path,
+          .bc-star,
+          .bc-arc-glow,
+          .bc-arc-dot-group {
+            animation: none !important;
+          }
         }
-        `}</style>
+      `}</style>
 
-            <div className="bc-shell">
+            <div className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
                 {/* ---------------- Form side ---------------- */}
-                <div className="bc-form-side">
-                    <div className="bc-topbar">
+                <div className="order-2 flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:order-1 min-[960px]:justify-center min-[960px]:px-[72px] min-[960px]:py-12">
+                    <div className="flex items-center justify-between mb-7 min-[960px]:justify-end min-[960px]:mb-10">
                         <button
                             type="button"
-                            className="bc-theme-toggle"
+                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
                             onClick={() => dispatch(toggleTheme())}
                             aria-label={mode === "day" ? "Switch to dark theme" : "Switch to day theme"}
                         >
@@ -700,37 +482,48 @@ const Signup: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="bc-form-wrap">
+                    <div className="w-full max-w-[420px] mx-auto">
                         {stage === "form" ? (
                             <>
-                                <h1 className="bc-heading">Create your account</h1>
-                                <p className="bc-subtext">
+                                <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
+                                    Create your account
+                                </h1>
+
+                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-[26px] leading-[1.55]">
                                     Begin your environmental awareness journey with live AQI and weather
                                     intelligence built around you.
                                 </p>
 
                                 {signupError && (
-                                    <div className="bc-general-error" role="alert">
-                                        <AlertCircle size={16} style={{ marginTop: 1, flexShrink: 0 }} />
+                                    <div
+                                        className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] leading-[1.5]"
+                                        role="alert"
+                                    >
+                                        <AlertCircle size={16} className="mt-px shrink-0" />
                                         <span>{signupError}</span>
                                     </div>
                                 )}
 
                                 <form onSubmit={handleSubmit} noValidate>
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-name" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-name"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Full name
                                         </label>
-                                        <div className={`bc-input-shell${invalid("fullName") ? " is-invalid" : ""}`}>
-                                            <span className="bc-input-icon">
+
+                                        <div className={inputShellClass(invalid("fullName"))}>
+                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                                 <User size={17} />
                                             </span>
+
                                             <input
                                                 id="signup-name"
                                                 name="fullName"
                                                 type="text"
                                                 autoComplete="name"
-                                                className="bc-input"
+                                                className={baseInputClass}
                                                 placeholder="Jordan Rivera"
                                                 value={values.fullName}
                                                 onChange={handleChange("fullName")}
@@ -739,28 +532,37 @@ const Signup: React.FC = () => {
                                                 aria-describedby={invalid("fullName") ? "signup-name-error" : undefined}
                                             />
                                         </div>
+
                                         {invalid("fullName") && (
-                                            <p className="bc-field-error" id="signup-name-error">
+                                            <p
+                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                id="signup-name-error"
+                                            >
                                                 <AlertCircle size={13} />
                                                 {errors.fullName}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-username" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-username"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Username
                                         </label>
-                                        <div className={`bc-input-shell${invalid("username") ? " is-invalid" : ""}`}>
-                                            <span className="bc-input-icon">
+
+                                        <div className={inputShellClass(invalid("username"))}>
+                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                                 <AtSign size={17} />
                                             </span>
+
                                             <input
                                                 id="signup-username"
                                                 name="username"
                                                 type="text"
                                                 autoComplete="username"
-                                                className="bc-input"
+                                                className={baseInputClass}
                                                 placeholder="@jordanrivera"
                                                 value={values.username}
                                                 onChange={handleChange("username")}
@@ -769,33 +571,42 @@ const Signup: React.FC = () => {
                                                 aria-describedby="signup-username-hint"
                                             />
                                         </div>
+
                                         {invalid("username") ? (
-                                            <p className="bc-field-error" id="signup-username-hint">
+                                            <p
+                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                id="signup-username-hint"
+                                            >
                                                 <AlertCircle size={13} />
                                                 {errors.username}
                                             </p>
                                         ) : (
-                                            <p className="bc-field-hint" id="signup-username-hint">
+                                            <p className="mt-[7px] text-xs text-[var(--bc-ink-faint)]" id="signup-username-hint">
                                                 Starts with @ · 3–50 letters, numbers, or underscores.
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-email" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-email"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Email
                                         </label>
-                                        <div className={`bc-input-shell${invalid("email") ? " is-invalid" : ""}`}>
-                                            <span className="bc-input-icon">
+
+                                        <div className={inputShellClass(invalid("email"))}>
+                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                                 <Mail size={17} />
                                             </span>
+
                                             <input
                                                 id="signup-email"
                                                 name="email"
                                                 type="email"
                                                 autoComplete="email"
                                                 inputMode="email"
-                                                className="bc-input"
+                                                className={baseInputClass}
                                                 placeholder="you@example.com"
                                                 value={values.email}
                                                 onChange={handleChange("email")}
@@ -804,28 +615,37 @@ const Signup: React.FC = () => {
                                                 aria-describedby={invalid("email") ? "signup-email-error" : undefined}
                                             />
                                         </div>
+
                                         {invalid("email") && (
-                                            <p className="bc-field-error" id="signup-email-error">
+                                            <p
+                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                id="signup-email-error"
+                                            >
                                                 <AlertCircle size={13} />
                                                 {errors.email}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-password" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-password"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Password
                                         </label>
-                                        <div className={`bc-input-shell${invalid("password") ? " is-invalid" : ""}`}>
-                                            <span className="bc-input-icon">
+
+                                        <div className={inputShellClass(invalid("password"))}>
+                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                                 <Lock size={17} />
                                             </span>
+
                                             <input
                                                 id="signup-password"
                                                 name="password"
                                                 type={showPassword ? "text" : "password"}
                                                 autoComplete="new-password"
-                                                className="bc-input"
+                                                className={baseInputClass}
                                                 placeholder="Create a password"
                                                 value={values.password}
                                                 onChange={handleChange("password")}
@@ -833,9 +653,10 @@ const Signup: React.FC = () => {
                                                 aria-invalid={invalid("password")}
                                                 aria-describedby="signup-password-status"
                                             />
+
                                             <button
                                                 type="button"
-                                                className="bc-input-toggle"
+                                                className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-[6px]"
                                                 onClick={() => setShowPassword((s) => !s)}
                                                 aria-label={showPassword ? "Hide password" : "Show password"}
                                                 aria-pressed={showPassword}
@@ -845,12 +666,12 @@ const Signup: React.FC = () => {
                                         </div>
 
                                         {values.password && (
-                                            <div className="bc-strength" aria-hidden={false}>
-                                                <div className="bc-strength-track">
+                                            <div className="mt-2.5" aria-hidden={false}>
+                                                <div className="flex gap-1 h-1">
                                                     {[1, 2, 3].map((seg) => (
                                                         <span
                                                             key={seg}
-                                                            className="bc-strength-seg"
+                                                            className="flex-1 rounded-full bg-[var(--bc-border)] transition-colors duration-[250ms]"
                                                             style={{
                                                                 background:
                                                                     strength.level >= seg
@@ -864,8 +685,9 @@ const Signup: React.FC = () => {
                                                         />
                                                     ))}
                                                 </div>
+
                                                 <p
-                                                    className="bc-strength-label"
+                                                    className="flex items-center gap-[5px] mt-1.5 text-xs font-semibold"
                                                     id="signup-password-status"
                                                     style={{
                                                         color:
@@ -885,37 +707,45 @@ const Signup: React.FC = () => {
                                         )}
 
                                         {invalid("password") && (
-                                            <p className="bc-field-error">
+                                            <p className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]">
                                                 <AlertCircle size={13} />
                                                 {errors.password}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-confirm" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-confirm"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Confirm password
                                         </label>
-                                        <div className={`bc-input-shell${invalid("confirmPassword") ? " is-invalid" : ""}`}>
-                                            <span className="bc-input-icon">
+
+                                        <div className={inputShellClass(invalid("confirmPassword"))}>
+                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                                 <Lock size={17} />
                                             </span>
+
                                             <input
                                                 id="signup-confirm"
                                                 name="confirmPassword"
                                                 type={showConfirmPassword ? "text" : "password"}
                                                 autoComplete="new-password"
-                                                className="bc-input"
+                                                className={baseInputClass}
                                                 placeholder="Re-enter your password"
                                                 value={values.confirmPassword}
                                                 onChange={handleChange("confirmPassword")}
                                                 onBlur={handleBlur("confirmPassword")}
                                                 aria-invalid={invalid("confirmPassword")}
-                                                aria-describedby={invalid("confirmPassword") ? "signup-confirm-error" : undefined}
+                                                aria-describedby={
+                                                    invalid("confirmPassword") ? "signup-confirm-error" : undefined
+                                                }
                                             />
+
                                             <button
                                                 type="button"
-                                                className="bc-input-toggle"
+                                                className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-[6px]"
                                                 onClick={() => setShowConfirmPassword((s) => !s)}
                                                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                                 aria-pressed={showConfirmPassword}
@@ -923,18 +753,22 @@ const Signup: React.FC = () => {
                                                 {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                             </button>
                                         </div>
+
                                         {invalid("confirmPassword") && (
-                                            <p className="bc-field-error" id="signup-confirm-error">
+                                            <p
+                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                id="signup-confirm-error"
+                                            >
                                                 <AlertCircle size={13} />
                                                 {errors.confirmPassword}
                                             </p>
                                         )}
                                     </div>
 
-                                    <button type="submit" className="bc-submit" disabled={isBusy}>
+                                    <button type="submit" className={submitClass} disabled={isBusy}>
                                         {signupLoading ? (
                                             <>
-                                                <Loader2 size={17} style={{ animation: "spin 0.8s linear infinite" }} />
+                                                <Loader2 size={17} className="animate-[spin_0.8s_linear_infinite]" />
                                                 Creating account…
                                             </>
                                         ) : (
@@ -946,19 +780,24 @@ const Signup: React.FC = () => {
                                     </button>
                                 </form>
 
-                                <div className="bc-divider">or</div>
+                                <div className="flex items-center gap-3 my-[22px] text-[var(--bc-ink-faint)] text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-[var(--bc-border)] after:content-[''] after:block after:flex-1 after:h-px after:bg-[var(--bc-border)]">
+                                    or
+                                </div>
 
-                                    <GoogleLogin
-                                        onSuccess={handleGoogleSuccess}
-                                        onError={handleGoogleError}
-                                        shape="rectangular"
-                                        width="100%"
-                                        text="continue_with"
-                                    />
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={handleGoogleError}
+                                    shape="rectangular"
+                                    width="100%"
+                                    text="continue_with"
+                                />
 
-                                <p className="bc-footer-line">
+                                <p className="text-center mt-6 text-sm text-[var(--bc-ink-soft)]">
                                     Already have an account?{" "}
-                                    <Link to="/login" className="bc-link-quiet" style={{ color: "var(--bc-accent-strong)", fontWeight: 600, textDecoration: "none" }}>
+                                    <Link
+                                        to="/login"
+                                        className="text-[var(--bc-accent-strong)] font-semibold no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-[4px]"
+                                    >
                                         Sign in
                                     </Link>
                                 </p>
@@ -967,36 +806,43 @@ const Signup: React.FC = () => {
                             <>
                                 <button
                                     type="button"
-                                    className="bc-back-link"
+                                    className="inline-flex items-center gap-1.5 bg-transparent border-none text-[var(--bc-ink-soft)] text-[13px] cursor-pointer p-0 mb-[18px] hover:text-[var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:rounded-[4px]"
                                     onClick={() => setStage("form")}
                                 >
                                     <ArrowLeft size={14} />
                                     Back
                                 </button>
 
-                                <span className="bc-otp-icon">
+                                <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)] mb-4">
                                     <ShieldCheck size={22} />
                                 </span>
 
-                                <h1 className="bc-heading">Verify your email</h1>
-                                <p className="bc-subtext">
+                                <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
+                                    Verify your email
+                                </h1>
+
+                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-[26px] leading-[1.55]">
                                     We sent a verification code to <strong>{pendingEmail}</strong>. Enter it
                                     below to activate your account.
                                 </p>
 
                                 <form onSubmit={handleOtpSubmit} noValidate>
-                                    <div className="bc-field">
-                                        <label htmlFor="signup-otp" className="bc-label">
+                                    <div className="mb-4">
+                                        <label
+                                            htmlFor="signup-otp"
+                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                        >
                                             Verification code
                                         </label>
-                                        <div className={`bc-input-shell${otpError ? " is-invalid" : ""}`}>
+
+                                        <div className={inputShellClass(Boolean(otpError))}>
                                             <input
                                                 id="signup-otp"
                                                 name="otp"
                                                 type="text"
                                                 inputMode="numeric"
                                                 autoComplete="one-time-code"
-                                                className="bc-input bc-otp-input"
+                                                className="flex-1 border-none bg-transparent outline-none p-3 text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)] text-center tracking-[0.5em] text-xl font-semibold"
                                                 placeholder="••••••"
                                                 maxLength={8}
                                                 value={otp}
@@ -1005,18 +851,22 @@ const Signup: React.FC = () => {
                                                 aria-describedby={otpError ? "signup-otp-error" : undefined}
                                             />
                                         </div>
+
                                         {otpError && (
-                                            <p className="bc-field-error" id="signup-otp-error">
+                                            <p
+                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                id="signup-otp-error"
+                                            >
                                                 <AlertCircle size={13} />
                                                 {otpError}
                                             </p>
                                         )}
                                     </div>
 
-                                    <button type="submit" className="bc-submit" disabled={otpSubmitting}>
+                                    <button type="submit" className={submitClass} disabled={otpSubmitting}>
                                         {otpSubmitting ? (
                                             <>
-                                                <Loader2 size={17} style={{ animation: "spin 0.8s linear infinite" }} />
+                                                <Loader2 size={17} className="animate-[spin_0.8s_linear_infinite]" />
                                                 Verifying…
                                             </>
                                         ) : (
@@ -1028,18 +878,11 @@ const Signup: React.FC = () => {
                                     </button>
                                 </form>
 
-                                <p className="bc-footer-line">
+                                <p className="text-center mt-6 text-sm text-[var(--bc-ink-soft)]">
                                     Wrong email?{" "}
                                     <button
                                         type="button"
-                                        className="bc-link-quiet"
-                                        style={{
-                                            background: "none",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            color: "var(--bc-accent-strong)",
-                                            fontWeight: 600,
-                                        }}
+                                        className="bg-transparent border-none cursor-pointer text-[var(--bc-accent-strong)] font-semibold p-0"
                                         onClick={() => setStage("form")}
                                     >
                                         Start over
@@ -1051,9 +894,12 @@ const Signup: React.FC = () => {
                 </div>
 
                 {/* ---------------- Atmospheric panel ---------------- */}
-                <div className="bc-scene" aria-hidden="true">
+                <div
+                    className="order-1 relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-[220px] min-[960px]:order-2 min-[960px]:min-h-screen"
+                    aria-hidden="true"
+                >
                     <svg
-                        className="bc-scene-svg"
+                        className="absolute inset-0 w-full h-full"
                         viewBox="0 0 480 640"
                         preserveAspectRatio="xMidYMid slice"
                         focusable="false"
@@ -1074,13 +920,18 @@ const Signup: React.FC = () => {
                                     </>
                                 )}
                             </linearGradient>
+
                             <radialGradient id="bc-glow-2" cx="28%" cy="16%" r="55%">
                                 <stop
                                     offset="0%"
                                     stopColor={mode === "day" ? "#FCEBC7" : "#123B39"}
                                     stopOpacity={mode === "day" ? 0.85 : 0.6}
                                 />
-                                <stop offset="100%" stopColor={mode === "day" ? "#FCEBC7" : "#123B39"} stopOpacity="0" />
+                                <stop
+                                    offset="100%"
+                                    stopColor={mode === "day" ? "#FCEBC7" : "#123B39"}
+                                    stopOpacity="0"
+                                />
                             </radialGradient>
                         </defs>
 
@@ -1111,6 +962,7 @@ const Signup: React.FC = () => {
                                 strokeOpacity="0.16"
                                 strokeWidth="1"
                             />
+
                             <circle
                                 cx="130"
                                 cy="130"
@@ -1122,6 +974,7 @@ const Signup: React.FC = () => {
                                 strokeDasharray="1 7"
                                 strokeLinecap="round"
                             />
+
                             <g className="bc-arc-dot-group">
                                 <circle cx="130" cy="44" r="4.5" fill={mode === "day" ? "#E8A64C" : "#F0B65E"} />
                             </g>
@@ -1134,7 +987,10 @@ const Signup: React.FC = () => {
                             fill="none"
                             strokeLinecap="round"
                         >
-                            <path className="bc-wind-path" d="M -20 220 C 90 202, 150 240, 260 218 S 470 200, 520 216" />
+                            <path
+                                className="bc-wind-path"
+                                d="M -20 220 C 90 202, 150 240, 260 218 S 470 200, 520 216"
+                            />
                             <path
                                 className="bc-wind-path"
                                 style={{ animationDelay: "-2.4s" }}
@@ -1151,6 +1007,7 @@ const Signup: React.FC = () => {
                             <ellipse cx="150" cy="392" rx="120" ry="26" fill={mode === "day" ? "#FFFFFF" : "#12222A"} />
                             <ellipse cx="235" cy="378" rx="80" ry="20" fill={mode === "day" ? "#FFFFFF" : "#12222A"} />
                         </g>
+
                         <g className="bc-cloud-b" opacity={mode === "day" ? 0.75 : 0.4}>
                             <ellipse cx="340" cy="460" rx="140" ry="30" fill={mode === "day" ? "#FFFFFF" : "#0E1B21"} />
                             <ellipse cx="420" cy="444" rx="70" ry="18" fill={mode === "day" ? "#FFFFFF" : "#0E1B21"} />
@@ -1176,18 +1033,26 @@ const Signup: React.FC = () => {
                         />
                     </svg>
 
-                    <div className="bc-scene-content">
-                        <div className="bc-brand">
-                            <span className="bc-brand-mark">
+                    <div className="relative z-[2] h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
+                        <div className="inline-flex items-center gap-2.5">
+                            <span className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[10px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
                                 <Wind size={18} strokeWidth={2.25} />
                             </span>
-                            <span className="bc-brand-name">{companyName}</span>
+                            <span className="font-[var(--bc-font-display)] text-xl font-semibold tracking-[0.01em] text-[var(--bc-ink)]">
+                                {companyName}
+                            </span>
                         </div>
 
-                        <div className="bc-scene-copy">
-                            <p className="bc-scene-eyebrow">Environmental intelligence</p>
-                            <h2 className="bc-scene-heading">Every breath, better understood.</h2>
-                            <p className="bc-scene-sub">
+                        <div className="max-w-[420px]">
+                            <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
+                                Environmental intelligence
+                            </p>
+
+                            <h2 className="hidden min-[960px]:block font-[var(--bc-font-display)] text-[clamp(28px,3vw,38px)] leading-[1.15] font-semibold m-0 mb-3.5 text-[var(--bc-ink)]">
+                                Every breath, better understood.
+                            </h2>
+
+                            <p className="hidden min-[960px]:block text-[15px] leading-[1.6] text-[var(--bc-ink-soft)] m-0">
                                 Join {companyName} for live AQI, hyperlocal forecasts, and alerts that adapt
                                 to the air around you — wherever you are.
                             </p>

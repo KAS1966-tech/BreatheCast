@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
     Sun,
@@ -22,6 +22,7 @@ import {
     ArrowRight,
     Sparkles,
 } from "lucide-react";
+
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { toggleTheme } from "../app/features/theme/themeSlice";
 import {
@@ -38,8 +39,8 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import { AqiMark } from "../hooks/font/aqiLogo";
-// ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
 const STORAGE_KEY = "breathecast:aqi-synthesis-form:v1";
 
 interface StoredAqiData {
@@ -83,12 +84,20 @@ function formatNumber(value: number, step?: number): string {
     return decimals > 0 ? value.toFixed(Math.min(decimals, 2)) : String(Math.round(value));
 }
 
-function selectValueToLabel(fieldName: string, options: string[] | number[], value: number): string | number {
+function selectValueToLabel(
+    fieldName: string,
+    options: string[] | number[],
+    value: number
+): string | number {
     const offset = fieldName === "Month" ? 1 : 0;
     return options[value - offset] ?? options[0] ?? "";
 }
 
-function selectLabelToValue(fieldName: string, options: string[] | number[], label: string | number): number {
+function selectLabelToValue(
+    fieldName: string,
+    options: string[] | number[],
+    label: string | number
+): number {
     const idx = options.indexOf(label as unknown as never);
     const offset = fieldName === "Month" ? 1 : 0;
     return (idx === -1 ? 0 : idx) + offset;
@@ -96,37 +105,46 @@ function selectLabelToValue(fieldName: string, options: string[] | number[], lab
 
 function isFieldValid(field: FieldConfig, input: InputState): boolean {
     const raw = readField(input, field.name);
+
     if (field.type === "number") {
         if (typeof raw !== "number" || Number.isNaN(raw)) return false;
         if (field.min !== undefined && raw < field.min) return false;
         if (field.max !== undefined && raw > field.max) return false;
         return true;
     }
+
     if (field.type === "select") {
         if (typeof raw !== "number" || Number.isNaN(raw)) return false;
         const count = field.options?.length ?? 0;
         const offset = field.name === "Month" ? 1 : 0;
         return raw >= offset && raw <= count - 1 + offset;
     }
+
     return true;
 }
 
-function isValidStoredInputState(candidate: unknown, schema: FieldConfig[]): candidate is InputState {
+function isValidStoredInputState(
+    candidate: unknown,
+    schema: FieldConfig[]
+): candidate is InputState {
     if (!candidate || typeof candidate !== "object") return false;
     return schema.every((field) => isFieldValid(field, candidate as InputState));
 }
 
 function getAqiCategory(prediction: number): AtmosphereInfo {
     const p = Number.isFinite(prediction) ? prediction : 0;
+
     if (p < 8) {
         return {
             key: "extreme-clean",
             label: "Ultra-Clean Air",
             shortLabel: "Ultra-clean",
             color: "#10B981",
-            description: "Exceptionally clear conditions — beyond the platform's typical measured range.",
+            description:
+                "Exceptionally clear conditions — beyond the platform's typical measured range.",
         };
     }
+
     if (p <= 50) {
         return {
             key: "clean",
@@ -136,6 +154,7 @@ function getAqiCategory(prediction: number): AtmosphereInfo {
             description: "Crisp, high-clarity air with minimal particulate presence.",
         };
     }
+
     if (p <= 100) {
         return {
             key: "moderate",
@@ -145,15 +164,18 @@ function getAqiCategory(prediction: number): AtmosphereInfo {
             description: "A light atmospheric haze. Air quality is generally acceptable.",
         };
     }
+
     if (p <= 150) {
         return {
             key: "elevated",
             label: "Elevated Smog",
             shortLabel: "Elevated",
             color: "#F97316",
-            description: "Noticeable particulate load — sensitive groups should take care outdoors.",
+            description:
+                "Noticeable particulate load — sensitive groups should take care outdoors.",
         };
     }
+
     if (p <= 205) {
         return {
             key: "heavy",
@@ -163,6 +185,7 @@ function getAqiCategory(prediction: number): AtmosphereInfo {
             description: "Dense pollutant concentration across the monitored area.",
         };
     }
+
     return {
         key: "extreme-heavy",
         label: "Extreme Pollution",
@@ -202,6 +225,7 @@ interface AtmosphereVisual {
 
 function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVisual {
     const brandAccent = isDark ? "#4FD8C4" : "#10B981";
+
     switch (key) {
         case "loading":
             return {
@@ -215,6 +239,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.62,
                 turbulent: false,
             };
+
         case "extreme-clean":
             return {
                 particleCount: 8,
@@ -227,6 +252,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.78,
                 turbulent: false,
             };
+
         case "clean":
             return {
                 particleCount: 9,
@@ -239,6 +265,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.72,
                 turbulent: false,
             };
+
         case "moderate":
             return {
                 particleCount: 12,
@@ -251,6 +278,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.58,
                 turbulent: false,
             };
+
         case "elevated":
             return {
                 particleCount: 15,
@@ -263,6 +291,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.48,
                 turbulent: true,
             };
+
         case "heavy":
             return {
                 particleCount: 18,
@@ -275,6 +304,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.4,
                 turbulent: true,
             };
+
         case "extreme-heavy":
             return {
                 particleCount: 18,
@@ -287,6 +317,7 @@ function getAtmosphereVisual(key: AtmosphereKey, isDark: boolean): AtmosphereVis
                 horizonOpacity: 0.34,
                 turbulent: true,
             };
+
         default:
             return {
                 particleCount: 9,
@@ -339,6 +370,13 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
     Month: <Calendar size={15} />,
 };
 
+const btnBase =
+    "inline-flex items-center justify-center gap-2 rounded-[10px] text-[14.5px] font-semibold px-[18px] py-[13px] cursor-pointer transition-[transform,box-shadow,opacity,border-color] duration-150";
+
+const ghostBtn = `${btnBase} border-[1.5px] border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] backdrop-blur-[8px] enabled:hover:text-[var(--bc-ink)] enabled:hover:border-[var(--bc-border-strong)] enabled:hover:bg-[var(--bc-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]`;
+
+const primaryBtn = `${btnBase} flex-1 border-none bg-[var(--bc-accent-strong)] text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]`;
+
 /* --------------------------------------------------------------------- */
 /* NumberField — schema-driven numeric control with a live range fill.   */
 /* --------------------------------------------------------------------- */
@@ -350,46 +388,72 @@ interface NumberFieldProps {
     onTouch: () => void;
 }
 
-const NumberField: React.FC<NumberFieldProps> = ({ field, value, showError, onCommit, onTouch }) => {
+const NumberField: React.FC<NumberFieldProps> = ({
+    field,
+    value,
+    showError,
+    onCommit,
+    onTouch,
+}) => {
     const [draft, setDraft] = useState<string | null>(null);
+
     const min = field.min ?? -Infinity;
     const max = field.max ?? Infinity;
     const step = field.step ?? 1;
+
     const displayValue = draft ?? formatNumber(value, step);
-    const pct = max > min ? clamp(((clamp(value, min, max) - min) / (max - min)) * 100, 0, 100) : 0;
+    const pct =
+        max > min ? clamp(((clamp(value, min, max) - min) / (max - min)) * 100, 0, 100) : 0;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value;
         setDraft(raw);
+
         if (raw.trim() === "" || raw === "-") return;
+
         const parsed = Number(raw);
         if (!Number.isNaN(parsed)) onCommit(parsed);
     };
 
     const handleBlur = () => {
         onTouch();
+
         const parsed = draft === null ? NaN : Number(draft);
         if (draft === null || draft.trim() === "" || Number.isNaN(parsed)) {
             setDraft(null);
             return;
         }
+
         onCommit(clamp(parsed, min, max));
         setDraft(null);
     };
 
+    const shellClasses = [
+        "relative flex items-center justify-between rounded-[10px] bg-[var(--bc-surface-2)] min-h-[42px] backdrop-blur-[8px] border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms] focus-within:outline-none",
+        showError
+            ? "border-[var(--bc-danger)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--bc-danger)_22%,transparent)]"
+            : "border-[var(--bc-border)] focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+    ].join(" ");
+
     return (
-        <div className="aqi-field">
-            <label htmlFor={`aqi-${field.name}`} className="aqi-label">
-                <span className="aqi-label-icon">{FIELD_ICONS[field.name]}</span>
+        <div className="min-w-0 relative">
+            <label
+                htmlFor={`aqi-${field.name}`}
+                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+            >
+                <span className="inline-flex text-[var(--bc-ink-faint)]">
+                    {FIELD_ICONS[field.name]}
+                </span>
                 {field.label}
             </label>
-            <div className={`aqi-input-shell${showError ? " is-invalid" : ""}`}>
+
+            <div className={shellClasses}>
                 <input
                     id={`aqi-${field.name}`}
                     name={field.name}
                     type="number"
                     inputMode="decimal"
-                    className="aqi-input"
+                    className="aqi-input flex-1 min-w-0 border-none bg-transparent outline-none px-3 text-[14.5px] text-[var(--bc-ink)] h-full"
                     min={field.min}
                     max={field.max}
                     step={step}
@@ -400,15 +464,26 @@ const NumberField: React.FC<NumberFieldProps> = ({ field, value, showError, onCo
                     aria-invalid={showError}
                     aria-describedby={showError ? `aqi-${field.name}-error` : undefined}
                 />
-                <span className="aqi-input-hint">
+                <span className="shrink-0 pr-3 text-[11px] text-[var(--bc-ink-faint)] whitespace-nowrap">
                     {field.min}–{field.max}
                 </span>
             </div>
-            <div className="aqi-range-track" aria-hidden="true">
-                <span className="aqi-range-fill" style={{ transform: `scaleX(${pct / 100})` }} />
+
+            <div
+                className="relative h-1 rounded-full bg-[var(--bc-track)] mt-2 overflow-hidden"
+                aria-hidden="true"
+            >
+                <span
+                    className="absolute inset-0 bg-[var(--bc-accent)] rounded-full origin-left transition-transform duration-[250ms]"
+                    style={{ transform: `scaleX(${pct / 100})` }}
+                />
             </div>
+
             {showError && (
-                <p className="aqi-field-error" id={`aqi-${field.name}-error`}>
+                <p
+                    className="flex items-center gap-1.5 mt-[7px] text-xs text-[var(--bc-danger)]"
+                    id={`aqi-${field.name}-error`}
+                >
                     <AlertCircle size={12} />
                     Enter a value between {field.min} and {field.max}.
                 </p>
@@ -429,18 +504,29 @@ interface CustomSelectProps {
     onChange: (label: string | number) => void;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ fieldId, label, icon, options, value, onChange }) => {
+const CustomSelect: React.FC<CustomSelectProps> = ({
+    fieldId,
+    label,
+    icon,
+    options,
+    value,
+    onChange,
+}) => {
     const [open, setOpen] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(() => Math.max(0, options.indexOf(value as unknown as never)));
+    const [activeIndex, setActiveIndex] = useState(() =>
+        Math.max(0, options.indexOf(value as unknown as never))
+    );
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!open) return;
+
         const handleClick = (e: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setOpen(false);
             }
         };
+
         document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
     }, [open]);
@@ -459,6 +545,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ fieldId, label, icon, optio
             }
             return;
         }
+
         if (e.key === "ArrowDown") {
             e.preventDefault();
             setActiveIndex((i) => Math.min(options.length - 1, i + 1));
@@ -474,20 +561,33 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ fieldId, label, icon, optio
         }
     };
 
+    const triggerClasses = [
+        "aqi-select-trigger relative flex w-full items-center justify-between rounded-[10px] bg-[var(--bc-surface-2)] min-h-[42px] backdrop-blur-[8px] px-3 text-[14.5px] text-[var(--bc-ink)] cursor-pointer outline-none border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms]",
+        open
+            ? "is-open border-[var(--bc-accent)] shadow-[0_0_0_4px_var(--bc-focus-ring)]"
+            : "border-[var(--bc-border)] hover:border-[var(--bc-border-strong)] hover:bg-[var(--bc-surface)] focus-visible:border-[var(--bc-accent)] focus-visible:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+    ].join(" ");
+
     return (
-        <div className="aqi-field" ref={containerRef}>
-            <span id={`${fieldId}-label`} className="aqi-label">
-                <span className="aqi-label-icon">{icon}</span>
+        <div className="min-w-0 relative" ref={containerRef}>
+            <span
+                id={`${fieldId}-label`}
+                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+            >
+                <span className="inline-flex text-[var(--bc-ink-faint)]">{icon}</span>
                 {label}
             </span>
+
             <button
                 type="button"
                 id={fieldId}
-                className={`aqi-select-trigger${open ? " is-open" : ""}`}
+                className={triggerClasses}
                 onClick={() => {
                     setOpen((o) => {
                         const nextOpen = !o;
-                        if (nextOpen) setActiveIndex(Math.max(0, options.indexOf(value as unknown as never)));
+                        if (nextOpen) {
+                            setActiveIndex(Math.max(0, options.indexOf(value as unknown as never)));
+                        }
                         return nextOpen;
                     });
                 }}
@@ -497,29 +597,44 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ fieldId, label, icon, optio
                 aria-labelledby={`${fieldId}-label ${fieldId}`}
             >
                 <span>{value}</span>
-                <ChevronDown size={16} className="aqi-select-chevron" />
+                <ChevronDown
+                    size={16}
+                    className={`shrink-0 text-[var(--bc-ink-faint)] transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "rotate-180" : ""
+                        }`}
+                />
             </button>
+
             {open && (
                 <ul
-                    className="aqi-select-list"
+                    className="aqi-select-list absolute z-[1000] top-full left-0 right-0 mt-1.5 p-1.5 list-none w-full max-h-[240px] overflow-y-auto bg-[var(--bc-surface)] border border-[var(--bc-border-strong)] rounded-[10px] shadow-[0_18px_40px_-20px_rgba(9,30,34,0.25)] animate-[aqi-dropdown-in_0.15s_cubic-bezier(0.16,1,0.3,1)] backdrop-blur-[12px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--bc-border-strong)] [&::-webkit-scrollbar-thumb]:rounded-full"
                     role="listbox"
                     aria-labelledby={`${fieldId}-label`}
                     tabIndex={-1}
                 >
-                    {options.map((opt, index) => (
-                        <li
-                            key={opt}
-                            role="option"
-                            aria-selected={opt === value}
-                            className={`aqi-select-option${index === activeIndex ? " is-active" : ""}${opt === value ? " is-selected" : ""
-                                }`}
-                            onMouseEnter={() => setActiveIndex(index)}
-                            onClick={() => commit(index)}
-                        >
-                            {opt === value ? <Check size={14} /> : <span className="aqi-select-spacer" />}
-                            <span>{opt}</span>
-                        </li>
-                    ))}
+                    {options.map((opt, index) => {
+                        const optionClasses = [
+                            "aqi-select-option flex items-center gap-2 px-2.5 py-2 rounded-[7px] text-sm cursor-pointer transition-[background-color,color] duration-[150ms]",
+                            index === activeIndex
+                                ? "is-active bg-[var(--bc-accent)] text-white"
+                                : opt === value
+                                    ? "is-selected text-[var(--bc-accent-strong)] font-semibold bg-[color-mix(in_srgb,var(--bc-accent)_8%,transparent)]"
+                                    : "text-[var(--bc-ink-soft)] hover:bg-[var(--bc-surface-2)] hover:text-[var(--bc-ink)]",
+                        ].join(" ");
+
+                        return (
+                            <li
+                                key={opt}
+                                role="option"
+                                aria-selected={opt === value}
+                                className={optionClasses}
+                                onMouseEnter={() => setActiveIndex(index)}
+                                onClick={() => commit(index)}
+                            >
+                                {opt === value ? <Check size={14} /> : <span className="inline-block w-3.5" />}
+                                <span>{opt}</span>
+                            </li>
+                        );
+                    })}
                 </ul>
             )}
         </div>
@@ -540,11 +655,17 @@ interface AtmosphereSceneProps {
 const RADIUS = 90;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, isLoading, progressPct }) => {
+const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({
+    isDark,
+    atmosphere,
+    isLoading,
+    progressPct,
+}) => {
     const visual = getAtmosphereVisual(atmosphere.key, isDark);
     const gaugeColor = atmosphere.color ?? (isDark ? "#4FD8C4" : "#10B981");
     const showGauge = atmosphere.key !== "default" && atmosphere.key !== "loading";
-    const dashOffset = CIRCUMFERENCE * (1 - (showGauge ? clamp(progressPct, 0, 100) : 0) / 100);
+    const dashOffset =
+        CIRCUMFERENCE * (1 - (showGauge ? clamp(progressPct, 0, 100) : 0) / 100);
 
     const particles = useMemo(
         () =>
@@ -572,8 +693,17 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
     );
 
     return (
-        <div className="aqi-scene" data-atmosphere={atmosphere.key} aria-hidden="true">
-            <svg className="aqi-scene-svg" viewBox="0 0 480 480" preserveAspectRatio="xMidYMid slice" focusable="false">
+        <div
+            className="aqi-scene relative overflow-hidden w-full h-full"
+            data-atmosphere={atmosphere.key}
+            aria-hidden="true"
+        >
+            <svg
+                className="aqi-scene-svg absolute inset-0 w-full h-full"
+                viewBox="0 0 480 480"
+                preserveAspectRatio="xMidYMid slice"
+                focusable="false"
+            >
                 <defs>
                     <linearGradient id="aqi-sky" x1="0" y1="0" x2="0" y2="1">
                         {isDark ? (
@@ -591,14 +721,20 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                         )}
                     </linearGradient>
                 </defs>
+
                 <rect x="0" y="0" width="480" height="480" fill="url(#aqi-sky)" />
                 <rect
                     x="0"
                     y="0"
                     width="480"
                     height="480"
-                    style={{ fill: visual.mistColor, opacity: visual.mistOpacity, transition: "fill 1.1s ease, opacity 1.1s ease" }}
+                    style={{
+                        fill: visual.mistColor,
+                        opacity: visual.mistOpacity,
+                        transition: "fill 1.1s ease, opacity 1.1s ease",
+                    }}
                 />
+
                 {isDark &&
                     stars.map((s) => (
                         <circle
@@ -624,7 +760,15 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                         strokeWidth="1"
                         className="aqi-arc-glow"
                     />
-                    <circle cx="90" cy="90" r={RADIUS} fill="none" stroke={gaugeColor} strokeOpacity="0.16" strokeWidth="10" />
+                    <circle
+                        cx="90"
+                        cy="90"
+                        r={RADIUS}
+                        fill="none"
+                        stroke={gaugeColor}
+                        strokeOpacity="0.16"
+                        strokeWidth="10"
+                    />
                     <circle
                         cx="90"
                         cy="90"
@@ -641,6 +785,7 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                             opacity: showGauge ? 1 : 0,
                         }}
                     />
+
                     {isLoading && (
                         <circle
                             cx="90"
@@ -661,19 +806,34 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                 <g
                     fill="none"
                     strokeLinecap="round"
-                    style={{ stroke: visual.windColor, strokeOpacity: visual.windOpacity, transition: "stroke 1s ease, stroke-opacity 1s ease" }}
                     strokeWidth="2"
+                    style={{
+                        stroke: visual.windColor,
+                        strokeOpacity: visual.windOpacity,
+                        transition: "stroke 1s ease, stroke-opacity 1s ease",
+                    }}
                 >
-                    <path className="aqi-wind" style={{ animationDuration: `${visual.windDuration}s` }} d="M -20 250 C 90 232, 150 268, 260 248 S 470 230, 520 246" />
                     <path
                         className="aqi-wind"
-                        style={{ animationDuration: `${visual.windDuration}s`, animationDelay: "-1.4s" }}
+                        style={{ animationDuration: `${visual.windDuration}s` }}
+                        d="M -20 250 C 90 232, 150 268, 260 248 S 470 230, 520 246"
+                    />
+                    <path
+                        className="aqi-wind"
+                        style={{
+                            animationDuration: `${visual.windDuration}s`,
+                            animationDelay: "-1.4s",
+                        }}
                         d="M -30 288 C 80 302, 170 274, 250 292 S 440 306, 520 286"
                     />
+
                     {visual.turbulent && (
                         <path
                             className="aqi-wind"
-                            style={{ animationDuration: `${visual.windDuration * 0.8}s`, animationDelay: "-0.6s" }}
+                            style={{
+                                animationDuration: `${visual.windDuration * 0.8}s`,
+                                animationDelay: "-0.6s",
+                            }}
                             d="M -10 318 C 70 340, 140 300, 220 326 S 400 344, 520 314"
                         />
                     )}
@@ -682,7 +842,8 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                 {/* Clean-air / AQI particles */}
                 {particles.slice(0, visual.particleCount).map((p) => {
                     const [minDur, maxDur] = visual.particleDuration;
-                    const dur = minDur + ((p.id * 13) % 100) / 100 * (maxDur - minDur);
+                    const dur = minDur + (((p.id * 13) % 100) / 100) * (maxDur - minDur);
+
                     return (
                         <circle
                             key={p.id}
@@ -704,7 +865,11 @@ const AtmosphereScene: React.FC<AtmosphereSceneProps> = ({ isDark, atmosphere, i
                 {/* Horizon */}
                 <path
                     d="M0 360 C 120 340, 360 380, 480 352 L480 480 L0 480 Z"
-                    style={{ fill: gaugeColor, opacity: visual.horizonOpacity * 0.28, transition: "opacity 1.1s ease, fill 1s ease" }}
+                    style={{
+                        fill: gaugeColor,
+                        opacity: visual.horizonOpacity * 0.28,
+                        transition: "opacity 1.1s ease, fill 1s ease",
+                    }}
                 />
                 <path
                     d="M0 380 C 120 362, 360 398, 480 372 L480 480 L0 480 Z"
@@ -730,6 +895,7 @@ const AqiPrediction: React.FC = () => {
         `Atmospheric Synthesis Engine — ${companyName}`,
         `Ingest multi-variable environmental data in ${companyName} to project real-time AQI predictions and visualize the resulting atmosphere.`
     );
+
     useGoogleFont("Fraunces");
     useGoogleFont("Plus Jakarta Sans");
 
@@ -746,14 +912,20 @@ const AqiPrediction: React.FC = () => {
     }, []);
 
     // ---- Restore from localStorage on mount ----
-    useCallback(() => {
+    useEffect(() => {
         try {
             const raw = window.localStorage.getItem(STORAGE_KEY);
             if (!raw) return;
+
             const parsed = JSON.parse(raw) as Partial<StoredAqiData>;
+
             if (isValidStoredInputState(parsed.inputState, fieldSchema)) {
                 dispatch(setInputState(parsed.inputState));
-                if (typeof parsed.lastPrediction === "number" && Number.isFinite(parsed.lastPrediction)) {
+
+                if (
+                    typeof parsed.lastPrediction === "number" &&
+                    Number.isFinite(parsed.lastPrediction)
+                ) {
                     dispatch(setResultState({ prediction: parsed.lastPrediction }));
                     setResultSource("restored");
                 }
@@ -761,6 +933,7 @@ const AqiPrediction: React.FC = () => {
         } catch {
             // Malformed storage — fall back to Redux defaults silently.
         }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -772,6 +945,7 @@ const AqiPrediction: React.FC = () => {
                 lastPrediction: result?.prediction,
                 savedAt: new Date().toISOString(),
             };
+
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         } catch {
             // Storage unavailable (e.g. private browsing) — safe to ignore.
@@ -780,7 +954,8 @@ const AqiPrediction: React.FC = () => {
 
     // ---- Toast once per loading -> settled transition ----
     const prevLoadingRef = useRef(loading);
-    useCallback(() => {
+
+    useEffect(() => {
         if (prevLoadingRef.current && !loading) {
             if (error) {
                 toast.error(error);
@@ -789,6 +964,7 @@ const AqiPrediction: React.FC = () => {
                 setResultSource("fresh");
             }
         }
+
         prevLoadingRef.current = loading;
     }, [loading, error, result]);
 
@@ -806,11 +982,13 @@ const AqiPrediction: React.FC = () => {
         dispatch(updateInputField({ field: field.name as keyof InputState, value }));
     };
 
-    const handleTouch = (name: string) => setTouched((prev) => ({ ...prev, [name]: true }));
+    const handleTouch = (name: string) =>
+        setTouched((prev) => ({ ...prev, [name]: true }));
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitAttempted(true);
+
         if (!isFormValid) {
             const allTouched: Record<string, boolean> = {};
             fieldSchema.forEach((f) => {
@@ -820,6 +998,7 @@ const AqiPrediction: React.FC = () => {
             toast.error("Check the highlighted fields before analyzing.");
             return;
         }
+
         if (loading) return;
         dispatch(predictAQI(inputState));
     };
@@ -841,336 +1020,226 @@ const AqiPrediction: React.FC = () => {
     const progressPct = result ? clamp((result.prediction / 205) * 100, 4, 100) : 0;
 
     const summaryChips = [
-        { label: "Temp", value: `${formatNumber(readField(inputState, "Temperature_C"), 0.1)}°C` },
-        { label: "Humidity", value: `${formatNumber(readField(inputState, "Humidity_pct"), 0.1)}%` },
-        { label: "Wind", value: `${formatNumber(readField(inputState, "WindSpeed_kmh"), 0.1)} km/h` },
+        {
+            label: "Temp",
+            value: `${formatNumber(readField(inputState, "Temperature_C"), 0.1)}°C`,
+        },
+        {
+            label: "Humidity",
+            value: `${formatNumber(readField(inputState, "Humidity_pct"), 0.1)}%`,
+        },
+        {
+            label: "Wind",
+            value: `${formatNumber(readField(inputState, "WindSpeed_kmh"), 0.1)} km/h`,
+        },
         {
             label: "When",
             value: `${selectValueToLabel(
                 "DayOfWeek",
                 fieldByName.DayOfWeek?.options ?? [],
                 readField(inputState, "DayOfWeek")
-            )}, ${selectValueToLabel("Month", fieldByName.Month?.options ?? [], readField(inputState, "Month"))}`,
+            )}, ${selectValueToLabel(
+                "Month",
+                fieldByName.Month?.options ?? [],
+                readField(inputState, "Month")
+            )}`,
         },
     ];
 
     return (
-        <div className="aqi-root" data-theme={isDark ? "dark" : "day"}>
+        <div
+            className="aqi-root min-h-screen w-full"
+            data-theme={isDark ? "dark" : "day"}
+            style={{ fontFamily: "var(--bc-font-body)" }}
+        >
             <style>{`
-        .aqi-root {
-            --bc-radius: 18px;
-            --bc-radius-sm: 10px;
-            --bc-font-display: 'Fraunces', 'Georgia', serif;
-            --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-            min-height: 100vh;
-            width: 100%;
-            font-family: var(--bc-font-body);
+        .aqi-root *,
+        .aqi-root *::before,
+        .aqi-root *::after {
+          box-sizing: border-box;
         }
+
         .aqi-root[data-theme='day'] {
-            --bc-bg: #F8FAFC;
-            --bc-surface: rgba(255, 255, 255, 0.85);
-            --bc-surface-2: rgba(240, 253, 244, 0.85);
-            --bc-ink: #0F2827;
-            --bc-ink-soft: #4A6665;
-            --bc-ink-faint: #8DA3A2;
-            --bc-accent: #10B981;
-            --bc-accent-strong: #059669;
-            --bc-border: rgba(16, 185, 129, 0.25);
-            --bc-border-strong: rgba(16, 185, 129, 0.45);
-            --bc-danger: #DC2626;
-            --bc-danger-bg: rgba(220, 38, 38, 0.08);
-            --bc-focus-ring: rgba(16, 185, 129, 0.35);
-            --bc-track: rgba(16, 185, 129, 0.12);
+          --bc-bg: #F8FAFC;
+          --bc-surface: rgba(255, 255, 255, 0.85);
+          --bc-surface-2: rgba(240, 253, 244, 0.85);
+          --bc-ink: #0F2827;
+          --bc-ink-soft: #4A6665;
+          --bc-ink-faint: #8DA3A2;
+          --bc-accent: #10B981;
+          --bc-accent-strong: #059669;
+          --bc-border: rgba(16, 185, 129, 0.25);
+          --bc-border-strong: rgba(16, 185, 129, 0.45);
+          --bc-danger: #DC2626;
+          --bc-danger-bg: rgba(220, 38, 38, 0.08);
+          --bc-focus-ring: rgba(16, 185, 129, 0.35);
+          --bc-track: rgba(16, 185, 129, 0.12);
         }
+
         .aqi-root[data-theme='dark'] {
-            --bc-bg: #0A1418;
-            --bc-surface: rgba(16, 28, 33, 0.85);
-            --bc-surface-2: rgba(12, 26, 30, 0.85);
-            --bc-ink: #E7F1F0;
-            --bc-ink-soft: #93ACB0;
-            --bc-ink-faint: #5E767B;
-            --bc-accent: #4FD8C4;
-            --bc-accent-strong: #7EE9DA;
-            --bc-border: rgba(231, 241, 240, 0.2);
-            --bc-border-strong: rgba(231, 241, 240, 0.35);
-            --bc-danger: #FF6B57;
-            --bc-danger-bg: rgba(255, 107, 87, 0.1);
-            --bc-focus-ring: rgba(79, 216, 196, 0.38);
-            --bc-track: rgba(231, 241, 240, 0.1);
+          --bc-bg: #0A1418;
+          --bc-surface: rgba(16, 28, 33, 0.85);
+          --bc-surface-2: rgba(12, 26, 30, 0.85);
+          --bc-ink: #E7F1F0;
+          --bc-ink-soft: #93ACB0;
+          --bc-ink-faint: #5E767B;
+          --bc-accent: #4FD8C4;
+          --bc-accent-strong: #7EE9DA;
+          --bc-border: rgba(231, 241, 240, 0.2);
+          --bc-border-strong: rgba(231, 241, 240, 0.35);
+          --bc-danger: #FF6B57;
+          --bc-danger-bg: rgba(255, 107, 87, 0.1);
+          --bc-focus-ring: rgba(79, 216, 196, 0.38);
+          --bc-track: rgba(231, 241, 240, 0.1);
         }
 
-        /* Full-screen background scene */
-        .aqi-bg-scene {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none; /* Allows clicks to pass through to the form */
-        }
-        .aqi-scene {
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
-        .aqi-scene-svg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Foreground content sits above the background */
-        .aqi-foreground {
-            position: relative;
-            z-index: 1;
-        }
-
-        .aqi-shell { background: var(--bc-bg); color: var(--bc-ink); min-height: 100vh; transition: background 0.4s ease, color 0.4s ease; }
-        .aqi-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 20px;
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-        @media (min-width: 768px) { .aqi-header { padding: 24px 40px; } }
-        .aqi-brand { display: inline-flex; align-items: center; gap: 10px; }
-        .aqi-brand-mark {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 9px;
-            background: color-mix(in srgb, var(--bc-accent) 16%, transparent);
-            color: var(--bc-accent-strong);
-        }
-        .aqi-brand-name { font-family: var(--bc-font-display); font-size: 18px; font-weight: 600; }
-        .aqi-theme-toggle {
-            display: inline-flex; align-items: center; gap: 6px;
-            border: 1px solid var(--bc-border); background: var(--bc-surface);
-            color: var(--bc-ink-soft); border-radius: 999px; padding: 6px 12px;
-            font-size: 13px; cursor: pointer;
-            transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-            backdrop-filter: blur(8px);
-        }
-        .aqi-theme-toggle:hover { color: var(--bc-ink); border-color: var(--bc-border-strong); }
-        .aqi-theme-toggle:active { transform: scale(0.97); }
-        .aqi-theme-toggle:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 2px; }
-        
-        .aqi-hero { max-width: 1240px; margin: 0 auto; padding: 8px 20px 20px; }
-        @media (min-width: 768px) { .aqi-hero { padding: 8px 40px 32px; max-width: 760px; } }
-        .aqi-eyebrow {
-            font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-            color: var(--bc-accent-strong); font-weight: 600; margin: 0 0 10px;
-        }
-        .aqi-title {
-            font-family: var(--bc-font-display); font-weight: 600;
-            font-size: clamp(26px, 4vw, 38px); line-height: 1.15; margin: 0 0 12px;
-        }
-        .aqi-subtitle { font-size: 15px; line-height: 1.6; color: var(--bc-ink-soft); margin: 0; max-width: 60ch; }
-        
-        .aqi-main-grid {
-            max-width: 1240px; margin: 0 auto; padding: 8px 20px 64px;
-            display: grid; grid-template-columns: 1fr; gap: 28px;
-        }
-        @media (min-width: 640px) { .aqi-main-grid { padding: 8px 40px 72px; } }
-        @media (min-width: 1024px) { .aqi-main-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 36px; align-items: start; } }
-        
-        .aqi-group { 
-            background: var(--bc-surface); 
-            border: 1px solid var(--bc-border); 
-            border-radius: var(--bc-radius); 
-            padding: 20px; 
-            margin-bottom: 18px; 
-            backdrop-filter: blur(12px);
-        }
-        .aqi-group-header { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; color: var(--bc-ink); }
-        .aqi-group-header h2 { font-size: 15px; font-weight: 700; margin: 0; }
-        .aqi-group-icon { display: inline-flex; color: var(--bc-accent-strong); }
-        .aqi-group-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .aqi-group:has(.aqi-select-trigger.is-open) {
-    position: relative;
-    z-index: 10;
-}
-        @media (min-width: 560px) { .aqi-group-grid { grid-template-columns: 1fr 1fr; } }
-        
-        .aqi-fieldset { border: none; padding: 0; margin: 0; min-width: 0; }
-        .aqi-fieldset:disabled { opacity: 0.7; }
-        .aqi-field { min-width: 0; position: relative; }
-        .aqi-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--bc-ink); margin-bottom: 7px; }
-        .aqi-label-icon { display: inline-flex; color: var(--bc-ink-faint); }
-        
-        .aqi-input-shell, .aqi-select-trigger {
-            position: relative; display: flex; align-items: center; justify-content: space-between;
-            border: 1.5px solid var(--bc-border); border-radius: var(--bc-radius-sm);
-            background: var(--bc-surface-2); transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
-            min-height: 42px;
-            backdrop-filter: blur(8px);
-        }
-        .aqi-input-shell:focus-within, .aqi-select-trigger:focus-visible, .aqi-select-trigger.is-open { 
-            border-color: var(--bc-accent); box-shadow: 0 0 0 4px var(--bc-focus-ring); outline: none; 
-        }
-        .aqi-input-shell.is-invalid { border-color: var(--bc-danger); }
-        .aqi-input-shell.is-invalid:focus-within { box-shadow: 0 0 0 4px color-mix(in srgb, var(--bc-danger) 22%, transparent); }
-        
-        .aqi-input {
-            flex: 1; min-width: 0; border: none; background: transparent; outline: none;
-            padding: 0 12px; font-size: 14.5px; color: var(--bc-ink); font-family: var(--bc-font-body); height: 100%;
-        }
-        .aqi-input::-webkit-outer-spin-button, .aqi-input::-webkit-inner-spin-button { opacity: 0.6; }
-        .aqi-input-hint { flex-shrink: 0; padding-right: 12px; font-size: 11px; color: var(--bc-ink-faint); white-space: nowrap; }
-        
-        .aqi-range-track { position: relative; height: 4px; border-radius: 999px; background: var(--bc-track); margin-top: 8px; overflow: hidden; }
-        .aqi-range-fill { position: absolute; inset: 0; background: var(--bc-accent); border-radius: 999px; transform-origin: left center; transition: transform 0.25s ease; }
-        .aqi-field-error { display: flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 12px; color: var(--bc-danger); }
-        
-        .aqi-select-trigger { width: 100%; color: var(--bc-ink); font-size: 14.5px; padding: 0 12px; cursor: pointer; font-family: var(--bc-font-body); }
-        .aqi-select-trigger:hover { border-color: var(--bc-border-strong); background: var(--bc-surface); }
-        .aqi-select-chevron { color: var(--bc-ink-faint); transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; }
-        .aqi-select-trigger.is-open .aqi-select-chevron { transform: rotate(180deg); }
-        
         @keyframes aqi-dropdown-in {
-            from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+          from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
-        .aqi-select-list {
-            position: absolute; z-index: 1000;top: 100%; left: 0;right: 0;
-            margin: 6px 0 0; padding: 6px; list-style: none;
-            width: 100%; max-height: 240px; overflow-y: auto;
-            background: var(--bc-surface); border: 1px solid var(--bc-border-strong); border-radius: var(--bc-radius-sm);
-            box-shadow: 0 18px 40px -20px rgba(9, 30, 34, 0.25);
-            animation: aqi-dropdown-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(12px);
-        }
-        .aqi-select-list::-webkit-scrollbar { width: 6px; }
-        .aqi-select-list::-webkit-scrollbar-track { background: transparent; }
-        .aqi-select-list::-webkit-scrollbar-thumb { background: var(--bc-border-strong); border-radius: 999px; }
-        
-        .aqi-select-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 7px;
-    font-size: 14px;
-    color: var(--bc-ink-soft);
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
 
-.aqi-select-option:hover {
-    background: var(--bc-surface-2);
-    color: var(--bc-ink);
-}
+        @keyframes aqi-float {
+          0%, 100% {
+            transform: translate3d(0, 0, 0);
+            opacity: 0.5;
+          }
+          50% {
+            transform: translate3d(0, -13px, 0);
+            opacity: 0.95;
+          }
+        }
 
-.aqi-select-option.is-selected {
-    color: var(--bc-accent-strong);
-    font-weight: 600;
-    background: color-mix(in srgb, var(--bc-accent) 8%, transparent);
-}
+        @keyframes aqi-wind-flow {
+          from {
+            stroke-dashoffset: 240;
+          }
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
 
-/* Keyboard / mouse active option */
-.aqi-select-option.is-active {
-    background: var(--bc-accent);
-    color: #ffffff;
-}
+        @keyframes aqi-twinkle {
+          0%, 100% {
+            opacity: 0.15;
+          }
+          50% {
+            opacity: 0.9;
+          }
+        }
 
-/* Make active selected option use the active appearance too */
-.aqi-select-option.is-active.is-selected {
-    background: var(--bc-accent);
-    color: #ffffff;
-}
-        .aqi-select-spacer { width: 14px; display: inline-block; }
-        
-        .aqi-general-error {
-            display: flex; align-items: flex-start; gap: 8px;
-            background: var(--bc-danger-bg); border: 1px solid color-mix(in srgb, var(--bc-danger) 35%, transparent);
-            color: var(--bc-danger); border-radius: var(--bc-radius-sm); padding: 10px 12px; font-size: 13px; margin-bottom: 18px;
-            backdrop-filter: blur(8px);
+        @keyframes aqi-arc-pulse {
+          0%, 100% {
+            opacity: 0.45;
+          }
+          50% {
+            opacity: 0.9;
+          }
         }
-        .aqi-actions { display: flex; gap: 12px; margin-top: 6px; }
-        .aqi-btn-primary, .aqi-btn-ghost {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            border-radius: var(--bc-radius-sm); font-size: 14.5px; font-weight: 600; padding: 13px 18px;
-            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.2s ease;
+
+        @keyframes aqi-scan-rotate {
+          from {
+            transform: rotate(-90deg);
+          }
+          to {
+            transform: rotate(270deg);
+          }
         }
-        .aqi-btn-primary {
-            flex: 1; border: none; background: var(--bc-accent-strong); color: #F4FBF9;
-            box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--bc-accent-strong) 60%, transparent);
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
-        .aqi-btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
-        .aqi-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
-        .aqi-btn-primary:focus-visible { outline: 2px solid var(--bc-ink); outline-offset: 3px; }
-        .aqi-btn-ghost { border: 1.5px solid var(--bc-border); background: var(--bc-surface); color: var(--bc-ink-soft); backdrop-filter: blur(8px); }
-        .aqi-btn-ghost:hover:not(:disabled) { color: var(--bc-ink); border-color: var(--bc-border-strong); background: var(--bc-surface-2); }
-        .aqi-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
-        .aqi-btn-ghost:focus-visible { outline: 2px solid var(--bc-accent); outline-offset: 2px; }
-        
-        .aqi-result-col { position: relative; }
-        @media (min-width: 1024px) { 
-            .aqi-result-col { position: sticky; top: 24px; } 
+
+        .aqi-particle {
+          animation-name: aqi-float;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          transform-box: fill-box;
+          transform-origin: center;
         }
-        .aqi-result-panel {
-            background: var(--bc-surface); border: 1px solid var(--bc-border); border-radius: var(--bc-radius);
-            padding: 22px; text-align: center;
-            backdrop-filter: blur(16px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+
+        .aqi-wind {
+          stroke-dasharray: 8 14;
+          animation-name: aqi-wind-flow;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
         }
-        .aqi-result-badge {
-            display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
-            letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
-            background: color-mix(in srgb, currentColor 14%, transparent);
+
+        .aqi-star {
+          animation: aqi-twinkle ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center;
         }
-        .aqi-result-value { font-family: var(--bc-font-display); font-size: 44px; font-weight: 600; margin: 12px 0 4px; line-height: 1; }
-        .aqi-result-value span { font-size: 15px; font-weight: 600; color: var(--bc-ink-faint); margin-left: 6px; font-family: var(--bc-font-body); }
-        .aqi-result-desc { font-size: 13.5px; color: var(--bc-ink-soft); margin: 0 0 6px; line-height: 1.5; }
-        .aqi-restored-note { font-size: 11.5px; color: var(--bc-ink-faint); margin: 0 0 10px; font-style: italic; }
-        .aqi-result-status { font-size: 14px; color: var(--bc-ink-soft); margin: 10px 0 0; }
-        .aqi-result-icon { color: var(--bc-accent-strong); }
-        .aqi-summary-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
-        .aqi-chip {
-            display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
-            border: 1px solid var(--bc-border); border-radius: 10px; padding: 7px 10px; min-width: 68px;
-            background: var(--bc-surface-2);
+
+        .aqi-arc-glow {
+          animation: aqi-arc-pulse 5s ease-in-out infinite;
         }
-        .aqi-chip span:first-child { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bc-ink-faint); }
-        .aqi-chip span:last-child { font-size: 12.5px; font-weight: 600; color: var(--bc-ink); }
-        
-        /* Motion */
-        @keyframes aqi-float { 0%, 100% { transform: translate3d(0,0,0); opacity: 0.5; } 50% { transform: translate3d(0,-13px,0); opacity: 0.95; } }
-        @keyframes aqi-wind-flow { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
-        @keyframes aqi-twinkle { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.9; } }
-        @keyframes aqi-arc-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
-        @keyframes aqi-scan-rotate { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .aqi-particle { animation-name: aqi-float; animation-timing-function: ease-in-out; animation-iteration-count: infinite; transform-box: fill-box; transform-origin: center; }
-        .aqi-wind { stroke-dasharray: 8 14; animation-name: aqi-wind-flow; animation-timing-function: linear; animation-iteration-count: infinite; }
-        .aqi-star { animation: aqi-twinkle ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-        .aqi-arc-glow { animation: aqi-arc-pulse 5s ease-in-out infinite; }
-        .aqi-arc-scan { transform-box: fill-box; transform-origin: center; animation: aqi-scan-rotate 1.6s linear infinite; opacity: 0.85; }
+
+        .aqi-arc-scan {
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: aqi-scan-rotate 1.6s linear infinite;
+          opacity: 0.85;
+        }
+
+        .aqi-input::-webkit-outer-spin-button,
+        .aqi-input::-webkit-inner-spin-button {
+          opacity: 0.6;
+        }
+
+        .aqi-group:has(.is-open) {
+          position: relative;
+          z-index: 10;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .aqi-particle, .aqi-wind, .aqi-star, .aqi-arc-glow, .aqi-arc-scan, .aqi-select-list { animation: none !important; }
+          .aqi-particle,
+          .aqi-wind,
+          .aqi-star,
+          .aqi-arc-glow,
+          .aqi-arc-scan,
+          .aqi-select-list {
+            animation: none !important;
+          }
         }
-        `}</style>
+      `}</style>
 
-            <div className="aqi-shell">
+            <div className="bg-[var(--bc-bg)] text-[var(--bc-ink)] min-h-screen transition-colors duration-[400ms]">
                 {/* ✨ FULL-SCREEN BACKGROUND ANIMATION ✨ */}
-                <div className="aqi-bg-scene">
-                    <AtmosphereScene isDark={isDark} atmosphere={atmosphere} isLoading={loading} progressPct={progressPct} />
+                <div className="fixed inset-0 z-0 w-screen h-screen pointer-events-none">
+                    <AtmosphereScene
+                        isDark={isDark}
+                        atmosphere={atmosphere}
+                        isLoading={loading}
+                        progressPct={progressPct}
+                    />
                 </div>
 
                 {/* ✨ FOREGROUND CONTENT (Sits above background) ✨ */}
-                <div className="aqi-foreground">
-                    <header className="aqi-header">
-                        <div className="aqi-brand">
-                            <span className="aqi-brand-mark">
-                                <AqiMark className="h-4.5 w-4.5 text-current" />
+                <div className="relative z-[1]">
+                    <header className="flex items-center justify-between px-5 py-[18px] max-w-[1240px] mx-auto md:px-10 md:py-6">
+                        <div className="inline-flex items-center gap-2.5">
+                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-[9px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
+                                <AqiMark className="h-[18px] w-[18px] text-current" />
                             </span>
-                            <span className="aqi-brand-name">{companyName}</span>
+                            <span className="font-[var(--bc-font-display)] text-lg font-semibold">
+                                {companyName}
+                            </span>
                         </div>
+
                         <button
                             type="button"
-                            className="aqi-theme-toggle"
+                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer backdrop-blur-[8px] transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
                             onClick={() => dispatch(toggleTheme())}
                             aria-label={isDark ? "Switch to day theme" : "Switch to dark theme"}
                         >
@@ -1179,32 +1248,53 @@ const AqiPrediction: React.FC = () => {
                         </button>
                     </header>
 
-                    <section className="aqi-hero">
-                        <p className="aqi-eyebrow">Environmental Intelligence</p>
-                        <h1 className="aqi-title">Atmospheric Synthesis Engine</h1>
-                        <p className="aqi-subtitle">
-                            Enter the environmental conditions below and {companyName} will synthesize a real-time air
-                            quality prediction — and transform the atmosphere around it to match.
+                    <section className="max-w-[1240px] mx-auto px-5 pt-2 pb-5 md:px-10 md:pb-8 md:max-w-[760px]">
+                        <p className="text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
+                            Environmental Intelligence
+                        </p>
+                        <h1 className="font-[var(--bc-font-display)] font-semibold text-[clamp(26px,4vw,38px)] leading-[1.15] m-0 mb-3">
+                            Atmospheric Synthesis Engine
+                        </h1>
+                        <p className="text-[15px] leading-[1.6] text-[var(--bc-ink-soft)] m-0 max-w-[60ch]">
+                            Enter the environmental conditions below and {companyName} will synthesize a
+                            real-time air quality prediction — and transform the atmosphere around it to
+                            match.
                         </p>
                     </section>
 
-                    <div className="aqi-main-grid">
-                        <div className="aqi-form-col">
+                    <div className="max-w-[1240px] mx-auto px-5 pt-2 pb-16 grid grid-cols-1 gap-7 sm:px-10 sm:pb-[72px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-9 lg:items-start">
+                        <div className="min-w-0">
                             <form onSubmit={handleSubmit} noValidate>
-                                <fieldset className="aqi-fieldset" disabled={loading}>
+                                <fieldset className="border-none p-0 m-0 min-w-0 disabled:opacity-70" disabled={loading}>
                                     {FIELD_GROUPS.map((group) => (
-                                        <section className="aqi-group" key={group.title}>
-                                            <div className="aqi-group-header">
-                                                <span className="aqi-group-icon">{group.icon}</span>
-                                                <h2>{group.title}</h2>
+                                        <section
+                                            key={group.title}
+                                            className="aqi-group bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-5 mb-[18px] backdrop-blur-[12px]"
+                                        >
+                                            <div className="flex items-center gap-[9px] mb-4 text-[var(--bc-ink)]">
+                                                <span className="inline-flex text-[var(--bc-accent-strong)]">
+                                                    {group.icon}
+                                                </span>
+                                                <h2 className="text-[15px] font-bold m-0">{group.title}</h2>
                                             </div>
-                                            <div className="aqi-group-grid">
+
+                                            <div className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
                                                 {group.fields.map((name) => {
                                                     const field = fieldByName[name];
                                                     if (!field) return null;
-                                                    const showError = Boolean((touched[name] || submitAttempted) && !isFieldValid(field, inputState));
+
+                                                    const showError = Boolean(
+                                                        (touched[name] || submitAttempted) &&
+                                                        !isFieldValid(field, inputState)
+                                                    );
+
                                                     if (field.type === "select") {
-                                                        const currentLabel = selectValueToLabel(field.name, field.options ?? [], readField(inputState, field.name));
+                                                        const currentLabel = selectValueToLabel(
+                                                            field.name,
+                                                            field.options ?? [],
+                                                            readField(inputState, field.name)
+                                                        );
+
                                                         return (
                                                             <CustomSelect
                                                                 key={field.name}
@@ -1217,13 +1307,16 @@ const AqiPrediction: React.FC = () => {
                                                             />
                                                         );
                                                     }
+
                                                     return (
                                                         <NumberField
                                                             key={field.name}
                                                             field={field}
                                                             value={readField(inputState, field.name)}
                                                             showError={showError}
-                                                            onCommit={(value) => handleNumberCommit(field.name as keyof InputState, value)}
+                                                            onCommit={(value) =>
+                                                                handleNumberCommit(field.name as keyof InputState, value)
+                                                            }
                                                             onTouch={() => handleTouch(field.name)}
                                                         />
                                                     );
@@ -1231,21 +1324,34 @@ const AqiPrediction: React.FC = () => {
                                             </div>
                                         </section>
                                     ))}
+
                                     {error && (
-                                        <div className="aqi-general-error" role="alert">
-                                            <AlertCircle size={16} style={{ marginTop: 1, flexShrink: 0 }} />
+                                        <div
+                                            className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] backdrop-blur-[8px]"
+                                            role="alert"
+                                        >
+                                            <AlertCircle size={16} className="mt-px shrink-0" />
                                             <span>{error}</span>
                                         </div>
                                     )}
-                                    <div className="aqi-actions">
-                                        <button type="button" className="aqi-btn-ghost" onClick={handleReset}>
+
+                                    <div className="flex gap-3 mt-1.5">
+                                        <button type="button" className={ghostBtn} onClick={handleReset}>
                                             <RotateCcw size={16} />
                                             Reset
                                         </button>
-                                        <button type="submit" className="aqi-btn-primary" disabled={loading || !isFormValid}>
+
+                                        <button
+                                            type="submit"
+                                            className={primaryBtn}
+                                            disabled={loading || !isFormValid}
+                                        >
                                             {loading ? (
                                                 <>
-                                                    <Loader2 size={17} style={{ animation: "spin 0.8s linear infinite" }} />
+                                                    <Loader2
+                                                        size={17}
+                                                        className="animate-[spin_0.8s_linear_infinite]"
+                                                    />
                                                     Analyzing…
                                                 </>
                                             ) : (
@@ -1260,36 +1366,63 @@ const AqiPrediction: React.FC = () => {
                             </form>
                         </div>
 
-                        <aside className="aqi-result-col">
-                            <div className="aqi-result-panel" aria-live="polite">
+                        <aside className="relative lg:sticky lg:top-6">
+                            <div
+                                className="bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-[22px] text-center backdrop-blur-[16px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)]"
+                                aria-live="polite"
+                            >
                                 {result && !loading ? (
                                     <>
-                                        <span className="aqi-result-badge" style={{ color: atmosphere.color ?? undefined }}>
+                                        <span
+                                            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-[color-mix(in_srgb,currentColor_14%,transparent)]"
+                                            style={{ color: atmosphere.color ?? undefined }}
+                                        >
                                             {atmosphere.shortLabel}
                                         </span>
-                                        <p className="aqi-result-value">
+
+                                        <p className="font-[var(--bc-font-display)] text-[44px] font-semibold mt-3 mb-1 leading-none">
                                             {Math.round(result.prediction)}
-                                            <span>AQI</span>
+                                            <span className="text-[15px] font-semibold text-[var(--bc-ink-faint)] ml-1.5 font-[var(--bc-font-body)]">
+                                                AQI
+                                            </span>
                                         </p>
-                                        <p className="aqi-result-desc">{atmosphere.description}</p>
+
+                                        <p className="text-[13.5px] text-[var(--bc-ink-soft)] m-0 mb-1.5 leading-[1.5]">
+                                            {atmosphere.description}
+                                        </p>
+
                                         {resultSource === "restored" && (
-                                            <p className="aqi-restored-note">Restored from your last analysis</p>
+                                            <p className="text-[11.5px] text-[var(--bc-ink-faint)] m-0 mb-2.5 italic">
+                                                Restored from your last analysis
+                                            </p>
                                         )}
-                                        <div className="aqi-summary-chips">
+
+                                        <div className="flex flex-wrap gap-2 justify-center mt-3.5">
                                             {summaryChips.map((chip) => (
-                                                <span className="aqi-chip" key={chip.label}>
-                                                    <span>{chip.label}</span>
-                                                    <span>{chip.value}</span>
+                                                <span
+                                                    key={chip.label}
+                                                    className="inline-flex flex-col items-center gap-0.5 border border-[var(--bc-border)] rounded-[10px] px-2.5 py-[7px] min-w-[68px] bg-[var(--bc-surface-2)]"
+                                                >
+                                                    <span className="text-[10px] uppercase tracking-[0.05em] text-[var(--bc-ink-faint)]">
+                                                        {chip.label}
+                                                    </span>
+                                                    <span className="text-[12.5px] font-semibold text-[var(--bc-ink)]">
+                                                        {chip.value}
+                                                    </span>
                                                 </span>
                                             ))}
                                         </div>
                                     </>
                                 ) : loading ? (
-                                    <p className="aqi-result-status">Analyzing atmospheric conditions…</p>
+                                    <p className="text-sm text-[var(--bc-ink-soft)] mt-2.5 m-0">
+                                        Analyzing atmospheric conditions…
+                                    </p>
                                 ) : (
                                     <>
-                                        <Sparkles size={20} className="aqi-result-icon" />
-                                        <p className="aqi-result-status">Ready to synthesize environmental conditions.</p>
+                                        <Sparkles size={20} className="text-[var(--bc-accent-strong)]" />
+                                        <p className="text-sm text-[var(--bc-ink-soft)] mt-2.5 m-0">
+                                            Ready to synthesize environmental conditions.
+                                        </p>
                                     </>
                                 )}
                             </div>

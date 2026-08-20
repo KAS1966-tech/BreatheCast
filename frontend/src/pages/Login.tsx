@@ -16,10 +16,10 @@ import {
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
-import { login, googleLogin } from "../app/features/auth/authSlice"; // existing thunks, not recreated
-import { companyName } from "../core/config"; // existing companyName export
-import { useSEO } from "../utils/useSeo"; // existing SEO hook
-import { useGoogleFont } from "../utils/useGoogleFont"; // existing font loader
+import { login, googleLogin } from "../app/features/auth/authSlice";
+import { companyName } from "../core/config";
+import { useSEO } from "../utils/useSeo";
+import { useGoogleFont } from "../utils/useGoogleFont";
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { toggleTheme } from "../app/features/theme/themeSlice";
 // ---------------------------------------------------------------------------
@@ -35,20 +35,21 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    // Existing Redux auth state — not duplicated locally.
     const {
         loginLoading,
         loginError,
         loading: googleLoading,
         error: googleError,
     } = useAppSelector((state) => state.auth);
+
     const { mode } = useAppSelector((state) => state.theme);
     const instanceId = useId();
 
     useSEO(
         `Sign in — ${companyName}`,
-        `Sign in to ${companyName} to track live air quality, weather intelligence, and personalized environmental alerts.`,
+        `Sign in to ${companyName} to track live air quality, weather intelligence, and personalized environmental alerts.`
     );
+
     useGoogleFont("Fraunces");
     useGoogleFont("Plus Jakarta Sans");
 
@@ -67,7 +68,6 @@ const Login: React.FC = () => {
         window.localStorage.setItem("breathecast-theme", mode);
     }, [mode]);
 
-    // Surface backend errors as a single toast, not one per render.
     const lastLoginErrorRef = useRef<string | null>(null);
     useEffect(() => {
         if (loginError && loginError !== lastLoginErrorRef.current) {
@@ -86,19 +86,19 @@ const Login: React.FC = () => {
         if (!googleError) lastGoogleErrorRef.current = null;
     }, [googleError]);
 
-    const validate = (values: {
-        email: string;
-        password: string;
-    }): FieldErrors => {
+    const validate = (values: { email: string; password: string }): FieldErrors => {
         const next: FieldErrors = {};
+
         if (!values.email.trim()) {
             next.email = "Enter your email address.";
         } else if (!EMAIL_PATTERN.test(values.email.trim())) {
             next.email = "Enter a valid email address.";
         }
+
         if (!values.password) {
             next.password = "Enter your password.";
         }
+
         return next;
     };
 
@@ -117,33 +117,30 @@ const Login: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitAttempted(true);
+
         const nextErrors = validate({ email, password });
         setErrors(nextErrors);
+
         if (Object.keys(nextErrors).length > 0) {
             setTouched({ email: true, password: true });
             return;
         }
 
         try {
-            // Existing thunk handles the API call; UI only reacts to the result.
             await dispatch(login({ email: email.trim(), password })).unwrap();
             toast.success(`Welcome back to ${companyName}.`);
             navigate("/home");
         } catch {
-            // loginError from the slice drives the toast/inline message above;
-            // nothing further to do here.
+            // loginError from the slice drives the toast/inline message above.
         }
     };
 
-    const handleGoogleSuccess = async (
-        credentialResponse: CredentialResponse,
-    ) => {
+    const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
         if (!credentialResponse.credential) {
-            toast.error(
-                "Google sign-in didn't return a credential. Please try again.",
-            );
+            toast.error("Google sign-in didn't return a credential. Please try again.");
             return;
         }
+
         try {
             await dispatch(googleLogin(credentialResponse.credential)).unwrap();
             toast.success(`Welcome back to ${companyName}.`);
@@ -171,7 +168,7 @@ const Login: React.FC = () => {
                 dur: 14 + (i % 5) * 3,
                 delay: -(i * 2.1),
             })),
-        [],
+        []
     );
 
     const stars = useMemo(
@@ -184,11 +181,29 @@ const Login: React.FC = () => {
                 delay: -(i * 1.3),
                 dur: 3 + (i % 4),
             })),
-        [],
+        []
     );
 
+    const emailShellClasses = [
+        "relative flex items-center border-[1.5px] rounded-[10px] bg-[var(--bc-surface)] transition-[border-color,box-shadow] duration-[180ms]",
+        emailInvalid
+            ? "border-[var(--bc-danger)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--bc-danger)_22%,transparent)]"
+            : "border-[var(--bc-border)] focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+    ].join(" ");
+
+    const passwordShellClasses = [
+        "relative flex items-center border-[1.5px] rounded-[10px] bg-[var(--bc-surface)] transition-[border-color,box-shadow] duration-[180ms]",
+        passwordInvalid
+            ? "border-[var(--bc-danger)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--bc-danger)_22%,transparent)]"
+            : "border-[var(--bc-border)] focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+    ].join(" ");
+
     return (
-        <div className="bc-root" data-theme={mode}>
+        <div
+            className="bc-root min-h-screen w-full"
+            data-theme={mode}
+            style={{ fontFamily: "var(--bc-font-body)" }}
+        >
             <style>{`
         .bc-root {
           --bc-radius: 18px;
@@ -196,12 +211,8 @@ const Login: React.FC = () => {
           --bc-font-display: 'Fraunces', 'Georgia', serif;
           --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
           --bc-shadow: 0 20px 60px -25px rgba(9, 30, 34, 0.35);
-          min-height: 100vh;
-          width: 100%;
-          font-family: var(--bc-font-body);
         }
-        
-        /* ✨ UPDATED FRESH "CLEAN AIR" DAY THEME ✨ */
+
         .bc-root[data-theme='day'] {
           --bc-bg: #F8FAFC;
           --bc-panel: #F0FDF4;
@@ -219,8 +230,7 @@ const Login: React.FC = () => {
           --bc-danger-bg: rgba(220, 38, 38, 0.08);
           --bc-focus-ring: rgba(16, 185, 129, 0.35);
         }
-        
-        /* Dark theme remains exactly as it was */
+
         .bc-root[data-theme='dark'] {
           --bc-bg: #0A1418;
           --bc-panel: #071013;
@@ -239,374 +249,105 @@ const Login: React.FC = () => {
           --bc-focus-ring: rgba(79, 216, 196, 0.4);
         }
 
-        .bc-shell {
-          min-height: 100vh;
-          display: grid;
-          grid-template-columns: 1fr;
-          background: var(--bc-bg);
-          color: var(--bc-ink);
-          transition: background 0.4s ease, color 0.4s ease;
-        }
-        @media (min-width: 960px) {
-          .bc-shell { grid-template-columns: minmax(0, 5fr) minmax(0, 4fr); }
+        .bc-google-wrap iframe {
+          border-radius: var(--bc-radius-sm) !important;
         }
 
-        /* ---------- Atmospheric panel ---------- */
-        .bc-scene {
-          position: relative;
-          overflow: hidden;
-          background: linear-gradient(180deg, var(--bc-panel) 0%, var(--bc-panel-2) 100%);
-          min-height: 220px;
-        }
-        @media (min-width: 960px) {
-          .bc-scene { min-height: 100vh; }
-        }
-        .bc-scene-svg {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-        }
-        .bc-scene-content {
-          position: relative;
-          z-index: 2;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 20px 24px;
-        }
-        @media (min-width: 960px) {
-          .bc-scene-content { justify-content: space-between; padding: 56px 56px 64px; }
-        }
-
-        .bc-brand {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .bc-brand-mark {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: color-mix(in srgb, var(--bc-accent) 16%, transparent);
-          color: var(--bc-accent-strong);
-        }
-        .bc-brand-name {
-            font-family: var(--bc-font-display);
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            color: var(--bc-ink);
-        }
-
-        .bc-scene-copy { max-width: 420px; }
-        .bc-scene-eyebrow {
-            font-size: 12px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--bc-accent-strong);
-            font-weight: 600;
-            margin: 0 0 10px;
-            display: none;
-        }
-        @media (min-width: 960px) {
-            .bc-scene-eyebrow { display: block; }
-        }
-        .bc-scene-heading {
-            display: none;
-            font-family: var(--bc-font-display);
-            font-size: clamp(28px, 3vw, 38px);
-            line-height: 1.15;
-            font-weight: 600;
-            margin: 0 0 14px;
-            color: var(--bc-ink);
-        }
-        @media (min-width: 960px) {
-            .bc-scene-heading { display: block; }
-        }
-        .bc-scene-sub {
-            display: none;
-            font-size: 15px;
-            line-height: 1.6;
-            color: var(--bc-ink-soft);
-            margin: 0;
-        }
-        @media (min-width: 960px) {
-            .bc-scene-sub { display: block; }
-        }
-
-        /* ---------- Form side ---------- */
-        .bc-form-side {
-            display: flex;
-            flex-direction: column;
-            background: var(--bc-bg);
-            padding: 28px 20px 40px;
-        }
-        @media (min-width: 640px) {
-            .bc-form-side { padding: 40px 48px 56px; }
-        }
-        @media (min-width: 960px) {
-            .bc-form-side { justify-content: center; padding: 48px 72px; }
-        }
-
-        .bc-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 28px;
-        }
-        @media (min-width: 960px) {
-            .bc-topbar { justify-content: flex-end; margin-bottom: 40px; }
-        }
-
-        .bc-theme-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid var(--bc-border);
-            background: var(--bc-surface);
-            color: var(--bc-ink-soft);
-            border-radius: 999px;
-            padding: 6px 12px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-        }
-        .bc-theme-toggle:hover { color: var(--bc-ink); border-color: var(--bc-border-strong); }
-        .bc-theme-toggle:active { transform: scale(0.97); }
-        .bc-theme-toggle:focus-visible {
-            outline: 2px solid var(--bc-accent);
-            outline-offset: 2px;
-        }
-
-        .bc-form-wrap { width: 100%; max-width: 400px; margin: 0 auto; }
-
-        .bc-heading {
-            font-family: var(--bc-font-display);
-            font-size: clamp(26px, 4vw, 30px);
-            font-weight: 600;
-            margin: 0 0 8px;
-            color: var(--bc-ink);
-        }
-        .bc-subtext {
-            font-size: 14.5px;
-            color: var(--bc-ink-soft);
-            margin: 0 0 28px;
-            line-height: 1.55;
-        }
-
-        .bc-field { margin-bottom: 18px; }
-        .bc-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--bc-ink);
-            margin-bottom: 7px;
-        }
-        .bc-input-shell {
-            position: relative;
-            display: flex;
-            align-items: center;
-            border: 1.5px solid var(--bc-border);
-            border-radius: var(--bc-radius-sm);
-            background: var(--bc-surface);
-            transition: border-color 0.18s ease, box-shadow 0.18s ease;
-        }
-        .bc-input-shell:focus-within {
-            border-color: var(--bc-accent);
-            box-shadow: 0 0 0 4px var(--bc-focus-ring);
-        }
-        .bc-input-shell.is-invalid {
-          border-color: var(--bc-danger);
-        }
-        .bc-input-shell.is-invalid:focus-within {
-          box-shadow: 0 0 0 4px color-mix(in srgb, var(--bc-danger) 22%, transparent);
-        }
-        .bc-input-icon {
-            display: inline-flex;
-            padding-left: 13px;
-            color: var(--bc-ink-faint);
-            flex-shrink: 0;
-        }
-        .bc-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            outline: none;
-            padding: 12px 12px;
-            font-size: 15px;
-            color: var(--bc-ink);
-            font-family: var(--bc-font-body);
-            min-width: 0;
-        }
-        .bc-input::placeholder { color: var(--bc-ink-faint); }
-        .bc-input-toggle {
-            background: none;
-            border: none;
-            display: inline-flex;
-            padding: 8px 12px;
-            color: var(--bc-ink-faint);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .bc-input-toggle:hover { color: var(--bc-ink-soft); }
-        .bc-input-toggle:focus-visible {
-            outline: 2px solid var(--bc-accent);
-            outline-offset: -2px;
-            border-radius: 6px;
-        }
-
-        .bc-field-error {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 7px;
-            font-size: 12.5px;
-            color: var(--bc-danger);
-        }
-
-        .bc-row-between {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin: -6px 0 22px;
-        }
-        .bc-link-quiet {
-            font-size: 13px;
-            color: var(--bc-accent-strong);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .bc-link-quiet:hover { text-decoration: underline; }
-        .bc-link-quiet:focus-visible {
-            outline: 2px solid var(--bc-accent);
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
-
-        .bc-submit {
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: none;
-            border-radius: var(--bc-radius-sm);
-            background: var(--bc-accent-strong);
-            color: #F4FBF9;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 13px 16px;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.2s ease;
-            box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--bc-accent-strong) 60%, transparent);
-        }
-        .bc-submit:hover:not(:disabled) { transform: translateY(-1px); }
-        .bc-submit:active:not(:disabled) { transform: translateY(0); }
-        .bc-submit:disabled { opacity: 0.65; cursor: not-allowed; box-shadow: none; }
-        .bc-submit:focus-visible { outline: 2px solid var(--bc-ink); outline-offset: 3px; }
-
-        .bc-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 24px 0;
-            color: var(--bc-ink-faint);
-            font-size: 12px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .bc-divider::before,
-        .bc-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--bc-border);
-        }
-
-        .bc-google-wrap {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .bc-google-wrap :global(iframe) { border-radius: var(--bc-radius-sm) !important; }
-
-        .bc-footer-line {
-            text-align: center;
-            margin-top: 26px;
-            font-size: 14px;
-            color: var(--bc-ink-soft);
-        }
-
-        .bc-general-error {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            background: var(--bc-danger-bg);
-            border: 1px solid color-mix(in srgb, var(--bc-danger) 35%, transparent);
-            color: var(--bc-danger);
-            border-radius: var(--bc-radius-sm);
-            padding: 10px 12px;
-            font-size: 13px;
-            margin-bottom: 18px;
-            line-height: 1.5;
-        }
-
-        /* ---------- Motion: clouds, particles, wind, arc ---------- */
         @keyframes bc-drift {
-            from { transform: translate3d(-6%, 0, 0); }
-            to   { transform: translate3d(6%, 0, 0); }
-        }
-        @keyframes bc-drift-slow {
-            from { transform: translate3d(-4%, 0, 0); }
-            to   { transform: translate3d(5%, 0, 0); }
-        }
-        @keyframes bc-float {
-            0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
-            50%      { transform: translate3d(0, -14px, 0); opacity: 0.95; }
-        }
-        @keyframes bc-wind-flow {
-            from { stroke-dashoffset: 240; }
-            to   { stroke-dashoffset: 0; }
-        }
-        @keyframes bc-twinkle {
-            0%, 100% { opacity: 0.15; }
-            50%      { opacity: 0.9; }
-        }
-        @keyframes bc-arc-pulse {
-            0%, 100% { opacity: 0.5; }
-            50%      { opacity: 1; }
-        }
-        @keyframes bc-arc-travel {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
+          from { transform: translate3d(-6%, 0, 0); }
+          to { transform: translate3d(6%, 0, 0); }
         }
 
-        .bc-cloud-a { animation: bc-drift 46s ease-in-out infinite alternate; }
-        .bc-cloud-b { animation: bc-drift-slow 62s ease-in-out infinite alternate; }
-        .bc-particle { animation: bc-float linear infinite; transform-box: fill-box; transform-origin: center; }
-        .bc-wind-path { stroke-dasharray: 8 14; animation: bc-wind-flow 5.5s linear infinite; }
-        .bc-star { animation: bc-twinkle ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-        .bc-arc-glow { animation: bc-arc-pulse 6s ease-in-out infinite; }
-        .bc-arc-dot-group { animation: bc-arc-travel 18s linear infinite; transform-origin: 130px 130px; }
+        @keyframes bc-drift-slow {
+          from { transform: translate3d(-4%, 0, 0); }
+          to { transform: translate3d(5%, 0, 0); }
+        }
+
+        @keyframes bc-float {
+          0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
+          50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
+        }
+
+        @keyframes bc-wind-flow {
+          from { stroke-dashoffset: 240; }
+          to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes bc-twinkle {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.9; }
+        }
+
+        @keyframes bc-arc-pulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes bc-arc-travel {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .bc-cloud-a {
+          animation: bc-drift 46s ease-in-out infinite alternate;
+        }
+
+        .bc-cloud-b {
+          animation: bc-drift-slow 62s ease-in-out infinite alternate;
+        }
+
+        .bc-particle {
+          animation: bc-float linear infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+
+        .bc-wind-path {
+          stroke-dasharray: 8 14;
+          animation: bc-wind-flow 5.5s linear infinite;
+        }
+
+        .bc-star {
+          animation: bc-twinkle ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+
+        .bc-arc-glow {
+          animation: bc-arc-pulse 6s ease-in-out infinite;
+        }
+
+        .bc-arc-dot-group {
+          animation: bc-arc-travel 18s linear infinite;
+          transform-origin: 130px 130px;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-            .bc-cloud-a, .bc-cloud-b, .bc-particle, .bc-wind-path,
-            .bc-star, .bc-arc-glow, .bc-arc-dot-group {
+          .bc-cloud-a,
+          .bc-cloud-b,
+          .bc-particle,
+          .bc-wind-path,
+          .bc-star,
+          .bc-arc-glow,
+          .bc-arc-dot-group {
             animation: none !important;
-            }
+          }
         }
-        `}</style>
+      `}</style>
 
-            <div className="bc-shell">
+            <div className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
                 {/* ---------------- Atmospheric panel ---------------- */}
-                <div className="bc-scene" aria-hidden="true">
+                <div
+                    className="relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-[220px] min-[960px]:min-h-screen"
+                    aria-hidden="true"
+                >
                     <svg
-                        className="bc-scene-svg"
+                        className="absolute inset-0 w-full h-full"
                         viewBox="0 0 480 640"
                         preserveAspectRatio="xMidYMid slice"
                         focusable="false"
@@ -627,6 +368,7 @@ const Login: React.FC = () => {
                                     </>
                                 )}
                             </linearGradient>
+
                             <radialGradient id="bc-glow" cx="72%" cy="18%" r="55%">
                                 <stop
                                     offset="0%"
@@ -644,7 +386,6 @@ const Login: React.FC = () => {
                         <rect x="0" y="0" width="480" height="640" fill="url(#bc-sky)" />
                         <rect x="0" y="0" width="480" height="640" fill="url(#bc-glow)" />
 
-                        {/* Dark mode: quiet field of stars */}
                         {mode === "dark" &&
                             stars.map((s) => (
                                 <circle
@@ -662,10 +403,7 @@ const Login: React.FC = () => {
                             ))}
 
                         {/* Signature element: the AQI horizon arc */}
-                        <g
-                            transform="translate(72, 96)"
-                            opacity={mode === "day" ? 0.9 : 0.85}
-                        >
+                        <g transform="translate(72, 96)" opacity={mode === "day" ? 0.9 : 0.85}>
                             <circle
                                 className="bc-arc-glow"
                                 cx="130"
@@ -676,6 +414,7 @@ const Login: React.FC = () => {
                                 strokeOpacity="0.16"
                                 strokeWidth="1"
                             />
+
                             <circle
                                 cx="130"
                                 cy="130"
@@ -687,6 +426,7 @@ const Login: React.FC = () => {
                                 strokeDasharray="1 7"
                                 strokeLinecap="round"
                             />
+
                             <g className="bc-arc-dot-group">
                                 <circle
                                     cx="130"
@@ -738,6 +478,7 @@ const Login: React.FC = () => {
                                 fill={mode === "day" ? "#FFFFFF" : "#12222A"}
                             />
                         </g>
+
                         <g className="bc-cloud-b" opacity={mode === "day" ? 0.75 : 0.4}>
                             <ellipse
                                 cx="330"
@@ -780,112 +521,126 @@ const Login: React.FC = () => {
                         />
                     </svg>
 
-                    <div className="bc-scene-content">
-                        <div className="bc-brand">
-                            <span className="bc-brand-mark">
+                    <div className="relative z-[2] h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
+                        <div className="inline-flex items-center gap-2.5">
+                            <span className="inline-flex items-center justify-center w-8.5 h-8.5 rounded-[10px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
                                 <Wind size={18} strokeWidth={2.25} />
                             </span>
-                            <span className="bc-brand-name">{companyName}</span>
+                            <span className="font-[var(--bc-font-display)] text-xl font-semibold tracking-[0.01em] text-[var(--bc-ink)]">
+                                {companyName}
+                            </span>
                         </div>
 
-                        <div className="bc-scene-copy">
-                            <p className="bc-scene-eyebrow">Environmental intelligence</p>
-                            <h2 className="bc-scene-heading">
+                        <div className="max-w-[420px]">
+                            <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
+                                Environmental intelligence
+                            </p>
+
+                            <h2 className="hidden min-[960px]:block font-[var(--bc-font-display)] text-[clamp(28px,3vw,38px)] leading-[1.15] font-semibold m-0 mb-3.5 text-[var(--bc-ink)]">
                                 Clear air, read&nbsp;clearly.
                             </h2>
-                            <p className="bc-scene-sub">
-                                Sign back in to your environmental dashboard — live AQI, hourly
-                                forecasts, and alerts tuned to the air you actually breathe.
+
+                            <p className="hidden min-[960px]:block text-[15px] leading-[1.6] text-[var(--bc-ink-soft)] m-0">
+                                Sign back in to your environmental dashboard — live AQI, hourly forecasts,
+                                and alerts tuned to the air you actually breathe.
                             </p>
                         </div>
                     </div>
                 </div>
 
                 {/* ---------------- Form side ---------------- */}
-                <div className="bc-form-side">
-                    <div className="bc-topbar">
+                <div className="flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:justify-center min-[960px]:px-[72px] min-[960px]:py-12">
+                    <div className="flex items-center justify-between mb-7 min-[960px]:justify-end min-[960px]:mb-10">
                         <button
                             type="button"
-                            className="bc-theme-toggle"
+                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
                             onClick={() => dispatch(toggleTheme())}
-                            aria-label={
-                                mode === "day" ? "Switch to dark theme" : "Switch to day theme"
-                            }
+                            aria-label={mode === "day" ? "Switch to dark theme" : "Switch to day theme"}
                         >
                             {mode === "day" ? <Moon size={14} /> : <Sun size={14} />}
                             {mode === "day" ? "Dark" : "Day"}
                         </button>
                     </div>
 
-                    <div className="bc-form-wrap">
-                        <h1 className="bc-heading">Welcome back</h1>
-                        <p className="bc-subtext">
-                            Sign in to keep tracking the air quality and weather that matter
-                            to you.
+                    <div className="w-full max-w-[400px] mx-auto">
+                        <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
+                            Welcome back
+                        </h1>
+
+                        <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-7 leading-[1.55]">
+                            Sign in to keep tracking the air quality and weather that matter to you.
                         </p>
 
                         {loginError && (
-                            <div className="bc-general-error" role="alert">
-                                <AlertCircle
-                                    size={16}
-                                    style={{ marginTop: 1, flexShrink: 0 }}
-                                />
+                            <div
+                                className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] leading-[1.5]"
+                                role="alert"
+                            >
+                                <AlertCircle size={16} className="mt-px shrink-0" />
                                 <span>{loginError}</span>
                             </div>
                         )}
 
                         <form onSubmit={handleSubmit} noValidate>
-                            <div className="bc-field">
-                                <label htmlFor="login-email" className="bc-label">
+                            <div className="mb-[18px]">
+                                <label
+                                    htmlFor="login-email"
+                                    className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                >
                                     Email
                                 </label>
-                                <div
-                                    className={`bc-input-shell${emailInvalid ? " is-invalid" : ""}`}
-                                >
-                                    <span className="bc-input-icon">
+
+                                <div className={emailShellClasses}>
+                                    <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                         <Mail size={17} />
                                     </span>
+
                                     <input
                                         id="login-email"
                                         name="email"
                                         type="email"
                                         autoComplete="email"
                                         inputMode="email"
-                                        className="bc-input"
+                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]"
                                         placeholder="you@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         onBlur={() => handleBlur("email")}
                                         aria-invalid={emailInvalid}
-                                        aria-describedby={
-                                            emailInvalid ? "login-email-error" : undefined
-                                        }
+                                        aria-describedby={emailInvalid ? "login-email-error" : undefined}
                                     />
                                 </div>
+
                                 {emailInvalid && (
-                                    <p className="bc-field-error" id="login-email-error">
+                                    <p
+                                        className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                        id="login-email-error"
+                                    >
                                         <AlertCircle size={13} />
                                         {errors.email}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="bc-field">
-                                <label htmlFor="login-password" className="bc-label">
+                            <div className="mb-[18px]">
+                                <label
+                                    htmlFor="login-password"
+                                    className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                >
                                     Password
                                 </label>
-                                <div
-                                    className={`bc-input-shell${passwordInvalid ? " is-invalid" : ""}`}
-                                >
-                                    <span className="bc-input-icon">
+
+                                <div className={passwordShellClasses}>
+                                    <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
                                         <Lock size={17} />
                                     </span>
+
                                     <input
                                         id="login-password"
                                         name="password"
                                         type={showPassword ? "text" : "password"}
                                         autoComplete="current-password"
-                                        className="bc-input"
+                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]"
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -895,39 +650,42 @@ const Login: React.FC = () => {
                                             passwordInvalid ? "login-password-error" : undefined
                                         }
                                     />
+
                                     <button
                                         type="button"
-                                        className="bc-input-toggle"
+                                        className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-md"
                                         onClick={() => setShowPassword((s) => !s)}
-                                        aria-label={
-                                            showPassword ? "Hide password" : "Show password"
-                                        }
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                         aria-pressed={showPassword}
                                     >
                                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                     </button>
                                 </div>
+
                                 {passwordInvalid && (
-                                    <p className="bc-field-error" id="login-password-error">
+                                    <p
+                                        className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                        id="login-password-error"
+                                    >
                                         <AlertCircle size={13} />
                                         {errors.password}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="bc-row-between">
+                            <div className="flex items-center justify-end -mt-1.5 mb-[22px]">
                                 {/* Forgot-password route intentionally omitted — not in scope. */}
                                 <span />
                             </div>
 
-                            <button type="submit" className="bc-submit" disabled={isBusy}>
+                            <button
+                                type="submit"
+                                className="w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-[var(--bc-accent-strong)] text-[#F4FBF9] text-[15px] font-semibold px-4 py-[13px] cursor-pointer transition-[transform,box-shadow,opacity,background-color] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]"
+                                disabled={isBusy}
+                            >
                                 {loginLoading ? (
                                     <>
-                                        <Loader2
-                                            size={17}
-                                            className="bc-spin"
-                                            style={{ animation: "spin 0.8s linear infinite" }}
-                                        />
+                                        <Loader2 size={17} className="animate-[spin_0.8s_linear_infinite]" />
                                         Signing in…
                                     </>
                                 ) : (
@@ -939,29 +697,32 @@ const Login: React.FC = () => {
                             </button>
                         </form>
 
-                        <div className="bc-divider">or</div>
+                        <div className="flex items-center gap-3 my-6 text-[var(--bc-ink-faint)] text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-[var(--bc-border)] after:content-[''] after:block after:flex-1 after:h-px after:bg-[var(--bc-border)]">
+                            or
+                        </div>
 
-                        <GoogleLogin
-                            key={`${instanceId}-${mode}`}
-                            onSuccess={handleGoogleSuccess}
-                            onError={handleGoogleError}
-                            shape="rectangular"
-                            text="continue_with"
-                        />
+                        {/* <div className="bc-google-wrap flex justify-center w-full"> */}
+                            <GoogleLogin
+                                key={`${instanceId}-${mode}`}
+                                onSuccess={handleGoogleSuccess}
+                                onError={handleGoogleError}
+                                shape="rectangular"
+                                text="continue_with"
+                            />
+                        {/* </div> */}
 
-                        <p className="bc-footer-line">
+                        <p className="text-center mt-[26px] text-sm text-[var(--bc-ink-soft)]">
                             Don&apos;t have an account?{" "}
-                            <Link to="/" className="bc-link-quiet">
+                            <Link
+                                to="/"
+                                className="text-[13px] text-[var(--bc-accent-strong)] no-underline font-semibold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded"
+                            >
                                 Create one
                             </Link>
                         </p>
                     </div>
                 </div>
             </div>
-
-            <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        `}</style>
         </div>
     );
 };
