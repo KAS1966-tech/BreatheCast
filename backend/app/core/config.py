@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     SHORT_STR: int = 30
     LONG_STR: int = 255
 
-    MAX_UPLOAD_SIZE_MB: int = 150
+    MAX_UPLOAD_SIZE_MB: int = 10
 
     # ------------------------
     # Database
@@ -94,7 +94,7 @@ class Settings(BaseSettings):
     # CORS
     # ------------------------
 
-    ALLOWED_ORIGINS: list[str] = Field(default_factory=lambda: ["*"])
+    ALLOWED_ORIGINS: list[str]
 
     @property
     def IS_PROD(self) -> bool:

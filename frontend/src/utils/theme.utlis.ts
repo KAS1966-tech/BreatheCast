@@ -9,3 +9,14 @@ export function getInitialTheme(): ThemeMode {
     ).matches;
     return prefersDark ? "dark" : "day";
 }
+
+export function setTheme(theme: ThemeMode): void {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("breathecast-theme", theme);
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+        root.classList.add("dark");
+    } else {
+        root.classList.remove("dark");
+    }
+}

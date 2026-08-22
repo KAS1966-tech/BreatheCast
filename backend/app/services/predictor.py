@@ -26,22 +26,23 @@ def predict(payload: dict):
 
 
 def predict_batch(payloads: list[dict]):
+    if not payloads:
+        return []
+
     features = modelService.model_artifact_info("features")
 
-    df = pd.DataFrame(payloads)
-
-    missing = sorted(set(features) - set(df.columns))
+    # Since payloads come from Pydantic model_dump(), keys are consistent.
+    missing = sorted(set(features) - payloads[0].keys())
 
     if missing:
         raise ValueError(
             f"Missing required columns: {', '.join(missing)}"
         )
 
-    # Keep the same feature order used during training
-    df = df[features]
+    # Create DataFrame directly with correct feature order
+    df = pd.DataFrame(payloads, columns=features)
 
     model = modelService.model
-
     predictions = model.predict(df)
 
     return predictions.tolist()

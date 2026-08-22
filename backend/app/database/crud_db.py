@@ -565,6 +565,29 @@ def get_user_uploaded_files(
 
     return files, total
 
+def delete_user_uploaded_file(
+    db: Session,
+    user_id: int,
+    file_id: int,
+) -> bool:
+
+    uploaded_file = (
+        db.query(UploadedFile)
+        .filter(
+            UploadedFile.id == file_id,
+            UploadedFile.user_id == user_id,
+        )
+        .first()
+    )
+
+    if not uploaded_file:
+        return False
+
+    db.delete(uploaded_file)
+    db.commit()
+
+    return True
+
 
 def delete_user(db: Session, user_id: int):
     user = get_user_by_id(db, user_id)

@@ -3,7 +3,7 @@ import authReducer from "./features/auth/authSlice";
 import themeReducer from './features/theme/themeSlice';
 import AQIReducer from './features/prediction/aqiSlice';
 import fileUploadReducer from './features/upload/fileUploadSlice';
-
+import historyReducer from './features/history/historySlice';
 
 export const store = configureStore({
     reducer:{
@@ -11,6 +11,7 @@ export const store = configureStore({
         "theme": themeReducer,
         "aqi": AQIReducer,
         "file": fileUploadReducer,
+        "history": historyReducer,
     }
 });
 

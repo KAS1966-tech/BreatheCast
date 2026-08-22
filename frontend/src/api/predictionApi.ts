@@ -2,7 +2,8 @@ import axios, { type AxiosProgressEvent } from "axios";
 import type { LoginRequest, LoginResponse, SignupRequest, SignupResponse, User, VerifyOTPRequest, VerifySignupOTPResponse } from "../hooks/types/auth.type";
 import type { MetricsResponse } from "../hooks/types/metrics.type";
 import type { ProfileResponse } from "../hooks/types/profile.type";
-import type { HistoryResponse } from "../hooks/types/history.type";
+import type { PredictionHistoryResponse } from "../hooks/types/history.type";
+import type { DeleteFileResponse, FileHistoryResponse } from "../hooks/types/fileUpload.type";
 import type { AQIPredictionPayload, AQIPredictionResponse } from "../hooks/types/aqiPrediction.type";
 
 
@@ -14,7 +15,7 @@ if (!import.meta.env.VITE_BACKEND_API) {
 
 const API = axios.create({
     baseURL: `${API_URL}/api/v1`,
-    timeout: 60000,
+    timeout: 120_000,
     withCredentials: true,
 });
 
@@ -156,8 +157,8 @@ export const deleteAccount = async (): Promise<void> => {
 export const getHistory = async (
     skip = 0,
     limit = 10,
-): Promise<HistoryResponse> => {
-    const { data } = await API.get<HistoryResponse>("/history", {
+): Promise<PredictionHistoryResponse> => {
+    const { data } = await API.get<PredictionHistoryResponse>("/history", {
         params: {
             skip,
             limit,
@@ -269,6 +270,49 @@ export const uploadFile = async (
         onUploadProgress,
         signal,
     });
+
+    return data;
+};
+
+// --------------------
+// FILE HISTORY
+// --------------------
+
+export const getFileHistory = async (
+    skip = 0,
+    limit = 10,
+): Promise<FileHistoryResponse> => {
+    const { data } = await API.get<FileHistoryResponse>("/filehistory", {
+        params: {
+            skip,
+            limit,
+        },
+    });
+    return data;
+};
+
+
+// --------------------
+// DELETE FILE
+// --------------------
+
+export const deleteUploadedFile = async (
+    fileId: number,
+): Promise<DeleteFileResponse> => {
+    const { data } = await API.delete<DeleteFileResponse>(
+        `/filehistory/${fileId}`,
+    );
+
+    return data;
+};
+
+export const downloadFileHistory = async (): Promise<Blob> => {
+    const { data } = await API.get<Blob>(
+        "/files/download",
+        {
+            responseType: "blob",
+        },
+    );
 
     return data;
 };

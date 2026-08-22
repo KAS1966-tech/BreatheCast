@@ -1,17 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
-    Sun, Moon, Wind, FileUp, FileSpreadsheet, ScanLine, ShieldCheck, ShieldAlert,
+    FileUp, FileSpreadsheet, ScanLine, ShieldCheck, ShieldAlert,
     CheckCircle2, AlertCircle, AlertTriangle, RotateCcw, ArrowRight, Download,
     Table as TableIcon, Hash, Database, HardDrive, Check, X, Cpu, ChevronDown,
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
 import { useAppDispatch, useAppSelector } from "../app/redux";
-import { toggleTheme } from "../app/features/theme/themeSlice";
 import {
     selectFile, setFileData, setAnalysisError, startUpload, setUploadProgress,
     uploadSuccess, uploadFailure, cancelUpload, clearError, resetUpload,
+    startProcessing,
 } from "../app/features/upload/fileUploadSlice";
 import { uploadFile as uploadPredictionCsv } from "../api/predictionApi";
 import { schema as fieldSchema } from "../hooks/schema/aqiSchema";
@@ -19,6 +19,7 @@ import type { CsvAnalysis, UploadPhase, FileUploadState } from "../hooks/types/f
 import { companyName, PREVIEW_LIMIT, MAX_UPLOAD_SIZE_MB } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
+import Navbar from "../components/Navbar";
 // ---------------------------------------------------------------------------
 
 const REQUIRED_COLUMNS: string[] = fieldSchema.map((f) => f.name);
@@ -98,7 +99,9 @@ function parseCsvHead(text: string, maxPreviewRows: number): { headers: string[]
         field += c; i++;
     }
     if (field.length > 0 || row.length > 0) { if (!inQuotes) pushRow(); }
-    const headers = (allRows.shift() ?? []).map((h) => h.trim());
+    const headers = (allRows.shift() ?? []).map((h) =>
+    h.replace(/^\uFEFF/, "").trim()
+);
     return { headers, rows: allRows };
 }
 
@@ -202,7 +205,7 @@ const STEP_DEFS: { label: string; icon: React.ReactNode }[] = [
 ];
 
 const WorkflowStepper: React.FC<{ states: StepState[] }> = ({ states }) => (
-    <ol className="list-none flex gap-1 mx-auto mb-4 max-w-[1240px] px-4 w-full overflow-x-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:px-10 md:mb-5.5 [&::-webkit-scrollbar]:hidden" aria-label="Batch processing workflow">
+    <ol className="list-none flex gap-1 mx-auto mb-4 max-w-310 px-4 w-full overflow-x-auto [-webkit-overflow-scrolling:touch] scrollbar-none md:px-10 md:mb-5.5 [&::-webkit-scrollbar]:hidden" aria-label="Batch processing workflow">
         {STEP_DEFS.map((step, i) => {
             const st = states[i];
             const isComplete = st === "complete";
@@ -212,21 +215,21 @@ const WorkflowStepper: React.FC<{ states: StepState[] }> = ({ states }) => (
             return (
                 <li
                     key={step.label}
-                    className={`shrink-0 flex items-center gap-1.5 min-w-0 relative px-0.5 py-1.5 sm:flex-1 sm:gap-2 ${i > 0 ? 'before:content-[\'\'] before:absolute before:-left-2.5 before:top-1/2 before:w-4 before:h-[1.5px] before:bg-[var(--bc-border-strong)] before:opacity-50 sm:before:-left-3.5 sm:before:w-6 max-[480px]:before:hidden' : ''}`}
+                    className={`shrink-0 flex items-center gap-1.5 min-w-0 relative px-0.5 py-1.5 sm:flex-1 sm:gap-2 ${i > 0 ? 'before:content-[\'\'] before:absolute before:-left-2.5 before:top-1/2 before:w-4 before:h-[1.5px] before:bg-(--bc-border-strong) before:opacity-50 sm:before:-left-3.5 sm:before:w-6 max-[480px]:before:hidden' : ''}`}
                     aria-current={isActive ? "step" : undefined}
                 >
-                    <span className={`w-[22px] h-[22px] rounded-full shrink-0 inline-flex items-center justify-center border-[1.5px] transition-[background,color,border-color] duration-300 sm:w-6 sm:h-6
-            ${isComplete ? 'bg-[var(--bc-accent)] border-[var(--bc-accent)] text-[#F4FBF9]' :
-                            isError ? 'bg-[var(--bc-danger)] border-[var(--bc-danger)] text-[#FFF5F4]' :
-                                isActive ? 'border-[var(--bc-accent)] text-[var(--bc-accent-strong)] bg-[var(--bc-surface)] animate-[fu-dot-pulse_2.4s_ease-in-out_infinite]' :
-                                    'border-[var(--bc-border-strong)] text-[var(--bc-ink-faint)] bg-[var(--bc-surface)]'}`}>
+                    <span className={`w-5.5 h-5.5 rounded-full shrink-0 inline-flex items-center justify-center border-[1.5px] transition-[background,color,border-color] duration-300 sm:w-6 sm:h-6
+            ${isComplete ? 'bg-(--bc-accent) border-(--bc-accent) text-[#F4FBF9]' :
+                            isError ? 'bg-(--bc-danger) border-(--bc-danger) text-[#FFF5F4]' :
+                                isActive ? 'border-(--bc-accent) text-(--bc-accent-strong) bg-(--bc-surface) animate-[fu-dot-pulse_2.4s_ease-in-out_infinite]' :
+                                    'border-(--bc-border-strong) text-(--bc-ink-faint) bg-(--bc-surface)'}`}>
                         {isComplete ? <Check size={12} /> : isError ? <X size={12} /> : step.icon}
                     </span>
                     <span className={`text-[10px] font-semibold tracking-[0.04em] uppercase whitespace-nowrap sm:text-[11.5px] max-[480px]:hidden
-            ${isComplete ? 'text-[var(--bc-ink-soft)]' :
-                            isError ? 'text-[var(--bc-danger)]' :
-                                isActive ? 'text-[var(--bc-ink)]' :
-                                    'text-[var(--bc-ink-faint)]'}`}>
+            ${isComplete ? 'text-(--bc-ink-soft)' :
+                            isError ? 'text-(--bc-danger)' :
+                                isActive ? 'text-(--bc-ink)' :
+                                    'text-(--bc-ink-faint)'}`}>
                         {step.label}
                     </span>
                 </li>
@@ -318,10 +321,10 @@ const Atmosphere: React.FC<{ isDark: boolean; mood: Mood }> = ({ isDark, mood })
 };
 
 const StatTile: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
-    <div className="border border-[var(--bc-border)] rounded-[10px] p-2 px-2.5 flex flex-col gap-0.5 bg-[var(--bc-surface-2)] min-w-0 sm:rounded-xl sm:p-2.5 sm:px-3">
-        <span className="text-[var(--bc-ink-faint)] mb-0.5 sm:mb-1">{icon}</span>
-        <span className="font-[var(--bc-font-display)] text-[15px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap sm:text-[17px]">{value}</span>
-        <span className="text-[9.5px] uppercase tracking-[0.06em] text-[var(--bc-ink-faint)] sm:text-[10.5px]">{label}</span>
+    <div className="border border-(--bc-border) rounded-[10px] p-2 px-2.5 flex flex-col gap-0.5 bg-(--bc-surface-2) min-w-0 sm:rounded-xl sm:p-2.5 sm:px-3">
+        <span className="text-(--bc-ink-faint) mb-0.5 sm:mb-1">{icon}</span>
+        <span className="text-[15px] font-semibold overflow-hidden text-ellipsis whitespace-nowrap sm:text-[17px]">{value}</span>
+        <span className="text-[9.5px] uppercase tracking-[0.06em] text-(--bc-ink-faint) sm:text-[10.5px]">{label}</span>
     </div>
 );
 
@@ -331,7 +334,7 @@ Page
 const FileUpload: React.FC = () => {
     const dispatch = useAppDispatch();
     const mode = useAppSelector((state) => state.theme.mode);
-    const upload = useAppSelector((state) => (state as any).file ?? (state as any).upload) as FileUploadState;
+    const upload = useAppSelector((state) => (state).file ?? (state).upload) as FileUploadState;
     const isDark = mode === "dark";
 
     useSEO(
@@ -433,7 +436,17 @@ const FileUpload: React.FC = () => {
         abortRef.current = controller;
         dispatch(startUpload());
         try {
-            const blob: Blob = await uploadPredictionCsv(file, undefined, controller.signal);
+            const blob: Blob = await uploadPredictionCsv(file,
+                (progressEvent) => {
+                    if (!progressEvent.total) return;
+
+                    const progress = Math.round(
+                        (progressEvent.loaded / progressEvent.total) * 100
+                    );
+
+                    dispatch(setUploadProgress(progress));
+                }, controller.signal);
+            dispatch(startProcessing());
             const resultName = `predicted_${file.name}`;
             const processedRows = rowCount ?? 0;
             triggerDownload(blob, resultName);
@@ -557,32 +570,15 @@ const FileUpload: React.FC = () => {
 
             <Atmosphere isDark={isDark} mood={mood} />
 
-            <div className="relative z-1 bg-transparent text-[var(--bc-ink)] min-h-screen overflow-x-hidden">
-                <header className="flex items-center justify-between px-4 py-3.5 max-w-[1240px] mx-auto w-full md:px-10 md:py-6">
-                    <div className="inline-flex items-center gap-2.5 min-w-0">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-[9px] shrink-0 bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
-                            <Wind size={16} strokeWidth={2.25} />
-                        </span>
-                        <span className="font-[var(--bc-font-display)] text-base font-semibold whitespace-nowrap overflow-hidden text-ellipsis sm:text-lg">{companyName}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2 shrink-0">
-                        <span className="text-[11px] tracking-[0.12em] uppercase text-[var(--bc-ink-faint)] font-semibold hidden sm:inline">Batch Environmental Analysis</span>
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-2.5 py-1 text-xs cursor-pointer transition-[border-color,color,transform] duration-200 sm:px-3 sm:py-1.5 sm:text-[13px] hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2"
-                            onClick={() => dispatch(toggleTheme())}
-                            aria-label={isDark ? "Switch to day theme" : "Switch to dark theme"}
-                        >
-                            {isDark ? <Sun size={14} /> : <Moon size={14} />}
-                            {isDark ? "Day" : "Dark"}
-                        </button>
-                    </div>
-                </header>
+            <header>
+                <Navbar />
+            </header>
+            <main className="relative z-1 bg-transparent text-(--bc-ink) min-h-screen overflow-x-hidden">
 
-                <section className="max-w-[1240px] mx-auto px-4 pt-1 pb-3.5 w-full md:px-10 md:pb-6.5 md:max-w-[860px]">
-                    <p className="text-[11px] tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2 sm:text-xs">Batch Processing</p>
-                    <h1 className="font-[var(--bc-font-display)] font-semibold text-[clamp(22px,5vw,38px)] leading-[1.15] m-0 mb-2.5 break-words">Environmental data, analyzed at scale.</h1>
-                    <p className="text-sm leading-[1.55] text-[var(--bc-ink-soft)] m-0 max-w-[62ch] sm:text-[15px]">
+                <section className="max-w-310 mx-auto px-4 pt-1 pb-3.5 w-full md:px-10 md:pb-6.5 md:max-w-215">
+                    <p className="text-[11px] tracking-[0.14em] uppercase text-(--bc-accent-strong) font-semibold m-0 mb-2 sm:text-xs">Batch Processing</p>
+                    <h1 className="font-semibold text-[clamp(22px,5vw,38px)] leading-[1.15] m-0 mb-2.5 wrap-wrap-break-word">Environmental data, analyzed at scale.</h1>
+                    <p className="text-sm leading-[1.55] text-(--bc-ink-soft) m-0 max-w-[62ch] sm:text-[15px]">
                         Import a CSV of environmental conditions. {companyName} validates its structure, previews the
                         dataset, then sends it for batch AQI prediction — your processed file downloads automatically.
                     </p>
@@ -590,16 +586,16 @@ const FileUpload: React.FC = () => {
 
                 <WorkflowStepper states={stepStates} />
 
-                <p className="max-w-[1240px] mx-auto mb-3.5 px-4 w-full flex items-center gap-2 text-xs text-[var(--bc-ink-soft)] md:px-10 md:text-[13px]" role="status" aria-live="polite">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--bc-accent)] shrink-0 animate-[fu-dot-pulse_2.6s_ease-in-out_infinite] sm:w-[7px] sm:h-[7px]" aria-hidden="true" />
+                <p className="max-w-310 mx-auto mb-3.5 px-4 w-full flex items-center gap-2 text-xs text-(--bc-ink-soft) md:px-10 md:text-[13px]" role="status" aria-live="polite">
+                    <span className="w-1.5 h-1.5 rounded-full bg-(--bc-accent) shrink-0 animate-[fu-dot-pulse_2.6s_ease-in-out_infinite] sm:w-1.75 sm:h-1.75" aria-hidden="true" />
                     {liveStatus}
                 </p>
 
-                <div className="max-w-[1240px] mx-auto px-4 pb-16 w-full grid grid-cols-1 gap-4 items-start md:px-10 md:pb-20 md:gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-7">
+                <div className="max-w-310 mx-auto px-4 pb-16 w-full grid grid-cols-1 gap-4 items-start md:px-10 md:pb-20 md:gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-7">
                     {/* ================= LEFT — IMPORT & PROCESS ================= */}
                     <div style={{ minWidth: 0 }}>
-                        <div className="bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-[18px] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] w-full max-w-full overflow-hidden sm:p-[22px]" key={phase}>
-                            <h2 className="flex items-center gap-2 text-[13px] font-bold m-0 mb-3 sm:text-sm sm:mb-3.5 [&_svg]:text-[var(--bc-accent-strong)] [&_svg]:shrink-0">
+                        <div className="bg-(--bc-surface) border border-(--bc-border) rounded-4.5 p-4.5 shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] w-full max-w-full overflow-hidden sm:p-5.5" key={phase}>
+                            <h2 className="flex items-center gap-2 text-[13px] font-bold m-0 mb-3 sm:text-sm sm:mb-3.5 [&_svg]:text-(--bc-accent-strong) [&_svg]:shrink-0">
                                 <FileUp size={16} />
                                 Dataset Import
                             </h2>
@@ -608,7 +604,7 @@ const FileUpload: React.FC = () => {
                             {(phase === "idle" || (phase === "error" && !hasAnalysis)) && (
                                 <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both]">
                                     <div
-                                        className={`border-[1.5px] border-dashed border-[var(--bc-border-strong)] rounded-[18px] bg-[color-mix(in_srgb,var(--bc-surface-2)_70%,transparent)] p-6 px-4 text-center cursor-pointer flex flex-col items-center gap-2 transition-[border-color,background,transform] duration-200 w-full hover:border-[var(--bc-accent)] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-[3px] sm:py-8 sm:px-5.5 sm:gap-2.5 ${dragActive ? 'border-[var(--bc-accent)] bg-[var(--bc-success-bg)] scale-[1.01]' : ''}`}
+                                        className={`border-[1.5px] border-dashed border-(--bc-border-strong) rounded-4.5 bg-[color-mix(in_srgb,var(--bc-surface-2)_70%,transparent)] p-6 px-4 text-center cursor-pointer flex flex-col items-center gap-2 transition-[border-color,background,transform] duration-200 w-full hover:border-(--bc-accent) focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-0.75 sm:py-8 sm:px-5.5 sm:gap-2.5 ${dragActive ? 'border-(--bc-accent) bg-(--bc-success-bg) scale-[1.01]' : ''}`}
                                         role="button"
                                         tabIndex={0}
                                         aria-label="Upload a CSV file for batch AQI prediction. Press Enter to browse files."
@@ -640,11 +636,11 @@ const FileUpload: React.FC = () => {
                                                 e.target.value = "";
                                             }}
                                         />
-                                        <span className="w-11 h-11 rounded-xl inline-flex items-center justify-center bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)] animate-[fu-float-y_4.5s_ease-in-out_infinite] sm:w-[52px] sm:h-[52px] sm:rounded-[14px]"><FileSpreadsheet size={24} /></span>
-                                        <p className="font-[var(--bc-font-display)] text-base font-semibold m-0.5 mt-0 mb-0 sm:text-lg">Drop your CSV here</p>
-                                        <p className="text-xs text-[var(--bc-ink-soft)] m-0 leading-[1.5] max-w-[36ch] sm:text-[13px]">Environmental batch prediction — the atmosphere reacts as your data moves through the pipeline.</p>
-                                        <span className="mt-1 inline-flex items-center gap-[7px] border-[1.5px] border-[var(--bc-border-strong)] rounded-full px-3.5 py-1.5 text-xs font-semibold text-[var(--bc-accent-strong)] bg-[var(--bc-surface)] sm:px-4 sm:py-2 sm:text-[13px]">Browse files</span>
-                                        <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center text-[10.5px] text-[var(--bc-ink-faint)] mt-1 sm:text-[11.5px] sm:gap-x-3.5 sm:gap-y-1.5">
+                                        <span className="w-11 h-11 rounded-xl inline-flex items-center justify-center bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong) animate-[fu-float-y_4.5s_ease-in-out_infinite] sm:w-13 sm:h-13 sm:rounded-[14px]"><FileSpreadsheet size={24} /></span>
+                                        <p className="text-base font-semibold m-0.5 mt-0 mb-0 sm:text-lg">Drop your CSV here</p>
+                                        <p className="text-xs text-(--bc-ink-soft) m-0 leading-normal max-w-[36ch] sm:text-[13px]">Environmental batch prediction — the atmosphere reacts as your data moves through the pipeline.</p>
+                                        <span className="mt-1 inline-flex items-center gap-1.75 border-[1.5px] border-(--bc-border-strong) rounded-full px-3.5 py-1.5 text-xs font-semibold text-(--bc-accent-strong) bg-(--bc-surface) sm:px-4 sm:py-2 sm:text-[13px]">Browse files</span>
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center text-[10.5px] text-(--bc-ink-faint) mt-1 sm:text-[11.5px] sm:gap-x-3.5 sm:gap-y-1.5">
                                             <span className="inline-flex items-center gap-1"><FileSpreadsheet size={12} /> CSV only</span>
                                             <span className="inline-flex items-center gap-1"><HardDrive size={12} /> Up to {formatBytes(MAX_UPLOAD_SIZE_BYTES)}</span>
                                             <span className="inline-flex items-center gap-1"><Hash size={12} /> {REQUIRED_COLUMNS.length} columns</span>
@@ -653,7 +649,7 @@ const FileUpload: React.FC = () => {
 
                                     <button
                                         type="button"
-                                        className={`mx-auto mt-2.5 inline-flex items-center gap-1 bg-transparent border-none text-[var(--bc-ink-faint)] text-[11px] font-semibold cursor-pointer px-1.5 py-1 rounded-md hover:text-[var(--bc-ink-soft)] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 [&_svg]:transition-transform [&_svg]:duration-200 sm:text-xs sm:gap-1.5 ${showRequired ? '[&_svg]:rotate-180' : ''}`}
+                                        className={`mx-auto mt-2.5 inline-flex items-center gap-1 bg-transparent border-none text-(--bc-ink-faint) text-[11px] font-semibold cursor-pointer px-1.5 py-1 rounded-md hover:text-(--bc-ink-soft) focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 [&_svg]:transition-transform [&_svg]:duration-200 sm:text-xs sm:gap-1.5 ${showRequired ? '[&_svg]:rotate-180' : ''}`}
                                         onClick={() => setShowRequired((s) => !s)}
                                         aria-expanded={showRequired}
                                     >
@@ -664,7 +660,7 @@ const FileUpload: React.FC = () => {
                                     {showRequired && (
                                         <div className="flex flex-wrap gap-1.5 justify-center mt-2.5">
                                             {REQUIRED_COLUMNS.map((c) => (
-                                                <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[var(--bc-border)] text-[var(--bc-ink-soft)] bg-[var(--bc-surface-2)] max-w-[160px] sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-[180px] [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap" key={c}>
+                                                <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-(--bc-border) text-(--bc-ink-soft) bg-(--bc-surface-2) max-w-40 sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-45 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap" key={c}>
                                                     <span>{c}</span>
                                                 </span>
                                             ))}
@@ -672,11 +668,11 @@ const FileUpload: React.FC = () => {
                                     )}
 
                                     {phase === "error" && error && (
-                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-[var(--bc-danger-bg)] text-[var(--bc-danger)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-[1.5] sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
+                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-(--bc-danger-bg) text-(--bc-danger) border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-normal sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
                                             <AlertCircle size={15} />
                                             <div>
-                                                <p className="font-bold m-0 mb-[3px] text-[12.5px] sm:text-[13px] sm:mb-1">Import failed</p>
-                                                <p className="m-0 break-words">{error}</p>
+                                                <p className="font-bold m-0 mb-0.75 text-[12.5px] sm:text-[13px] sm:mb-1">Import failed</p>
+                                                <p className="m-0 wrap-break-word">{error}</p>
                                             </div>
                                         </div>
                                     )}
@@ -685,22 +681,22 @@ const FileUpload: React.FC = () => {
 
                             {/* ---------- ANALYZING ---------- */}
                             {phase === "analyzing" && (
-                                <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both] p-4 px-[18px] sm:p-5 sm:px-[22px]" aria-busy="true">
-                                    <div className="flex items-center gap-2.5 justify-center mb-4 [&_svg]:text-[var(--bc-accent-strong)] [&_svg]:shrink-0">
+                                <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both] p-4 px-4.5 sm:p-5 sm:px-5.5" aria-busy="true">
+                                    <div className="flex items-center gap-2.5 justify-center mb-4 [&_svg]:text-(--bc-accent-strong) [&_svg]:shrink-0">
                                         <FileSpreadsheet size={20} />
                                         <div style={{ minWidth: 0 }}>
-                                            <div className="font-semibold text-[13px] overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px] sm:text-sm sm:max-w-[240px]">{fileName}</div>
-                                            <div className="text-[11px] text-[var(--bc-ink-faint)] sm:text-xs">{fileSizeBytes !== null ? formatBytes(fileSizeBytes) : ""}</div>
+                                            <div className="font-semibold text-[13px] overflow-hidden text-ellipsis whitespace-nowrap max-w-50 sm:text-sm sm:max-w-60">{fileName}</div>
+                                            <div className="text-[11px] text-(--bc-ink-faint) sm:text-xs">{fileSizeBytes !== null ? formatBytes(fileSizeBytes) : ""}</div>
                                         </div>
                                     </div>
-                                    <div className="relative overflow-hidden flex flex-col gap-2 rounded-[10px] p-2.5 bg-[var(--bc-surface-2)] sm:p-3">
-                                        <div className="flex gap-2"><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-1" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[1.4]" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[0.8]" /></div>
-                                        <div className="flex gap-2"><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-1" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[1.4]" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[0.8]" /></div>
-                                        <div className="flex gap-2"><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-1" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[1.4]" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[0.8]" /></div>
-                                        <div className="flex gap-2"><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-1" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[1.4]" /><span className="h-2.5 rounded-[5px] bg-[var(--bc-track)] flex-[0.8]" /></div>
-                                        <div className="absolute top-0 bottom-0 w-[40%] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--bc-accent)_22%,transparent)] to-transparent animate-[fu-beam_1.6s_ease-in-out_infinite]" />
+                                    <div className="relative overflow-hidden flex flex-col gap-2 rounded-[10px] p-2.5 bg-(--bc-surface-2) sm:p-3">
+                                        <div className="flex gap-2"><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-1" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[1.4]" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[0.8]" /></div>
+                                        <div className="flex gap-2"><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-1" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[1.4]" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[0.8]" /></div>
+                                        <div className="flex gap-2"><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-1" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[1.4]" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[0.8]" /></div>
+                                        <div className="flex gap-2"><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-1" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[1.4]" /><span className="h-2.5 rounded-1.25 bg-(--bc-track) flex-[0.8]" /></div>
+                                        <div className="absolute top-0 bottom-0 w-[40%] bg-linear-to-r from-transparent via-[color-mix(in_srgb,var(--bc-accent)_22%,transparent)] to-transparent animate-[fu-beam_1.6s_ease-in-out_infinite]" />
                                     </div>
-                                    <p className="text-center text-[11.5px] text-[var(--bc-ink-soft)] mt-3 sm:text-[12.5px]">Inspecting headers, rows & structure…</p>
+                                    <p className="text-center text-[11.5px] text-(--bc-ink-soft) mt-3 sm:text-[12.5px]">Inspecting headers, rows & structure…</p>
                                 </div>
                             )}
 
@@ -708,10 +704,10 @@ const FileUpload: React.FC = () => {
                             {(phase === "ready" || phase === "uploading") && (
                                 <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both]">
                                     <div className="flex items-center gap-2.5 mb-3.5 min-w-0 sm:gap-3 sm:mb-4">
-                                        <span className="w-[38px] h-[38px] rounded-[10px] shrink-0 inline-flex items-center justify-center bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)] sm:w-[42px] sm:h-[42px] sm:rounded-xl"><FileSpreadsheet size={20} /></span>
+                                        <span className="w-9.5 h-9.5 rounded-[10px] shrink-0 inline-flex items-center justify-center bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong) sm:w-10.5 sm:h-10.5 sm:rounded-xl"><FileSpreadsheet size={20} /></span>
                                         <div style={{ minWidth: 0 }}>
                                             <div className="font-bold text-sm overflow-hidden text-ellipsis whitespace-nowrap sm:text-[15px]" title={fileName ?? ""}>{fileName}</div>
-                                            <div className="text-[11px] text-[var(--bc-ink-faint)] sm:text-xs">{fileType || "text/csv"}</div>
+                                            <div className="text-[11px] text-(--bc-ink-faint) sm:text-xs">{fileType || "text/csv"}</div>
                                         </div>
                                     </div>
 
@@ -723,27 +719,27 @@ const FileUpload: React.FC = () => {
                                     </div>
 
                                     {isValid ? (
-                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-[var(--bc-success-bg)] text-[var(--bc-success)] border border-[color-mix(in_srgb,var(--bc-success)_30%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-[1.5] sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px">
+                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-(--bc-success-bg) text-(--bc-success) border border-[color-mix(in_srgb,var(--bc-success)_30%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-normal sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px">
                                             <CheckCircle2 size={15} />
                                             <div>
-                                                <p className="font-bold m-0 mb-[3px] text-[12.5px] sm:text-[13px] sm:mb-1">CSV structure verified</p>
-                                                <p className="m-0 break-words">All {REQUIRED_COLUMNS.length} required environmental columns are present. Ready for batch prediction.</p>
+                                                <p className="font-bold m-0 mb-0.75 text-[12.5px] sm:text-[13px] sm:mb-1">CSV structure verified</p>
+                                                <p className="m-0 wrap-break-word">All {REQUIRED_COLUMNS.length} required environmental columns are present. Ready for batch prediction.</p>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-[var(--bc-warn-bg)] text-[var(--bc-warn)] border border-[color-mix(in_srgb,var(--bc-warn)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-[1.5] sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
+                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-(--bc-warn-bg) text-(--bc-warn) border border-[color-mix(in_srgb,var(--bc-warn)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-normal sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
                                             <AlertTriangle size={15} />
                                             <div>
-                                                <p className="font-bold m-0 mb-[3px] text-[12.5px] sm:text-[13px] sm:mb-1">CSV structure issue</p>
-                                                <p className="m-0 break-words">The file cannot be processed until the CSV structure is corrected.</p>
+                                                <p className="font-bold m-0 mb-0.75 text-[12.5px] sm:text-[13px] sm:mb-1">CSV structure issue</p>
+                                                <p className="m-0 wrap-break-word">The file cannot be processed until the CSV structure is corrected.</p>
                                                 {(missingColumns.length > 0 || duplicateColumns.length > 0 || (rowCount ?? 0) === 0) && (
                                                     <div className="flex flex-wrap gap-1.5 mt-1.5 sm:gap-2 sm:mt-2">
-                                                        {(rowCount ?? 0) === 0 && <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-[var(--bc-warn)] bg-[var(--bc-warn-bg)] max-w-[160px] sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-[180px]"><AlertCircle size={11} /><span>No data rows detected</span></span>}
+                                                        {(rowCount ?? 0) === 0 && <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-(--bc-warn) bg-(--bc-warn-bg) max-w-40 sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-45"><AlertCircle size={11} /><span>No data rows detected</span></span>}
                                                         {missingColumns.map((c) => (
-                                                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-[var(--bc-warn)] bg-[var(--bc-warn-bg)] max-w-[160px] sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-[180px]" key={`m-${c}`}><X size={11} /><span>{c}</span></span>
+                                                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-(--bc-warn) bg-(--bc-warn-bg) max-w-40 sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-45" key={`m-${c}`}><X size={11} /><span>{c}</span></span>
                                                         ))}
                                                         {duplicateColumns.map((c) => (
-                                                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-[var(--bc-warn)] bg-[var(--bc-warn-bg)] max-w-[160px] sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-[180px]" key={`d-${c}`}><AlertTriangle size={11} /><span>{c} (duplicate)</span></span>
+                                                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-(--bc-warn) bg-(--bc-warn-bg) max-w-40 sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-45" key={`d-${c}`}><AlertTriangle size={11} /><span>{c} (duplicate)</span></span>
                                                         ))}
                                                     </div>
                                                 )}
@@ -752,41 +748,41 @@ const FileUpload: React.FC = () => {
                                     )}
 
                                     {sizeExceeded && (
-                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-[var(--bc-danger-bg)] text-[var(--bc-danger)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-[1.5] sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
+                                        <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-(--bc-danger-bg) text-(--bc-danger) border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-normal sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
                                             <AlertCircle size={15} />
-                                            <p className="m-0 break-words">File exceeds the {formatBytes(MAX_UPLOAD_SIZE_BYTES)} limit and cannot be processed.</p>
+                                            <p className="m-0 wrap-break-word">File exceeds the {formatBytes(MAX_UPLOAD_SIZE_BYTES)} limit and cannot be processed.</p>
                                         </div>
                                     )}
 
                                     {phase === "uploading" && (
                                         <div className="mt-3.5 sm:mt-4">
-                                            <div className="flex justify-between text-[11px] text-[var(--bc-ink-soft)] mb-1.5 gap-2 sm:text-xs sm:mb-[7px]">
+                                            <div className="flex justify-between text-[11px] text-(--bc-ink-soft) mb-1.5 gap-2 sm:text-xs sm:mb-1.75">
                                                 <span>{realProgress !== null && realProgress < 100 ? "Uploading dataset…" : "Backend processing predictions…"}</span>
                                                 <span>{realProgress !== null && realProgress < 100 ? `${Math.round(realProgress)}%` : "please wait"}</span>
                                             </div>
-                                            <div className="h-[5px] rounded-full bg-[var(--bc-track)] overflow-hidden relative sm:h-1.5">
+                                            <div className="h-1.25 rounded-full bg-(--bc-track) overflow-hidden relative sm:h-1.5">
                                                 {realProgress !== null && realProgress < 100 ? (
-                                                    <div className="absolute inset-0 bg-[var(--bc-accent)] rounded-full origin-left transition-transform duration-400" style={{ transform: `scaleX(${realProgress / 100})` }} />
+                                                    <div className="absolute inset-0 bg-(--bc-accent) rounded-full origin-left transition-transform duration-400" style={{ transform: `scaleX(${realProgress / 100})` }} />
                                                 ) : (
-                                                    <div className="absolute top-0 bottom-0 w-[40%] rounded-full bg-[var(--bc-accent)] animate-[fu-indet_1.5s_cubic-bezier(0.4,0,0.4,1)_infinite]" />
+                                                    <div className="absolute top-0 bottom-0 w-[40%] rounded-full bg-(--bc-accent) animate-[fu-indet_1.5s_cubic-bezier(0.4,0,0.4,1)_infinite]" />
                                                 )}
                                             </div>
                                         </div>
                                     )}
 
-                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-[18px]">
+                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-4.5">
                                         {phase === "uploading" ? (
-                                            <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 border-[1.5px] border-[color-mix(in_srgb,var(--bc-danger)_40%,transparent)] bg-transparent text-[var(--bc-danger)] hover:bg-[var(--bc-danger-bg)]" onClick={handleCancel}>
+                                            <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 border-[1.5px] border-[color-mix(in_srgb,var(--bc-danger)_40%,transparent)] bg-transparent text-(--bc-danger) hover:bg-(--bc-danger-bg)" onClick={handleCancel}>
                                                 <X size={15} />
                                                 Cancel
                                             </button>
                                         ) : (
                                             <>
-                                                <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 border-[1.5px] border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] hover:enabled:text-[var(--bc-ink)] hover:enabled:border-[var(--bc-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleReset}>
+                                                <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 border-[1.5px] border-(--bc-border) bg-(--bc-surface) text-(--bc-ink-soft) hover:enabled:text-(--bc-ink) hover:enabled:border-(--bc-border-strong) disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleReset}>
                                                     <RotateCcw size={15} />
                                                     Remove
                                                 </button>
-                                                <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 flex-1 border-none bg-[var(--bc-accent-strong)] text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" onClick={() => void handleProcess()} disabled={!canProcess}>
+                                                <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 flex-1 border-none bg-(--bc-accent-strong) text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" onClick={() => void handleProcess()} disabled={!canProcess}>
                                                     Analyze & Predict
                                                     <ArrowRight size={16} />
                                                 </button>
@@ -798,21 +794,21 @@ const FileUpload: React.FC = () => {
 
                             {/* ---------- SUCCESS ---------- */}
                             {phase === "success" && (
-                                <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both] text-center p-6 px-[18px] sm:p-7 sm:px-[22px]">
-                                    <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-[var(--bc-success-bg)] text-[var(--bc-success)] animate-[fu-pop_0.5s_cubic-bezier(0.16,1,0.3,1)_both] sm:w-14 sm:h-14 sm:mb-3.5"><CheckCircle2 size={26} /></div>
-                                    <h3 className="font-[var(--bc-font-display)] text-xl font-semibold m-0 mb-1.5 sm:text-[22px]">Analysis complete</h3>
-                                    <p className="text-[12.5px] font-semibold text-[var(--bc-accent-strong)] m-0 mb-1 break-all sm:text-[13.5px]">{resultFileName ?? "processed.csv"}</p>
-                                    <p className="text-xs text-[var(--bc-ink-soft)] m-0 mb-1 sm:text-[13px]">{formatInt(processedRowCount ?? 0)} rows processed</p>
-                                    <p className="text-[11px] text-[var(--bc-ink-faint)] m-0 mb-4 leading-[1.5] sm:text-xs sm:mb-[18px] sm:leading-[1.55]">
+                                <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both] text-center p-6 px-4.5 sm:p-7 sm:px-5.5">
+                                    <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-(--bc-success-bg) text-(--bc-success) animate-[fu-pop_0.5s_cubic-bezier(0.16,1,0.3,1)_both] sm:w-14 sm:h-14 sm:mb-3.5"><CheckCircle2 size={26} /></div>
+                                    <h3 className="text-xl font-semibold m-0 mb-1.5 sm:text-5.5">Analysis complete</h3>
+                                    <p className="text-[12.5px] font-semibold text-(--bc-accent-strong) m-0 mb-1 break-all sm:text-[13.5px]">{resultFileName ?? "processed.csv"}</p>
+                                    <p className="text-xs text-(--bc-ink-soft) m-0 mb-1 sm:text-[13px]">{formatInt(processedRowCount ?? 0)} rows processed</p>
+                                    <p className="text-[11px] text-(--bc-ink-faint) m-0 mb-4 leading-normal sm:text-xs sm:mb-4.5 sm:leading-[1.55]">
                                         Your dataset was enriched server-side with <strong>prediction</strong>, <strong>status</strong> and{" "}
                                         <strong>message</strong> columns, and downloaded automatically.
                                     </p>
-                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-[18px] justify-center">
-                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 border-[1.5px] border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] hover:enabled:text-[var(--bc-ink)] hover:enabled:border-[var(--bc-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleDownloadAgain}>
+                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-4.5 justify-center">
+                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 border-[1.5px] border-(--bc-border) bg-(--bc-surface) text-(--bc-ink-soft) hover:enabled:text-(--bc-ink) hover:enabled:border-(--bc-border-strong) disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleDownloadAgain}>
                                             <Download size={15} />
                                             Download again
                                         </button>
-                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 flex-1 border-none bg-[var(--bc-accent-strong)] text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" style={{ flex: "0 1 auto" }} onClick={handleReset}>
+                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 flex-1 border-none bg-(--bc-accent-strong) text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" style={{ flex: "0 1 auto" }} onClick={handleReset}>
                                             <FileUp size={15} />
                                             Upload another CSV
                                         </button>
@@ -823,20 +819,20 @@ const FileUpload: React.FC = () => {
                             {/* ---------- ERROR with analysis ---------- */}
                             {phase === "error" && hasAnalysis && (
                                 <div className="animate-[fu-rise_0.45s_cubic-bezier(0.16,1,0.3,1)_both]">
-                                    <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-[var(--bc-danger-bg)] text-[var(--bc-danger)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-[1.5] sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
+                                    <div className="flex items-start gap-2 rounded-[10px] p-2.5 px-3 text-[12.5px] leading-[1.45] mt-3 bg-(--bc-danger-bg) text-(--bc-danger) border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] sm:rounded-xl sm:p-3 sm:px-3.5 sm:text-[13px] sm:leading-normal sm:gap-2.5 sm:mt-3.5 [&_svg]:shrink-0 [&_svg]:mt-px" role="alert">
                                         <AlertCircle size={15} />
                                         <div>
-                                            <p className="font-bold m-0 mb-[3px] text-[12.5px] sm:text-[13px] sm:mb-1">Processing failed</p>
-                                            <p className="m-0 break-words">{error ?? "Something went wrong while processing your file."}</p>
+                                            <p className="font-bold m-0 mb-0.75 text-[12.5px] sm:text-[13px] sm:mb-1">Processing failed</p>
+                                            <p className="m-0 wrap-break-word">{error ?? "Something went wrong while processing your file."}</p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-[18px]">
-                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 border-[1.5px] border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] hover:enabled:text-[var(--bc-ink)] hover:enabled:border-[var(--bc-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleReset}>
+                                    <div className="flex gap-2 mt-4 flex-wrap sm:gap-2.5 sm:mt-4.5">
+                                        <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 border-[1.5px] border-(--bc-border) bg-(--bc-surface) text-(--bc-ink-soft) hover:enabled:text-(--bc-ink) hover:enabled:border-(--bc-border-strong) disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleReset}>
                                             <RotateCcw size={15} />
                                             Start over
                                         </button>
                                         {fileRef.current && isValid && (
-                                            <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-[11px] cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-[42px] focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-[18px] sm:py-3 flex-1 border-none bg-[var(--bc-accent-strong)] text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" onClick={() => void handleProcess()}>
+                                            <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 flex-1 border-none bg-(--bc-accent-strong) text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" onClick={() => void handleProcess()}>
                                                 Retry processing
                                                 <ArrowRight size={16} />
                                             </button>
@@ -849,21 +845,21 @@ const FileUpload: React.FC = () => {
 
                     {/* ================= RIGHT — DATASET INSPECTOR ================= */}
                     <div style={{ minWidth: 0 }}>
-                        <div className="bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-[18px] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] w-full max-w-full overflow-hidden sm:p-[22px]">
+                        <div className="bg-(--bc-surface) border border-(--bc-border) rounded-4.5 p-4.5 shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] w-full max-w-full overflow-hidden sm:p-5.5">
                             <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap sm:gap-2.5 sm:mb-3">
-                                <h2 className="flex items-center gap-2 text-[13px] font-bold m-0 sm:text-sm [&_svg]:text-[var(--bc-accent-strong)] [&_svg]:shrink-0">
+                                <h2 className="flex items-center gap-2 text-[13px] font-bold m-0 sm:text-sm [&_svg]:text-(--bc-accent-strong) [&_svg]:shrink-0">
                                     <TableIcon size={16} />
                                     Dataset Inspector
                                 </h2>
                                 {headers.length > 0 && (
-                                    <span className="text-[10.5px] text-[var(--bc-ink-faint)] sm:text-[11.5px]">
+                                    <span className="text-[10.5px] text-(--bc-ink-faint) sm:text-[11.5px]">
                                         Showing {previewRows.length} of {formatInt(rowCount ?? 0)} rows
                                     </span>
                                 )}
                             </div>
 
                             {headers.length === 0 ? (
-                                <div className="border-[1.5px] border-dashed border-[var(--bc-border-strong)] rounded-[18px] min-h-[220px] flex flex-col items-center justify-center gap-2.5 text-[var(--bc-ink-faint)] text-center p-5 sm:min-h-[260px] sm:p-6 [&_p]:m-0 [&_p]:text-[12.5px] [&_p]:max-w-[30ch] [&_p]:leading-[1.5] sm:[&_p]:text-[13px]">
+                                <div className="border-[1.5px] border-dashed border-(--bc-border-strong) rounded-4.5 min-h-55 flex flex-col items-center justify-center gap-2.5 text-(--bc-ink-faint) text-center p-5 sm:min-h-65 sm:p-6 [&_p]:m-0 [&_p]:text-[12.5px] [&_p]:max-w-[30ch] [&_p]:leading-normal sm:[&_p]:text-[13px]">
                                     <TableIcon size={26} />
                                     <p>{phase === "analyzing" ? "Waiting for structural analysis…" : "No dataset loaded yet. Structural inspection and a data preview will appear here."}</p>
                                 </div>
@@ -875,10 +871,10 @@ const FileUpload: React.FC = () => {
                                             const required = REQUIRED_COLUMNS.includes(h);
                                             return (
                                                 <span
-                                                    className={`inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border max-w-[160px] sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-[180px] [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap
-                            ${dup ? 'border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-[var(--bc-warn)] bg-[var(--bc-warn-bg)]' :
-                                                            required ? 'border-[color-mix(in_srgb,var(--bc-success)_35%,transparent)] text-[var(--bc-success)] bg-[var(--bc-success-bg)]' :
-                                                                'border-[var(--bc-border)] text-[var(--bc-ink-soft)] bg-[var(--bc-surface-2)]'}`}
+                                                    className={`inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full border max-w-40 sm:text-[11.5px] sm:px-2 sm:py-1 sm:max-w-45 [&_span]:overflow-hidden [&_span]:text-ellipsis [&_span]:whitespace-nowrap
+                            ${dup ? 'border-[color-mix(in_srgb,var(--bc-warn)_45%,transparent)] text-(--bc-warn) bg-(--bc-warn-bg)' :
+                                                            required ? 'border-[color-mix(in_srgb,var(--bc-success)_35%,transparent)] text-(--bc-success) bg-(--bc-success-bg)' :
+                                                                'border-(--bc-border) text-(--bc-ink-soft) bg-(--bc-surface-2)'}`}
                                                     key={`${h}-${i}`}
                                                     title={h}
                                                 >
@@ -888,14 +884,14 @@ const FileUpload: React.FC = () => {
                                             );
                                         })}
                                     </div>
-                                    <div className="overflow-auto max-h-[360px] border border-[var(--bc-border)] rounded-[10px] bg-[var(--bc-surface-2)] w-full max-w-full [-webkit-overflow-scrolling:touch] sm:max-h-[380px] sm:rounded-xl focus-visible:outline-2 focus-visible:outline-[var(--bc-accent)] focus-visible:outline-offset-2" tabIndex={0} role="region" aria-label={`CSV preview, first ${previewRows.length} rows`}>
+                                    <div className="overflow-auto max-h-90 border border-(--bc-border) rounded-[10px] bg-(--bc-surface-2) w-full max-w-full [-webkit-overflow-scrolling:touch] sm:max-h-95 sm:rounded-xl focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2" tabIndex={0} role="region" aria-label={`CSV preview, first ${previewRows.length} rows`}>
                                         <table className="border-separate border-spacing-0 text-[11.5px] min-w-full sm:text-[12.5px]">
                                             <thead>
                                                 <tr>
-                                                    <th className="sticky top-0 z-[2] bg-[var(--bc-surface)] text-left text-[10px] uppercase tracking-[0.05em] text-[var(--bc-ink-soft)] px-2.5 py-2 border-b border-[var(--bc-border)] whitespace-nowrap text-[var(--bc-ink-faint)]! tabular-nums w-9 sticky left-0 bg-inherit sm:w-11 sm:text-[11px] sm:px-3 sm:py-[9px]" scope="col">#</th>
+                                                    <th className="sticky top-0 left-0 z-2 bg-inherit text-left text-[10px] uppercase tracking-wider text-(--bc-ink-soft) px-2.5 py-2 border-b border-(--bc-border) whitespace-nowrap tabular-nums w-9 sm:w-11 sm:text-[11px] sm:px-3 sm:py-2.25" scope="col">#</th>
                                                     {headers.map((h, i) => (
-                                                        <th key={`${h}-${i}`} scope="col" title={h} className="sticky top-0 z-[2] bg-[var(--bc-surface)] text-left text-[10px] uppercase tracking-[0.05em] text-[var(--bc-ink-soft)] px-2.5 py-2 border-b border-[var(--bc-border)] whitespace-nowrap sm:text-[11px] sm:px-3 sm:py-[9px]">
-                                                            <span className="inline-block max-w-[120px] overflow-hidden text-ellipsis align-bottom sm:max-w-[140px]">{h}</span>
+                                                        <th key={`${h}-${i}`} scope="col" title={h} className="sticky top-0 z-2 bg-(--bc-surface) text-left text-[10px] uppercase tracking-wider text-(--bc-ink-soft) px-2.5 py-2 border-b border-(--bc-border) whitespace-nowrap sm:text-[11px] sm:px-3 sm:py-2.25">
+                                                            <span className="inline-block max-w-30 overflow-hidden text-ellipsis align-bottom sm:max-w-35">{h}</span>
                                                         </th>
                                                     ))}
                                                 </tr>
@@ -903,9 +899,10 @@ const FileUpload: React.FC = () => {
                                             <tbody>
                                                 {previewRows.map((row, r) => (
                                                     <tr key={r} className="transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--bc-accent)_6%,transparent)]">
-                                                        <td className="px-2.5 py-1.5 border-b border-[var(--bc-border)] text-[var(--bc-ink)] whitespace-nowrap max-w-[140px] overflow-hidden text-ellipsis text-[var(--bc-ink-faint)]! tabular-nums w-9 sticky left-0 bg-inherit sm:w-11 sm:px-3 sm:py-[7px] sm:max-w-[170px]">{r + 2}</td>
+                                                        <td className="px-2.5 py-1.5 border-b border-(--bc-border) 
+                                                        text-(--bc-ink) whitespace-nowrap max-w-35 overflow-hidden text-ellipsis tabular-nums w-9 bg-inherit sm:w-11 sm:px-3 sm:py-1.75 sm:max-w-42.5">{r + 1}</td>
                                                         {headers.map((_, c) => (
-                                                            <td key={c} title={row[c] ?? ""} className="px-2.5 py-1.5 border-b border-[var(--bc-border)] text-[var(--bc-ink)] whitespace-nowrap max-w-[140px] overflow-hidden text-ellipsis sm:px-3 sm:py-[7px] sm:max-w-[170px]">{row[c] ?? ""}</td>
+                                                            <td key={c} title={row[c] ?? ""} className="px-2.5 py-1.5 border-b border-(--bc-border) text-(--bc-ink) whitespace-nowrap max-w-35 overflow-hidden text-ellipsis sm:px-3 sm:py-1.75 sm:max-w-42.5">{row[c] ?? ""}</td>
                                                         ))}
                                                     </tr>
                                                 ))}
@@ -917,7 +914,7 @@ const FileUpload: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

@@ -14,69 +14,17 @@ import {
     ArrowLeft,
     AlertCircle,
     Check,
-    Sun,
-    Moon,
-    Wind,
     ShieldCheck,
 } from "lucide-react";
 
-// TODO: adjust to your project's actual paths -----------------------------
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { signup, googleLogin, verifySignupOtp } from "../app/features/auth/authSlice";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
-import { toggleTheme } from "../app/features/theme/themeSlice";
-// ---------------------------------------------------------------------------
-
-type Stage = "form" | "otp";
-
-interface FormValues {
-    fullName: string;
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-}
-
-interface FormErrors {
-    fullName?: string;
-    username?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-}
-
-const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-const USERNAME_PATTERN = /^@[A-Za-z0-9_]{2,49}$/;
-const PASSWORD_PATTERN =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/?]).{8,}$/;
-
-function normalizeUsername(value: string): string {
-    if (!value) return value;
-    return value.startsWith("@") ? value : `@${value}`;
-}
-
-type StrengthLevel = 0 | 1 | 2 | 3;
-
-function getPasswordStrength(password: string): { level: StrengthLevel; label: string } {
-    if (!password) return { level: 0, label: "" };
-
-    const rules = [
-        /[a-z]/.test(password),
-        /[A-Z]/.test(password),
-        /\d/.test(password),
-        /[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/?]/.test(password),
-        password.length >= 8,
-        password.length >= 12,
-    ];
-
-    const score = rules.filter(Boolean).length;
-
-    if (score <= 3) return { level: 1, label: "Weak" };
-    if (score <= 5) return { level: 2, label: "Fair" };
-    return { level: 3, label: "Strong" };
-}
+import Navbar from "../components/Navbar";
+import { getPasswordStrength, normalizeUsername,signupValidate as validate } from "../utils/auth.utlis";
+import type { FormErrors, FormValues, Stage } from "../hooks/types/auth.type";
 
 const Signup: React.FC = () => {
     const navigate = useNavigate();
@@ -139,43 +87,6 @@ const Signup: React.FC = () => {
         }
         if (!googleError) lastGoogleErrorRef.current = null;
     }, [googleError]);
-
-    const validate = (v: FormValues): FormErrors => {
-        const next: FormErrors = {};
-
-        if (!v.fullName.trim()) {
-            next.fullName = "Enter your full name.";
-        } else if (v.fullName.trim().length < 2) {
-            next.fullName = "Full name looks too short.";
-        }
-
-        if (!v.username.trim()) {
-            next.username = "Choose a username.";
-        } else if (!USERNAME_PATTERN.test(v.username.trim())) {
-            next.username = "Username must start with @ and use 3–50 letters, numbers, or underscores.";
-        }
-
-        if (!v.email.trim()) {
-            next.email = "Enter your email address.";
-        } else if (!EMAIL_PATTERN.test(v.email.trim())) {
-            next.email = "Enter a valid email address.";
-        }
-
-        if (!v.password) {
-            next.password = "Create a password.";
-        } else if (!PASSWORD_PATTERN.test(v.password)) {
-            next.password =
-                "Password needs an uppercase and lowercase letter, a number, a symbol, and 8+ characters.";
-        }
-
-        if (!v.confirmPassword) {
-            next.confirmPassword = "Confirm your password.";
-        } else if (v.confirmPassword !== v.password) {
-            next.confirmPassword = "Passwords do not match.";
-        }
-
-        return next;
-    };
 
     useCallback(() => {
         if (submitAttempted) setErrors(validate(values));
@@ -321,7 +232,7 @@ const Signup: React.FC = () => {
         "flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]";
 
     const submitClass =
-        "w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-[var(--bc-accent-strong)] text-[#F4FBF9] text-[15px] font-semibold px-4 py-[13px] cursor-pointer mt-1.5 transition-[transform,box-shadow,opacity] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]";
+        "w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-[var(--bc-accent-strong)] text-[#F4FBF9] text-[15px] font-semibold px-4 py-3.25 cursor-pointer mt-1.5 transition-[transform,box-shadow,opacity] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]";
 
     return (
         <div
@@ -331,172 +242,163 @@ const Signup: React.FC = () => {
         >
             <style>{`
         .bc-root {
-          --bc-radius: 18px;
-          --bc-radius-sm: 10px;
-          --bc-font-display: 'Fraunces', 'Georgia', serif;
-          --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-          --bc-shadow: 0 20px 60px -25px rgba(9, 30, 34, 0.35);
+            --bc-radius: 18px;
+            --bc-radius-sm: 10px;
+            --bc-font-display: 'Fraunces', 'Georgia', serif;
+            --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+            --bc-shadow: 0 20px 60px -25px rgba(9, 30, 34, 0.35);
         }
 
         .bc-root[data-theme='day'] {
-          --bc-bg: #EEF5F3;
-          --bc-panel: #DCEEEA;
-          --bc-panel-2: #C7E6DD;
-          --bc-surface: #FFFFFF;
-          --bc-ink: #12262B;
-          --bc-ink-soft: #4B6169;
-          --bc-ink-faint: #7C949A;
-          --bc-accent: #1F8A7A;
-          --bc-accent-strong: #146357;
-          --bc-accent-2: #E8A64C;
-          --bc-border: rgba(18, 38, 43, 0.12);
-          --bc-border-strong: rgba(18, 38, 43, 0.22);
-          --bc-danger: #C7462F;
-          --bc-danger-bg: rgba(199, 70, 47, 0.08);
-          --bc-focus-ring: rgba(31, 138, 122, 0.35);
-          --bc-strength-1: #C7462F;
-          --bc-strength-2: #E8A64C;
-          --bc-strength-3: #1F8A7A;
+            --bc-bg: #EEF5F3;
+            --bc-panel: #DCEEEA;
+            --bc-panel-2: #C7E6DD;
+            --bc-surface: #FFFFFF;
+            --bc-ink: #12262B;
+            --bc-ink-soft: #4B6169;
+            --bc-ink-faint: #7C949A;
+            --bc-accent: #1F8A7A;
+            --bc-accent-strong: #146357;
+            --bc-accent-2: #E8A64C;
+            --bc-border: rgba(18, 38, 43, 0.12);
+            --bc-border-strong: rgba(18, 38, 43, 0.22);
+            --bc-danger: #C7462F;
+            --bc-danger-bg: rgba(199, 70, 47, 0.08);
+            --bc-focus-ring: rgba(31, 138, 122, 0.35);
+            --bc-strength-1: #C7462F;
+            --bc-strength-2: #E8A64C;
+            --bc-strength-3: #1F8A7A;
         }
 
         .bc-root[data-theme='dark'] {
-          --bc-bg: #0A1418;
-          --bc-panel: #071013;
-          --bc-panel-2: #0C1A1E;
-          --bc-surface: #101C21;
-          --bc-ink: #E7F1F0;
-          --bc-ink-soft: #93ACB0;
-          --bc-ink-faint: #5E767B;
-          --bc-accent: #4FD8C4;
-          --bc-accent-strong: #7EE9DA;
-          --bc-accent-2: #F0B65E;
-          --bc-border: rgba(231, 241, 240, 0.12);
-          --bc-border-strong: rgba(231, 241, 240, 0.22);
-          --bc-danger: #FF6B57;
-          --bc-danger-bg: rgba(255, 107, 87, 0.1);
-          --bc-focus-ring: rgba(79, 216, 196, 0.4);
-          --bc-strength-1: #FF6B57;
-          --bc-strength-2: #F0B65E;
-          --bc-strength-3: #4FD8C4;
+            --bc-bg: #0A1418;
+            --bc-panel: #071013;
+            --bc-panel-2: #0C1A1E;
+            --bc-surface: #101C21;
+            --bc-ink: #E7F1F0;
+            --bc-ink-soft: #93ACB0;
+            --bc-ink-faint: #5E767B;
+            --bc-accent: #4FD8C4;
+            --bc-accent-strong: #7EE9DA;
+            --bc-accent-2: #F0B65E;
+            --bc-border: rgba(231, 241, 240, 0.12);
+            --bc-border-strong: rgba(231, 241, 240, 0.22);
+            --bc-danger: #FF6B57;
+            --bc-danger-bg: rgba(255, 107, 87, 0.1);
+            --bc-focus-ring: rgba(79, 216, 196, 0.4);
+            --bc-strength-1: #FF6B57;
+            --bc-strength-2: #F0B65E;
+            --bc-strength-3: #4FD8C4;
         }
 
         @keyframes bc-drift {
-          from { transform: translate3d(-6%, 0, 0); }
-          to { transform: translate3d(6%, 0, 0); }
+            from { transform: translate3d(-6%, 0, 0); }
+            to { transform: translate3d(6%, 0, 0); }
         }
 
         @keyframes bc-drift-slow {
-          from { transform: translate3d(-4%, 0, 0); }
-          to { transform: translate3d(5%, 0, 0); }
+            from { transform: translate3d(-4%, 0, 0); }
+            to { transform: translate3d(5%, 0, 0); }
         }
 
         @keyframes bc-float {
-          0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
-          50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
+            0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.55; }
+            50% { transform: translate3d(0, -14px, 0); opacity: 0.95; }
         }
 
         @keyframes bc-wind-flow {
-          from { stroke-dashoffset: 240; }
-          to { stroke-dashoffset: 0; }
+            from { stroke-dashoffset: 240; }
+            to { stroke-dashoffset: 0; }
         }
 
         @keyframes bc-twinkle {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.9; }
-        }
+            0%, 100% { opacity: 0.15; }
+            50% { opacity: 0.9; }
+            }
 
         @keyframes bc-arc-pulse {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 1; }
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
         @keyframes bc-arc-travel {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .bc-cloud-a {
-          animation: bc-drift 50s ease-in-out infinite alternate;
+            animation: bc-drift 50s ease-in-out infinite alternate;
         }
 
         .bc-cloud-b {
-          animation: bc-drift-slow 66s ease-in-out infinite alternate;
+            animation: bc-drift-slow 66s ease-in-out infinite alternate;
         }
 
         .bc-particle {
-          animation: bc-float linear infinite;
-          transform-box: fill-box;
-          transform-origin: center;
+            animation: bc-float linear infinite;
+            transform-box: fill-box;
+            transform-origin: center;
         }
 
         .bc-wind-path {
-          stroke-dasharray: 8 14;
-          animation: bc-wind-flow 5.5s linear infinite;
+            stroke-dasharray: 8 14;
+            animation: bc-wind-flow 5.5s linear infinite;
         }
 
         .bc-star {
-          animation: bc-twinkle ease-in-out infinite;
-          transform-box: fill-box;
-          transform-origin: center;
+            animation: bc-twinkle ease-in-out infinite;
+            transform-box: fill-box;
+            transform-origin: center;
         }
 
         .bc-arc-glow {
-          animation: bc-arc-pulse 6s ease-in-out infinite;
+            animation: bc-arc-pulse 6s ease-in-out infinite;
         }
 
         .bc-arc-dot-group {
-          animation: bc-arc-travel 20s linear infinite;
-          transform-origin: 130px 130px;
+            animation: bc-arc-travel 20s linear infinite;
+            transform-origin: 130px 130px;
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .bc-cloud-a,
-          .bc-cloud-b,
-          .bc-particle,
-          .bc-wind-path,
-          .bc-star,
-          .bc-arc-glow,
-          .bc-arc-dot-group {
+            .bc-cloud-a,
+            .bc-cloud-b,
+            .bc-particle,
+            .bc-wind-path,
+            .bc-star,
+            .bc-arc-glow,
+            .bc-arc-dot-group {
             animation: none !important;
-          }
+            }
         }
-      `}</style>
-
-            <div className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
+        `}</style>
+            <header>
+                <Navbar />
+            </header>
+            <main className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-400 min-[960px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
                 {/* ---------------- Form side ---------------- */}
-                <div className="order-2 flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:order-1 min-[960px]:justify-center min-[960px]:px-[72px] min-[960px]:py-12">
-                    <div className="flex items-center justify-between mb-7 min-[960px]:justify-end min-[960px]:mb-10">
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
-                            onClick={() => dispatch(toggleTheme())}
-                            aria-label={mode === "day" ? "Switch to dark theme" : "Switch to day theme"}
-                        >
-                            {mode === "day" ? <Moon size={14} /> : <Sun size={14} />}
-                            {mode === "day" ? "Dark" : "Day"}
-                        </button>
-                    </div>
+                <div className="order-2 flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:order-1 min-[960px]:justify-center min-[960px]:px-18 min-[960px]:py-12">
 
-                    <div className="w-full max-w-[420px] mx-auto">
+                    <div className="w-full max-w-105 mx-auto">
                         {stage === "form" ? (
                             <>
                                 <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
                                     Create your account
                                 </h1>
 
-                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-[26px] leading-[1.55]">
+                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-6.5 leading-[1.55]">
                                     Begin your environmental awareness journey with live AQI and weather
                                     intelligence built around you.
                                 </p>
 
                                 {signupError && (
                                     <div
-                                        className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] leading-[1.5]"
+                                        className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-3.25 mb-4.5 leading-[1.5]"
                                         role="alert"
                                     >
                                         <AlertCircle size={16} className="mt-px shrink-0" />
@@ -508,13 +410,13 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-name"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Full name
                                         </label>
 
                                         <div className={inputShellClass(invalid("fullName"))}>
-                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                            <span className="inline-flex pl-3.25 text-[var(--bc-ink-faint)] shrink-0">
                                                 <User size={17} />
                                             </span>
 
@@ -535,7 +437,7 @@ const Signup: React.FC = () => {
 
                                         {invalid("fullName") && (
                                             <p
-                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]"
                                                 id="signup-name-error"
                                             >
                                                 <AlertCircle size={13} />
@@ -547,13 +449,13 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-username"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Username
                                         </label>
 
                                         <div className={inputShellClass(invalid("username"))}>
-                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                            <span className="inline-flex pl-3.25 text-[var(--bc-ink-faint)] shrink-0">
                                                 <AtSign size={17} />
                                             </span>
 
@@ -574,14 +476,14 @@ const Signup: React.FC = () => {
 
                                         {invalid("username") ? (
                                             <p
-                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]"
                                                 id="signup-username-hint"
                                             >
                                                 <AlertCircle size={13} />
                                                 {errors.username}
                                             </p>
                                         ) : (
-                                            <p className="mt-[7px] text-xs text-[var(--bc-ink-faint)]" id="signup-username-hint">
+                                            <p className="mt-1.75 text-xs text-[var(--bc-ink-faint)]" id="signup-username-hint">
                                                 Starts with @ · 3–50 letters, numbers, or underscores.
                                             </p>
                                         )}
@@ -590,13 +492,13 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-email"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Email
                                         </label>
 
                                         <div className={inputShellClass(invalid("email"))}>
-                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                            <span className="inline-flex pl-3.25 text-[var(--bc-ink-faint)] shrink-0">
                                                 <Mail size={17} />
                                             </span>
 
@@ -618,7 +520,7 @@ const Signup: React.FC = () => {
 
                                         {invalid("email") && (
                                             <p
-                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]"
                                                 id="signup-email-error"
                                             >
                                                 <AlertCircle size={13} />
@@ -630,13 +532,13 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-password"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Password
                                         </label>
 
                                         <div className={inputShellClass(invalid("password"))}>
-                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                            <span className="inline-flex pl-3.25 text-[var(--bc-ink-faint)] shrink-0">
                                                 <Lock size={17} />
                                             </span>
 
@@ -671,7 +573,7 @@ const Signup: React.FC = () => {
                                                     {[1, 2, 3].map((seg) => (
                                                         <span
                                                             key={seg}
-                                                            className="flex-1 rounded-full bg-[var(--bc-border)] transition-colors duration-[250ms]"
+                                                            className="flex-1 rounded-full bg-[var(--bc-border)] transition-colors duration-250"
                                                             style={{
                                                                 background:
                                                                     strength.level >= seg
@@ -687,7 +589,7 @@ const Signup: React.FC = () => {
                                                 </div>
 
                                                 <p
-                                                    className="flex items-center gap-[5px] mt-1.5 text-xs font-semibold"
+                                                    className="flex items-center gap-1.25 mt-1.5 text-xs font-semibold"
                                                     id="signup-password-status"
                                                     style={{
                                                         color:
@@ -707,7 +609,7 @@ const Signup: React.FC = () => {
                                         )}
 
                                         {invalid("password") && (
-                                            <p className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]">
+                                            <p className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]">
                                                 <AlertCircle size={13} />
                                                 {errors.password}
                                             </p>
@@ -717,13 +619,13 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-confirm"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Confirm password
                                         </label>
 
                                         <div className={inputShellClass(invalid("confirmPassword"))}>
-                                            <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                            <span className="inline-flex pl-3.25 text-[var(--bc-ink-faint)] shrink-0">
                                                 <Lock size={17} />
                                             </span>
 
@@ -745,7 +647,7 @@ const Signup: React.FC = () => {
 
                                             <button
                                                 type="button"
-                                                className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-[6px]"
+                                                className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-md"
                                                 onClick={() => setShowConfirmPassword((s) => !s)}
                                                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                                                 aria-pressed={showConfirmPassword}
@@ -756,7 +658,7 @@ const Signup: React.FC = () => {
 
                                         {invalid("confirmPassword") && (
                                             <p
-                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]"
                                                 id="signup-confirm-error"
                                             >
                                                 <AlertCircle size={13} />
@@ -780,7 +682,7 @@ const Signup: React.FC = () => {
                                     </button>
                                 </form>
 
-                                <div className="flex items-center gap-3 my-[22px] text-[var(--bc-ink-faint)] text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-[var(--bc-border)] after:content-[''] after:block after:flex-1 after:h-px after:bg-[var(--bc-border)]">
+                                <div className="flex items-center gap-3 my-5.5 text-[var(--bc-ink-faint)] text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-[var(--bc-border)] after:content-[''] after:block after:flex-1 after:h-px after:bg-[var(--bc-border)]">
                                     or
                                 </div>
 
@@ -806,7 +708,7 @@ const Signup: React.FC = () => {
                             <>
                                 <button
                                     type="button"
-                                    className="inline-flex items-center gap-1.5 bg-transparent border-none text-[var(--bc-ink-soft)] text-[13px] cursor-pointer p-0 mb-[18px] hover:text-[var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:rounded-[4px]"
+                                    className="inline-flex items-center gap-1.5 bg-transparent border-none text-[var(--bc-ink-soft)] text-3.25 cursor-pointer p-0 mb-4.5 hover:text-[var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:rounded-[4px]"
                                     onClick={() => setStage("form")}
                                 >
                                     <ArrowLeft size={14} />
@@ -821,7 +723,7 @@ const Signup: React.FC = () => {
                                     Verify your email
                                 </h1>
 
-                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-[26px] leading-[1.55]">
+                                <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-6.5 leading-[1.55]">
                                     We sent a verification code to <strong>{pendingEmail}</strong>. Enter it
                                     below to activate your account.
                                 </p>
@@ -830,7 +732,7 @@ const Signup: React.FC = () => {
                                     <div className="mb-4">
                                         <label
                                             htmlFor="signup-otp"
-                                            className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                            className="block text-3.25 font-semibold text-[var(--bc-ink)] mb-1.75"
                                         >
                                             Verification code
                                         </label>
@@ -854,7 +756,7 @@ const Signup: React.FC = () => {
 
                                         {otpError && (
                                             <p
-                                                className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                                className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-[var(--bc-danger)]"
                                                 id="signup-otp-error"
                                             >
                                                 <AlertCircle size={13} />
@@ -895,7 +797,7 @@ const Signup: React.FC = () => {
 
                 {/* ---------------- Atmospheric panel ---------------- */}
                 <div
-                    className="order-1 relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-[220px] min-[960px]:order-2 min-[960px]:min-h-screen"
+                    className="order-1 relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-55 min-[960px]:order-2 min-[960px]:min-h-screen"
                     aria-hidden="true"
                 >
                     <svg
@@ -1033,17 +935,8 @@ const Signup: React.FC = () => {
                         />
                     </svg>
 
-                    <div className="relative z-[2] h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
-                        <div className="inline-flex items-center gap-2.5">
-                            <span className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[10px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
-                                <Wind size={18} strokeWidth={2.25} />
-                            </span>
-                            <span className="font-[var(--bc-font-display)] text-xl font-semibold tracking-[0.01em] text-[var(--bc-ink)]">
-                                {companyName}
-                            </span>
-                        </div>
-
-                        <div className="max-w-[420px]">
+                    <div className="relative z-2 h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
+                        <div className="max-w-105">
                             <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
                                 Environmental intelligence
                             </p>
@@ -1059,7 +952,7 @@ const Signup: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

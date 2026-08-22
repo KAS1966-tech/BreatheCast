@@ -2,7 +2,9 @@
 # 1. Standard Library & Third-Party Core Modules
 # =====================================================================
 import io
+import csv
 import pandas as pd
+import polars as pl
 from datetime import datetime, timedelta, timezone
 from fastapi import (
     APIRouter, 
@@ -28,18 +30,17 @@ from app.core.logger import logger
 # 3. Pydantic Schemas (Inputs vs Outputs)
 # =====================================================================
 from app.schemas.input_schemas import LoginRequest, SetPasswordRequest, SignupRequest, WeatherAQIPrediction,GoogleLoginRequest,UpdateNameRequest, UpdateUsernameRequest,ChangePasswordRequest,SendOTPRequest, VerifyOTPRequest
-from app.schemas.output_schemas import LoginResponse, PredictionResponse, SignupResponse, User,GoogleLoginResponse
+from app.schemas.output_schemas import LoginResponse, PredictionResponse, User,GoogleLoginResponse
 from pydantic import ValidationError
 
 # =====================================================================
 # 4. Database Layer (Connection, Operations & Lifecycle)
 # =====================================================================
 from app.database.database import get_db
-from app.database.connection import Authentication,PendingSignup
+from app.database.connection import Authentication,PendingSignup,UploadedFile
 from app.database.crud_db import (
     add_prediction_history,
     create_uploaded_file,
-    create_user,
     current_user,
     delete_refresh_token,
     delete_user,
@@ -52,6 +53,7 @@ from app.database.crud_db import (
     clear_user_history,
     get_all_user_history,
     get_user_uploaded_files,
+    delete_user_uploaded_file,
     update_full_name,
     update_username,
     set_user_password,
@@ -74,7 +76,6 @@ from app.services.predictor import predict,predict_batch
 from app.services.security import decode_refresh_token,hash_password
 from app.services.email_service import send_otp_email
 from app.services.otp import create_otp,verify_otp
-
 
 router = APIRouter()
 
@@ -923,13 +924,11 @@ async def upload_file(
     # ==========================
     # File validation
     # ==========================
-
     if not dataFile.filename:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File name is required.",
         )
-
     if not dataFile.filename.lower().endswith(".csv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -940,9 +939,7 @@ async def upload_file(
         # ==========================
         # Read uploaded file
         # ==========================
-
         contents = await dataFile.read()
-
         if not contents:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -952,9 +949,7 @@ async def upload_file(
         # ==========================
         # File size validation
         # ==========================
-
         max_file_size = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
-
         if len(contents) > max_file_size:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
@@ -965,32 +960,30 @@ async def upload_file(
             )
 
         # ==========================
-        # Read CSV
+        # Read CSV with Polars
         # ==========================
-
         try:
-            df = pd.read_csv(io.BytesIO(contents))
-        except pd.errors.EmptyDataError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The CSV file does not contain any data.",
-            )
-        except pd.errors.ParserError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The CSV file could not be parsed.",
-            )
+            # First try: standard parsing
+            df = pl.read_csv(io.BytesIO(contents))
+        except Exception:
+            try:
+                # Fallback: read everything as strings to prevent Polars parsing crashes.
+                # Pydantic will safely convert strings to ints/floats later.
+                df = pl.read_csv(io.BytesIO(contents), infer_schema_length=0)
+            except Exception as csv_error:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"The CSV file could not be parsed: {str(csv_error)}",
+                )
 
         # ==========================
         # Basic dataframe validation
         # ==========================
-
-        if df.empty:
+        if df.height == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The CSV file contains no data rows.",
             )
-
         if len(df.columns) != len(set(df.columns)):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -1000,19 +993,10 @@ async def upload_file(
         # ==========================
         # Required columns
         # ==========================
-
         required_columns = set(modelService.model_artifact_info("features"))
-
-        # Computed by Pydantic and therefore does not need
-        # to be supplied by the CSV file.
-        computed_features = {
-            "IsWeekend",
-        }
-
+        computed_features = {"IsWeekend"}
         required_input_columns = required_columns - computed_features
-
         uploaded_columns = set(df.columns)
-
         missing_columns = required_input_columns - uploaded_columns
 
         if missing_columns:
@@ -1027,61 +1011,46 @@ async def upload_file(
         # ==========================
         # Validate rows
         # ==========================
-
+        row_count = df.height
         valid_payloads = []
         valid_indices = []
+        
+        predictions = [None] * row_count
+        statuses = ["skipped"] * row_count
+        messages = ["Prediction not permissible for this row."] * row_count
 
-        predictions = [None] * len(df)
-        statuses = ["skipped"] * len(df)
-        messages = ["Prediction not permissible for this row."] * len(df)
+        # Convert to list of dicts once (much faster than Pandas iterrows)
+        records = df.to_dicts()
 
-        for position, (index, row) in enumerate(df.iterrows()):
-
+        for position, record in enumerate(records):
             try:
-                payload = WeatherAQIPrediction(
-                    **row.to_dict()
-                )
-
+                # Pydantic V2 handles string-to-int/float conversion automatically
+                payload = WeatherAQIPrediction.model_validate(record)
                 valid_payloads.append(payload.model_dump())
                 valid_indices.append(position)
-
-            except Exception as row_error:
-
+            except ValidationError as row_error:
                 logger.warning(
-                    f"CSV row skipped | "
-                    f"row={index + 2} | "
-                    f"reason={str(row_error)}"
+                    f"CSV row skipped | row={position + 2} | reason={str(row_error)}"
                 )
-
-                if isinstance(row_error,ValidationError):
-                    error = row_error.errors()[0]
-
-                    messages[position] = (
-                        f"Prediction not permissible: {error['msg']}"
-                    )
-                else:
-                    messages[position] = (
-                        f"Prediction not permissible: {str(row_error)}"
-                    )
-
+                error = row_error.errors()[0]
+                messages[position] = f"Prediction not permissible: {error['msg']}"
+            except Exception as row_error:
+                logger.warning(
+                    f"CSV row skipped | row={position + 2} | reason={str(row_error)}"
+                )
+                messages[position] = f"Prediction not permissible: {str(row_error)}"
 
         # ==========================
         # Batch prediction
         # ==========================
-
         if valid_payloads:
-
             try:
                 batch_predictions = predict_batch(valid_payloads)
-
                 for position, prediction in zip(valid_indices, batch_predictions):
-
                     predictions[position] = prediction
                     statuses[position] = "success"
                     messages[position] = "Prediction generated successfully."
-
             except Exception as prediction_error:
-
                 logger.exception(
                     f"Batch prediction failed | "
                     f"user_id={user.id} | "
@@ -1093,25 +1062,16 @@ async def upload_file(
                     detail="Unable to generate predictions for the uploaded file.",
                 )
 
-
         # ==========================
         # Count results
         # ==========================
-
-        successful_predictions = sum(
-            status == "success"
-            for status in statuses
-        )
-
-        failed_predictions = len(df) - successful_predictions
-
+        successful_predictions = statuses.count("success")
+        failed_predictions = row_count - successful_predictions
 
         # ==========================
         # Reject if ALL rows failed
         # ==========================
-
         if successful_predictions == 0:
-
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={
@@ -1119,7 +1079,7 @@ async def upload_file(
                         "No predictions could be generated. "
                         "Every row contains invalid or unsupported data."
                     ),
-                    "total_rows": len(df),
+                    "total_rows": row_count,
                     "successful_predictions": 0,
                     "failed_predictions": failed_predictions,
                 },
@@ -1128,28 +1088,30 @@ async def upload_file(
         # ==========================
         # Add prediction results
         # ==========================
-
-        df["prediction"] = predictions
-        df["status"] = statuses
-        df["message"] = messages
-
-        # ==========================
-        # Save generated CSV
-        # ==========================
-
-        output_buffer = io.BytesIO()
-
-        df.to_csv(
-            output_buffer,
-            index=False,
+        df = df.with_columns(
+            pl.Series("prediction", predictions),
+            pl.Series("status", statuses),
+            pl.Series("message", messages),
         )
 
+        # ==========================
+        # Save generated CSV (FIXED BYTES ISSUE)
+        # ==========================
+        csv_data = df.write_csv()
+        
+        # Polars write_csv() returns a string in some versions, bytes in others.
+        # We force it to bytes here to satisfy io.BytesIO.
+        if isinstance(csv_data, str):
+            csv_bytes = csv_data.encode("utf-8")
+        else:
+            csv_bytes = bytes(csv_data)
+            
+        output_buffer = io.BytesIO(csv_bytes)
         output_buffer.seek(0)
 
         # ==========================
         # Save upload metadata
         # ==========================
-
         uploaded_file = create_uploaded_file(
             db=db,
             user_id=user.id,
@@ -1173,14 +1135,12 @@ async def upload_file(
         # ==========================
         # Return predicted CSV
         # ==========================
-
         return StreamingResponse(
             output_buffer,
             media_type="text/csv",
             headers={
                 "Content-Disposition": (
-                    f'attachment; '
-                    f'filename="predicted_{dataFile.filename}"'
+                    f'attachment; filename="predicted_{dataFile.filename}"'
                 )
             },
         )
@@ -1188,22 +1148,59 @@ async def upload_file(
     except HTTPException:
         raise
 
-    except pd.errors.ParserError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid CSV format.",
-        )
 
     except Exception as e:
         db.rollback()
-
         logger.exception(
             f"File prediction failed | "
             f"user_id={user.id} | "
             f"filename={dataFile.filename}"
         )
+        detail = str(e) if settings.DEBUG else settings.ERROR_MESSAGE
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail,
+        )
 
-        detail = (
+@router.get("/filehistory")
+def file_history(
+    skip: int = 0,
+    limit: int = 10,
+    user: Authentication = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        files, total = get_user_uploaded_files(
+            db=db,
+            user_id=user.id,
+            skip=skip,
+            limit=limit,
+        )
+
+        return {
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "files": [
+                {
+                    "id": file.id,
+                    "original_name": file.original_name,
+                    "file_size": file.file_size,
+                    "file_type": file.file_type,
+                    "row_count": file.row_count,
+                    "prediction_count": file.prediction_count,
+                    "created_at": file.created_at,
+                }
+                for file in files
+            ],
+        }
+
+    except Exception as e:
+        logger.exception(
+            f"Failed to fetch file history | user_id={user.id}"
+        )
+
+        error = (
             str(e)
             if settings.DEBUG
             else settings.ERROR_MESSAGE
@@ -1211,5 +1208,104 @@ async def upload_file(
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=detail,
+            detail=error,
         )
+
+@router.delete("/filehistory/{file_id}")
+def delete_file_history(
+    file_id: int,
+    user: Authentication = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        logger.info(f"the id passed is {file_id=}")
+        deleted = delete_user_uploaded_file(
+            db=db,
+            user_id=user.id,
+            file_id=file_id,
+        )
+
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File history not found.",
+            )
+
+        return {
+            "status": "success",
+            "message": "File history deleted successfully.",
+            "deleted_file_id": file_id
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        db.rollback()
+
+        logger.exception(
+            f"Failed to delete file history | "
+            f"user_id={user.id} | file_id={file_id}"
+        )
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error,
+        )
+
+@router.get("/files/download")
+def download_file_history(
+    db: Session = Depends(get_db),
+    current_user: Authentication = Depends(current_user),
+):
+    files = (
+        db.query(UploadedFile)
+        .filter(
+            UploadedFile.user_id == current_user.id
+        )
+        .order_by(UploadedFile.created_at.desc())
+        .all()
+    )
+
+    output = io.StringIO()
+
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "id",
+        "original_name",
+        "file_size",
+        "file_type",
+        "row_count",
+        "prediction_count",
+        "created_at",
+    ])
+
+    for file in files:
+        writer.writerow([
+            file.id,
+            file.original_name,
+            file.file_size,
+            file.file_type,
+            file.row_count,
+            file.prediction_count,
+            file.created_at.isoformat(),
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": (
+                'attachment; filename="file_upload_history.csv"'
+            )
+        },
+    )

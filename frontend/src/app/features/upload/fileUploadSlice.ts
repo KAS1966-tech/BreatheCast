@@ -91,9 +91,27 @@ const fileUploadSlice = createSlice({
                 ? "ready"
                 : "error";
 
-            state.error = analysis.isValid
-                ? null
-                : "The CSV file does not contain the required columns.";
+            const problems: string[] = [];
+
+            if (analysis.missingColumns.length > 0) {
+                problems.push(
+                    `Missing required columns: ${analysis.missingColumns.join(", ")}`
+                );
+            }
+
+            if (analysis.duplicateColumns.length > 0) {
+                problems.push(
+                    `Duplicate columns: ${analysis.duplicateColumns.join(", ")}`
+                );
+            }
+
+            if (analysis.rowCount === 0) {
+                problems.push("The CSV contains no data rows.");
+            }
+
+            state.error = problems.length > 0
+                ? problems.join(" ")
+                : null;
         },
 
         setAnalysisError: (
@@ -108,6 +126,13 @@ const fileUploadSlice = createSlice({
         startUpload: (state) => {
             state.phase = "uploading";
             state.uploadProgress = 0;
+            state.error = null;
+            state.resultFileName = null;
+            state.processedRowCount = null;
+        },
+        startProcessing: (state) => {
+            state.phase = "processing";
+            state.uploadProgress = 100;
             state.error = null;
         },
 
@@ -183,6 +208,7 @@ export const {
     setUploadProgress,
     uploadSuccess,
     uploadFailure,
+    startProcessing,
     cancelUpload,
     clearError,
     resetUpload,

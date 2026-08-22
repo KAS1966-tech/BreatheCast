@@ -10,9 +10,6 @@ import {
     Loader2,
     ArrowRight,
     AlertCircle,
-    Sun,
-    Moon,
-    Wind,
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
@@ -21,15 +18,14 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import { useAppDispatch, useAppSelector } from "../app/redux";
-import { toggleTheme } from "../app/features/theme/themeSlice";
+import Navbar from "../components/Navbar";
+import { EMAIL_PATTERN } from "../constants/regex.constants";
 // ---------------------------------------------------------------------------
 
 interface FieldErrors {
     email?: string;
     password?: string;
 }
-
-const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -339,8 +335,10 @@ const Login: React.FC = () => {
           }
         }
       `}</style>
-
-            <div className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+            <header>
+                <Navbar />
+            </header>
+            <main className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
                 {/* ---------------- Atmospheric panel ---------------- */}
                 <div
                     className="relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-[220px] min-[960px]:min-h-screen"
@@ -522,14 +520,6 @@ const Login: React.FC = () => {
                     </svg>
 
                     <div className="relative z-[2] h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
-                        <div className="inline-flex items-center gap-2.5">
-                            <span className="inline-flex items-center justify-center w-8.5 h-8.5 rounded-[10px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
-                                <Wind size={18} strokeWidth={2.25} />
-                            </span>
-                            <span className="font-[var(--bc-font-display)] text-xl font-semibold tracking-[0.01em] text-[var(--bc-ink)]">
-                                {companyName}
-                            </span>
-                        </div>
 
                         <div className="max-w-[420px]">
                             <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
@@ -550,19 +540,8 @@ const Login: React.FC = () => {
 
                 {/* ---------------- Form side ---------------- */}
                 <div className="flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:justify-center min-[960px]:px-[72px] min-[960px]:py-12">
-                    <div className="flex items-center justify-between mb-7 min-[960px]:justify-end min-[960px]:mb-10">
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
-                            onClick={() => dispatch(toggleTheme())}
-                            aria-label={mode === "day" ? "Switch to dark theme" : "Switch to day theme"}
-                        >
-                            {mode === "day" ? <Moon size={14} /> : <Sun size={14} />}
-                            {mode === "day" ? "Dark" : "Day"}
-                        </button>
-                    </div>
 
-                    <div className="w-full max-w-[400px] mx-auto">
+                    <div className="w-full max-w-[400px] mx-auto mt-8">
                         <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
                             Welcome back
                         </h1>
@@ -702,13 +681,13 @@ const Login: React.FC = () => {
                         </div>
 
                         {/* <div className="bc-google-wrap flex justify-center w-full"> */}
-                            <GoogleLogin
-                                key={`${instanceId}-${mode}`}
-                                onSuccess={handleGoogleSuccess}
-                                onError={handleGoogleError}
-                                shape="rectangular"
-                                text="continue_with"
-                            />
+                        <GoogleLogin
+                            key={`${instanceId}-${mode}`}
+                            onSuccess={handleGoogleSuccess}
+                            onError={handleGoogleError}
+                            shape="rectangular"
+                            text="continue_with"
+                        />
                         {/* </div> */}
 
                         <p className="text-center mt-[26px] text-sm text-[var(--bc-ink-soft)]">
@@ -722,7 +701,7 @@ const Login: React.FC = () => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

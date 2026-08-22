@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
     Sun,
-    Moon,
     Wind,
     Thermometer,
     Droplets,
@@ -24,7 +23,6 @@ import {
 } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "../app/redux";
-import { toggleTheme } from "../app/features/theme/themeSlice";
 import {
     predictAQI,
     setInputState,
@@ -38,7 +36,7 @@ import type { InputState } from "../hooks/types/aqiSchema.type";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
-import { AqiMark } from "../hooks/font/aqiLogo";
+import Navbar from "../components/Navbar";
 
 // ---------------------------------------------------------------------------
 const STORAGE_KEY = "breathecast:aqi-synthesis-form:v1";
@@ -1213,8 +1211,10 @@ const AqiPrediction: React.FC = () => {
           }
         }
       `}</style>
-
-            <div className="bg-[var(--bc-bg)] text-[var(--bc-ink)] min-h-screen transition-colors duration-[400ms]">
+            <header>
+                <Navbar />
+            </header>
+            <main className="bg-[var(--bc-bg)] text-[var(--bc-ink)] min-h-screen transition-colors duration-[400ms]">
                 {/* ✨ FULL-SCREEN BACKGROUND ANIMATION ✨ */}
                 <div className="fixed inset-0 z-0 w-screen h-screen pointer-events-none">
                     <AtmosphereScene
@@ -1226,29 +1226,9 @@ const AqiPrediction: React.FC = () => {
                 </div>
 
                 {/* ✨ FOREGROUND CONTENT (Sits above background) ✨ */}
-                <div className="relative z-[1]">
-                    <header className="flex items-center justify-between px-5 py-[18px] max-w-[1240px] mx-auto md:px-10 md:py-6">
-                        <div className="inline-flex items-center gap-2.5">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-[9px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
-                                <AqiMark className="h-[18px] w-[18px] text-current" />
-                            </span>
-                            <span className="font-[var(--bc-font-display)] text-lg font-semibold">
-                                {companyName}
-                            </span>
-                        </div>
+                <div className="relative z-1">
 
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-1.5 border border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] rounded-full px-3 py-1.5 text-[13px] cursor-pointer backdrop-blur-[8px] transition-[border-color,color,transform] duration-200 hover:text-[var(--bc-ink)] hover:border-[var(--bc-border-strong)] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
-                            onClick={() => dispatch(toggleTheme())}
-                            aria-label={isDark ? "Switch to day theme" : "Switch to dark theme"}
-                        >
-                            {isDark ? <Sun size={14} /> : <Moon size={14} />}
-                            {isDark ? "Day" : "Dark"}
-                        </button>
-                    </header>
-
-                    <section className="max-w-[1240px] mx-auto px-5 pt-2 pb-5 md:px-10 md:pb-8 md:max-w-[760px]">
+                    <section className="max-w-310 mx-auto px-5 pt-2 pb-5 md:px-10 md:pb-8 md:max-w-[760px]">
                         <p className="text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
                             Environmental Intelligence
                         </p>
@@ -1429,7 +1409,7 @@ const AqiPrediction: React.FC = () => {
                         </aside>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

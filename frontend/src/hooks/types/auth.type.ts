@@ -2,6 +2,24 @@
 // API REQUEST TYPES
 // --------------------
 
+export type Stage = "form" | "otp";
+
+export interface FormValues {
+    fullName: string;
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export interface FormErrors {
+    fullName?: string;
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
 export interface SignupRequest {
     fullname: string;
     username: string;

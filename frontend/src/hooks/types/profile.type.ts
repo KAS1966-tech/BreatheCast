@@ -1,5 +1,5 @@
 import type { User } from "./auth.type";
-import type { AQIHistory } from "./history.type";
+import type { PredictionHistory } from "./history.type";
 
 
 // ============================================================
@@ -35,7 +35,7 @@ export interface ProfileResponse {
 
     history: {
         total: number;
-        items: AQIHistory[];
+        items: PredictionHistory[];
     };
 
     files: {

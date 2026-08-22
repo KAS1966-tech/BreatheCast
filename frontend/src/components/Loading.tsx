@@ -10,7 +10,7 @@ import { AqiMark } from "../hooks/font/aqiLogo";
 export interface LoadingProps {
     /** 0–100. Omit for an indeterminate loading state. */
     progress?: number;
-    /* Overrides the default cycling message sequence when supplied. */
+    /** Overrides the default cycling message sequence when supplied. */
     message?: string;
 }
 
@@ -83,138 +83,45 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
     const brandAccent = isDark ? "#4FD8C4" : "#1F8A7A";
 
     return (
-        <div className="bcl-root" data-theme={isDark ? "dark" : "day"}>
+        <div
+            className="bcl-root relative min-h-screen w-full overflow-hidden"
+            data-theme={isDark ? "dark" : "day"}
+            style={{ fontFamily: "var(--bc-font-body)" }}
+        >
             <style>{`
         .bcl-root {
           --bc-font-display: 'Fraunces', 'Georgia', serif;
           --bc-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-          position: relative;
-          min-height: 100vh;
-          width: 100%;
-          font-family: var(--bc-font-body);
-          overflow: hidden;
         }
+
         .bcl-root[data-theme='day'] {
-            --bc-bg-top: #F3F9F6;
-            --bc-bg-mid: #DCEEEA;
-            --bc-bg-bottom: #C3E3D8;
-            --bc-ink: #12262B;
-            --bc-ink-soft: #4B6169;
-            --bc-ink-faint: #8AA1A6;
-            --bc-accent: #1F8A7A;
-            --bc-accent-strong: #146357;
-            --bc-ring-track: rgba(18, 38, 43, 0.1);
-            --bc-glow: #FCEBC7;
-            --bc-horizon: #BFE2D6;
+          --bc-bg-top: #F3F9F6;
+          --bc-bg-mid: #DCEEEA;
+          --bc-bg-bottom: #C3E3D8;
+          --bc-ink: #12262B;
+          --bc-ink-soft: #4B6169;
+          --bc-ink-faint: #8AA1A6;
+          --bc-accent: #1F8A7A;
+          --bc-accent-strong: #146357;
+          --bc-ring-track: rgba(18, 38, 43, 0.1);
+          --bc-glow: #FCEBC7;
+          --bc-horizon: #BFE2D6;
         }
+
         .bcl-root[data-theme='dark'] {
-            --bc-bg-top: #0C1A1F;
-            --bc-bg-mid: #081216;
-            --bc-bg-bottom: #050B0D;
-            --bc-ink: #E7F1F0;
-            --bc-ink-soft: #93ACB0;
-            --bc-ink-faint: #5E767B;
-            --bc-accent: #4FD8C4;
-            --bc-accent-strong: #7EE9DA;
-            --bc-ring-track: rgba(231, 241, 240, 0.12);
-            --bc-glow: #123B39;
-            --bc-horizon: #081215;
+          --bc-bg-top: #0C1A1F;
+          --bc-bg-mid: #081216;
+          --bc-bg-bottom: #050B0D;
+          --bc-ink: #E7F1F0;
+          --bc-ink-soft: #93ACB0;
+          --bc-ink-faint: #5E767B;
+          --bc-accent: #4FD8C4;
+          --bc-accent-strong: #7EE9DA;
+          --bc-ring-track: rgba(231, 241, 240, 0.12);
+          --bc-glow: #123B39;
+          --bc-horizon: #081215;
         }
 
-        .bcl-bg { position: absolute; inset: 0; z-index: 0; }
-        .bcl-bg-svg { width: 100%; height: 100%; display: block; }
-        .bcl-content {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 32px 20px;
-            text-align: center;
-        }
-        .bcl-ring-wrap {
-            position: relative;
-            width: 168px;
-            height: 168px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 22px;
-        }
-        @media (min-width: 640px) { .bcl-ring-wrap { width: 188px; height: 188px; } }
-        .bcl-ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-        .bcl-core {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: var(--bc-accent-strong);
-        }
-        .bcl-core-icon { animation: bcl-pulse 3.2s ease-in-out infinite; }
-        .bcl-core-progress {
-            font-family: var(--bc-font-display);
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--bc-ink);
-        }
-        .bcl-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .bcl-brand-mark {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 26px;
-            height: 26px;
-            border-radius: 8px;
-            background: color-mix(in srgb, var(--bc-accent) 16%, transparent);
-            color: var(--bc-accent-strong);
-        }
-        .bcl-brand-name {
-            font-family: var(--bc-font-display);
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--bc-ink);
-            letter-spacing: 0.01em;
-        }
-        .bcl-message-wrap {
-            min-height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .bcl-message {
-            margin: 0;
-            font-size: 13.5px;
-            color: var(--bc-ink-soft);
-            animation: bcl-fade-in 0.5s ease both;
-        }
-        .bcl-progress-track {
-            margin-top: 16px;
-            width: 168px;
-            height: 3px;
-            border-radius: 999px;
-            background: var(--bc-ring-track);
-            overflow: hidden;
-        }
-        @media (min-width: 640px) { .bcl-progress-track { width: 188px; } }
-        .bcl-progress-fill {
-            height: 100%;
-            border-radius: 999px;
-            background: var(--bc-accent);
-            transform-origin: left center;
-            transition: transform 0.6s ease;
-        }
-
-        /* ---------- Motion ---------- */
         @keyframes bcl-glow-breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
         @keyframes bcl-float { 0%, 100% { transform: translate3d(0,0,0); opacity: 0.5; } 50% { transform: translate3d(0,-12px,0); opacity: 0.9; } }
         @keyframes bcl-wind-flow { from { stroke-dashoffset: 220; } to { stroke-dashoffset: 0; } }
@@ -225,7 +132,7 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
         @keyframes bcl-fade-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes bcl-drift { from { transform: translate3d(-6%, 0, 0); } to { transform: translate3d(6%, 0, 0); } }
         @keyframes bcl-drift-slow { from { transform: translate3d(-4%, 0, 0); } to { transform: translate3d(5%, 0, 0); } }
-        
+
         .bcl-glow { animation: bcl-glow-breathe 20s ease-in-out infinite; }
         .bcl-particle { animation-name: bcl-float; animation-timing-function: ease-in-out; animation-iteration-count: infinite; transform-box: fill-box; transform-origin: center; }
         .bcl-wind { stroke-dasharray: 7 12; animation: bcl-wind-flow linear infinite; }
@@ -234,33 +141,39 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
         .bcl-sweep { transform-box: fill-box; transform-origin: center; animation: bcl-sweep-rotate 1.7s linear infinite; }
         .bcl-cloud-a { animation: bcl-drift 46s ease-in-out infinite alternate; }
         .bcl-cloud-b { animation: bcl-drift-slow 62s ease-in-out infinite alternate; }
-        
-        @media (prefers-reduced-motion: reduce) {
-            .bcl-glow, .bcl-particle, .bcl-wind, .bcl-star,
-            .bcl-data-ring, .bcl-sweep, .bcl-core-icon,
-            .bcl-cloud-a, .bcl-cloud-b {
-            animation: none !important;
-            }
-            .bcl-message { animation: none !important; }
-        }
-        `}</style>
 
-            <div className="bcl-bg" aria-hidden="true">
-                <svg className="bcl-bg-svg" viewBox="0 0 480 480" preserveAspectRatio="xMidYMid slice" focusable="false">
+        @media (prefers-reduced-motion: reduce) {
+          .bcl-glow, .bcl-particle, .bcl-wind, .bcl-star,
+          .bcl-data-ring, .bcl-sweep,
+          .bcl-cloud-a, .bcl-cloud-b {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+            {/* Background SVG */}
+            <div className="absolute inset-0 z-0" aria-hidden="true">
+                <svg
+                    className="w-full h-full block"
+                    viewBox="0 0 480 480"
+                    preserveAspectRatio="xMidYMid slice"
+                    focusable="false"
+                >
                     <defs>
                         <linearGradient id="bcl-sky" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="var(--bc-bg-top)" />
                             <stop offset="55%" stopColor="var(--bc-bg-mid)" />
                             <stop offset="100%" stopColor="var(--bc-bg-bottom)" />
                         </linearGradient>
-                        <radialGradient id="bcl-glow" cx="50%" cy="28%" r="55%">
+                        <radialGradient id="bcl-glow-grad" cx="50%" cy="28%" r="55%">
                             <stop offset="0%" stopColor="var(--bc-glow)" stopOpacity="0.8" />
                             <stop offset="100%" stopColor="var(--bc-glow)" stopOpacity="0" />
                         </radialGradient>
                     </defs>
+
                     <rect x="0" y="0" width="480" height="480" fill="url(#bcl-sky)" />
-                    <rect className="bcl-glow" x="0" y="0" width="480" height="480" fill="url(#bcl-glow)" />
-                    
+                    <rect className="bcl-glow" x="0" y="0" width="480" height="480" fill="url(#bcl-glow-grad)" />
+
                     {isDark &&
                         stars.map((s) => (
                             <circle
@@ -276,36 +189,12 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
 
                     {/* Drifting cloud bands */}
                     <g className="bcl-cloud-a" opacity={isDark ? 0.5 : 0.9}>
-                        <ellipse
-                            cx="120"
-                            cy="280"
-                            rx="120"
-                            ry="26"
-                            fill={isDark ? "#12222A" : "#FFFFFF"}
-                        />
-                        <ellipse
-                            cx="205"
-                            cy="266"
-                            rx="80"
-                            ry="20"
-                            fill={isDark ? "#12222A" : "#FFFFFF"}
-                        />
+                        <ellipse cx="120" cy="280" rx="120" ry="26" fill={isDark ? "#12222A" : "#FFFFFF"} />
+                        <ellipse cx="205" cy="266" rx="80" ry="20" fill={isDark ? "#12222A" : "#FFFFFF"} />
                     </g>
                     <g className="bcl-cloud-b" opacity={isDark ? 0.4 : 0.75}>
-                        <ellipse
-                            cx="330"
-                            cy="352"
-                            rx="140"
-                            ry="30"
-                            fill={isDark ? "#0E1B21" : "#FFFFFF"}
-                        />
-                        <ellipse
-                            cx="410"
-                            cy="336"
-                            rx="70"
-                            ry="18"
-                            fill={isDark ? "#0E1B21" : "#FFFFFF"}
-                        />
+                        <ellipse cx="330" cy="352" rx="140" ry="30" fill={isDark ? "#0E1B21" : "#FFFFFF"} />
+                        <ellipse cx="410" cy="336" rx="70" ry="18" fill={isDark ? "#0E1B21" : "#FFFFFF"} />
                     </g>
 
                     <g stroke={brandAccent} strokeOpacity="0.24" strokeWidth="2" fill="none" strokeLinecap="round">
@@ -338,9 +227,11 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
                 </svg>
             </div>
 
-            <div className="bcl-content">
-                <div className="bcl-ring-wrap">
-                    <svg className="bcl-ring-svg" viewBox="0 0 140 140" focusable="false">
+            {/* Content */}
+            <div className="relative z-[1] min-h-screen flex flex-col items-center justify-center px-5 py-8 text-center">
+                {/* Ring */}
+                <div className="relative w-42 h-42 flex items-center justify-center mb-[22px] sm:w-47 sm:h-47">
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 140 140" focusable="false">
                         {/* Layer 5 — faint data ring */}
                         <circle
                             className="bcl-data-ring"
@@ -355,7 +246,7 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
                         />
                         {/* Track */}
                         <circle cx="70" cy="70" r={RING_RADIUS} fill="none" stroke="var(--bc-ring-track)" strokeWidth="6" />
-                        {/* Layer 4 — central system: determinate progress OR indeterminate sweep */}
+                        {/* Progress OR sweep */}
                         {hasProgress ? (
                             <circle
                                 cx="70"
@@ -386,36 +277,60 @@ const Loading: React.FC<LoadingProps> = ({ progress, message }) => {
                             />
                         )}
                     </svg>
-                    <div className="bcl-core">
-                        <Wind size={hasProgress ? 20 : 26} className="bcl-core-icon" strokeWidth={2} />
-                        {hasProgress && <span className="bcl-core-progress">{Math.round(pct)}%</span>}
+
+                    <div className="relative z-[1] flex flex-col items-center justify-center gap-1 text-[var(--bc-accent-strong)]">
+                        <Wind
+                            size={hasProgress ? 20 : 26}
+                            className="animate-[bcl-pulse_3.2s_ease-in-out_infinite]"
+                            strokeWidth={2}
+                        />
+                        {hasProgress && (
+                            <span className="font-[var(--bc-font-display)] text-[22px] font-semibold text-[var(--bc-ink)]">
+                                {Math.round(pct)}%
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                <div className="bcl-brand">
-                    <span className="bcl-brand-mark">
-                        <AqiMark className="h-4.5 w-4.5 text-current"/>
+                {/* Brand */}
+                <div className="inline-flex items-center gap-2 mb-3">
+                    <span className="inline-flex items-center justify-center w-6.5 h-6.5 rounded-lg bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
+                        <AqiMark className="h-[18px] w-[18px] text-current" />
                     </span>
-                    <span className="bcl-brand-name">{companyName}</span>
+                    <span className="font-[var(--bc-font-display)] text-lg font-semibold text-[var(--bc-ink)] tracking-[0.01em]">
+                        {companyName}
+                    </span>
                 </div>
 
-                <div className="bcl-message-wrap">
-                    <p className="bcl-message" role="status" aria-live="polite" key={displayedMessage}>
-                        {displayedMessage}
-                    </p>
-                </div>
+                {/* Message */}
+                <div className="min-h-5.5 flex items-center justify-center">
+    <p
+        className="m-0 text-[13.5px] text-(--bc-ink-soft) animate-[bcl-fade-in_0.5s_ease_both]"
+        role="status"
+        aria-live="polite"
+        key={displayedMessage}
+    >
+        {displayedMessage}
+    </p>
+</div>
 
+
+                {/* Progress bar */}
                 {hasProgress && (
                     <div
-                        className="bcl-progress-track"
+                        className="mt-4 w-42 sm:w-47 h-0.75 rounded-full bg-(--bc-ring-track) overflow-hidden"
                         role="progressbar"
                         aria-valuenow={Math.round(pct)}
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-valuetext={`${Math.round(pct)} percent loaded`}
                     >
-                        <div className="bcl-progress-fill" style={{ transform: `scaleX(${pct / 100})` }} />
+                        <div
+                            className="h-full rounded-full bg-(--bc-accent) origin-left transition-transform duration-600"
+                            style={{ transform: `scaleX(${pct / 100})` }}
+                        />
                     </div>
+
                 )}
             </div>
         </div>

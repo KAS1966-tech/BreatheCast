@@ -1,4 +1,8 @@
-export interface AQIHistory {
+// ============================================================
+// Prediction History
+// ============================================================
+
+export interface PredictionHistory {
     id: number;
 
     temperature_c: number;
@@ -21,13 +25,21 @@ export interface AQIHistory {
 }
 
 
-export interface HistoryResponse {
+// ============================================================
+// Prediction History Response
+// ============================================================
+
+export interface PredictionHistoryResponse {
     total: number;
     skip: number;
     limit: number;
-    history: AQIHistory[];
+    history: PredictionHistory[];
 }
 
+
+// ============================================================
+// Clear Prediction History
+// ============================================================
 
 export interface ClearHistoryResponse {
     status: string;
@@ -36,19 +48,84 @@ export interface ClearHistoryResponse {
 }
 
 
-export interface HistoryState {
-    history: AQIHistory[];
+// ============================================================
+// Uploaded File History
+// ============================================================
 
+export interface UploadedFile {
+    id: number;
+    original_name: string;
+    file_size: number;
+    file_type: string;
+    row_count: number;
+    prediction_count: number;
+    created_at: string;
+}
+
+
+// ============================================================
+// Uploaded File History Response
+// ============================================================
+
+export interface FileHistoryResponse {
     total: number;
     skip: number;
     limit: number;
+    files: UploadedFile[];
+}
 
-    loading: boolean;
-    error: string | null;
 
-    isDownloading: boolean;
-    downloadError: string | null;
+// ============================================================
+// Delete Uploaded File
+// ============================================================
 
-    isClearing: boolean;
-    clearErrorMessage: string | null;
+export interface DeleteFileResponse {
+    status: string;
+    message: string;
+    deleted_file_id: number;
+}
+
+
+// ============================================================
+// History State
+// ============================================================
+
+export interface HistoryState {
+
+    // --------------------------------------------------------
+    // Prediction History
+    // --------------------------------------------------------
+
+    predictionHistory: PredictionHistory[];
+    predictionTotal: number;
+    predictionSkip: number;
+    predictionLimit: number;
+
+    predictionLoading: boolean;
+    predictionError: string | null;
+
+    isDownloadingPredictionHistory: boolean;
+    predictionDownloadError: string | null;
+
+    isClearingPredictionHistory: boolean;
+    predictionClearError: string | null;
+
+
+    // --------------------------------------------------------
+    // File History
+    // --------------------------------------------------------
+
+    fileHistory: UploadedFile[];
+    fileTotal: number;
+    fileSkip: number;
+    fileLimit: number;
+
+    fileLoading: boolean;
+    fileError: string | null;
+
+    isDownloadingFileHistory: boolean;
+    fileDownloadError: string | null;
+
+    deletingFileId: number | null;
+    fileDeleteError: string | null;
 }
