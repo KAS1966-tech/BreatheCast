@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom"
 import Signup from "./pages/Signup"
 import Login from "./pages/Login"
 import PublicRoute from "./components/PublicRoute"
-import Home from "./components/Home"
+
 import ProtectedRoute from "./components/ProtectedRoute"
 import { useEffect, useState } from "react"
 import { waitForBackend } from "./api/predictionApi"
@@ -15,6 +15,9 @@ import NotFound from "./components/NotFound"
 import { setTheme as syncDOMTheme } from "./utils/theme.utlis";
 import IntroPage from "./pages/IntroPage"
 import History from "./pages/History"
+import Profile from "./pages/Profile"
+import ProfileSettings from "./pages/ProfileSettings"
+import Home from "./pages/Home"
 
 
 const App = () => {
@@ -41,7 +44,6 @@ const App = () => {
   }, [themeMode]);
 
   if (!ready) {
-    console.log("wow");
     return <Loading />
   }
 
@@ -58,6 +60,8 @@ const App = () => {
           <Route path="/predict" element={<AqiPrediction />} />
           <Route path="/fileupload" element={<FileUpload />} />
           <Route path="/history" element={<History />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<ProfileSettings />} />
         </Route>
           <Route path="*" element={<NotFound />} />
       </Routes>

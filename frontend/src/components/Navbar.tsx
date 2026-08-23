@@ -17,6 +17,8 @@ import {
     FileUp,
     History,
     User,
+    MoveRight,
+    ArrowRight,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { toggleTheme } from "../app/features/theme/themeSlice";
@@ -408,12 +410,12 @@ const Navbar: React.FC = () => {
                                             <div className="nb-divider" />
                                             <button
                                                 type="button"
-                                                className="nb-menu-item is-danger"
+                                                className="nb-menu-item hover:bg-green-400"
                                                 role="menuitem"
-                                                onClick={() => void handleLogout()}
+                                                onClick={() => void navigate("/settings")}
                                             >
-                                                <LogOut size={14} />
-                                                Sign out
+                                                <ArrowRight/>
+                                                Go to settings
                                             </button>
                                         </>
                                     )}

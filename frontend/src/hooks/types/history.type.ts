@@ -128,4 +128,24 @@ export interface HistoryState {
 
     deletingFileId: number | null;
     fileDeleteError: string | null;
+
+    isDeletingAllHistory: boolean;
+    deleteAllHistoryError: string | null;
+
+    isClearingFileHistory: boolean;
+    fileClearError: string | null;
+}
+
+export interface DeleteAllHistoryResponse {
+    status: string;
+    message: string;
+    prediction_deleted: number;
+    files_deleted: number;
+    total_deleted: number;
+}
+
+export interface ClearFileHistoryResponse {
+    status: string;
+    message: string;
+    deleted_count: number;
 }

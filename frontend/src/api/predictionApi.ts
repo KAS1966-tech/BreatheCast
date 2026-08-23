@@ -1,8 +1,8 @@
 import axios, { type AxiosProgressEvent } from "axios";
 import type { LoginRequest, LoginResponse, SignupRequest, SignupResponse, User, VerifyOTPRequest, VerifySignupOTPResponse } from "../hooks/types/auth.type";
 import type { MetricsResponse } from "../hooks/types/metrics.type";
-import type { ProfileResponse } from "../hooks/types/profile.type";
-import type { PredictionHistoryResponse } from "../hooks/types/history.type";
+import type { ChangePasswordResponse, DeleteAccountResponse, ProfileResponse, SetPasswordResponse } from "../hooks/types/profile.type";
+import type { PredictionHistoryResponse,DeleteAllHistoryResponse, ClearFileHistoryResponse } from "../hooks/types/history.type";
 import type { DeleteFileResponse, FileHistoryResponse } from "../hooks/types/fileUpload.type";
 import type { AQIPredictionPayload, AQIPredictionResponse } from "../hooks/types/aqiPrediction.type";
 
@@ -145,8 +145,9 @@ export const logout = async () => {
 // USER
 // --------------------
 
-export const deleteAccount = async (): Promise<void> => {
-    await API.delete("/me");
+export const deleteAccount = async (): Promise<DeleteAccountResponse> => {
+    const response = await API.delete("/me");
+    return await response.data
 };
 
 
@@ -209,21 +210,23 @@ export const updateUsername = async (username: string) => {
 
 export const setPassword = async (
     password: string,
-): Promise<void> => {
-    await API.post("/password/set", {
+): Promise<SetPasswordResponse> => {
+    const response = await API.post("/password/set", {
         password,
     });
+    return response.data
 };
 
 
 export const changePassword = async (
     currentPassword: string,
     newPassword: string,
-): Promise<void> => {
-    await API.post("/password/change", {
+): Promise<ChangePasswordResponse> => {
+    const response = await API.post("/password/change", {
         current_password: currentPassword,
         new_password: newPassword,
     });
+    return response.data
 };
 
 
@@ -317,5 +320,20 @@ export const downloadFileHistory = async (): Promise<Blob> => {
     return data;
 };
 
+export const clearFileHistory = async (): Promise<ClearFileHistoryResponse> => {
+    const response = await API.delete<ClearFileHistoryResponse>(
+        "/file-history"
+    );
+
+    return response.data;
+};
+
+export const deleteAllHistory = async (): Promise<DeleteAllHistoryResponse> => {
+    const { data } = await API.delete<DeleteAllHistoryResponse>(
+        "/history/all",
+    );
+
+    return data;
+};
 
 export default API;

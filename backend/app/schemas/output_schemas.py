@@ -34,5 +34,10 @@ class LoginResponse(BaseModel):
     status : str
     user : User
 
+class OtpResponse(BaseModel):
+    status: str
+    message: str
+    user: User
+
 class GoogleLoginResponse(LoginResponse):
     pass

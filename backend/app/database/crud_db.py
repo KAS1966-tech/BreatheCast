@@ -588,6 +588,20 @@ def delete_user_uploaded_file(
 
     return True
 
+def delete_all_user_uploaded_files(
+    db: Session,
+    user_id: int,
+) -> int:
+    deleted_count = (
+        db.query(UploadedFile)
+        .filter(UploadedFile.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+
+    db.commit()
+
+    return deleted_count
+
 
 def delete_user(db: Session, user_id: int):
     user = get_user_by_id(db, user_id)
@@ -618,3 +632,24 @@ def delete_user(db: Session, user_id: int):
     except SQLAlchemyError:
         db.rollback()
         raise
+
+def delete_all_user_history(
+    db: Session,
+    user_id: int,
+) -> tuple[int, int]:
+
+    prediction_deleted = (
+        db.query(History)
+        .filter(History.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+
+    files_deleted = (
+        db.query(UploadedFile)
+        .filter(UploadedFile.user_id == user_id)
+        .delete(synchronize_session=False)
+    )
+
+    db.commit()
+
+    return prediction_deleted, files_deleted

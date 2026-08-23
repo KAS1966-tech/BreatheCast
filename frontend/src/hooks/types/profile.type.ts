@@ -86,14 +86,16 @@ export interface UpdatedUserResponse {
 // ============================================================
 // Password Responses
 // ============================================================
-
 export interface SetPasswordResponse {
     status: string;
     message: string;
 }
 
-
 export interface ChangePasswordResponse {
     status: string;
+    message: string;
+}
+
+export interface DeleteAccountResponse {
     message: string;
 }

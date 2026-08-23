@@ -4,6 +4,7 @@ import themeReducer from './features/theme/themeSlice';
 import AQIReducer from './features/prediction/aqiSlice';
 import fileUploadReducer from './features/upload/fileUploadSlice';
 import historyReducer from './features/history/historySlice';
+import profileReducer from './features/profile/profileSlice';
 
 export const store = configureStore({
     reducer:{
@@ -12,6 +13,7 @@ export const store = configureStore({
         "aqi": AQIReducer,
         "file": fileUploadReducer,
         "history": historyReducer,
+        "profile": profileReducer,
     }
 });
 

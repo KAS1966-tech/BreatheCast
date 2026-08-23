@@ -29,8 +29,8 @@ from app.core.logger import logger
 # =====================================================================
 # 3. Pydantic Schemas (Inputs vs Outputs)
 # =====================================================================
-from app.schemas.input_schemas import LoginRequest, SetPasswordRequest, SignupRequest, WeatherAQIPrediction,GoogleLoginRequest,UpdateNameRequest, UpdateUsernameRequest,ChangePasswordRequest,SendOTPRequest, VerifyOTPRequest
-from app.schemas.output_schemas import LoginResponse, PredictionResponse, User,GoogleLoginResponse
+from app.schemas.input_schemas import LoginRequest, SetPasswordRequest, SignupRequest, WeatherAQIPrediction,GoogleLoginRequest,UpdateNameRequest, UpdateUsernameRequest,ChangePasswordRequest, VerifyOTPRequest
+from app.schemas.output_schemas import LoginResponse, PredictionResponse, User,GoogleLoginResponse,OtpResponse
 from pydantic import ValidationError
 
 # =====================================================================
@@ -44,6 +44,7 @@ from app.database.crud_db import (
     current_user,
     delete_refresh_token,
     delete_user,
+    delete_all_user_history,
     generate_user_tokens,
     get_refresh_token,
     get_user_by_id,
@@ -54,6 +55,7 @@ from app.database.crud_db import (
     get_all_user_history,
     get_user_uploaded_files,
     delete_user_uploaded_file,
+    delete_all_user_uploaded_files,
     update_full_name,
     update_username,
     set_user_password,
@@ -81,7 +83,7 @@ router = APIRouter()
 
 # Authentication
 
-@router.post("/auth/verify-signup-otp")
+@router.post("/auth/verify-signup-otp",response_model=OtpResponse)
 def verify_signup_otp(
     payload: VerifyOTPRequest,
     response: Response,
@@ -189,8 +191,8 @@ def verify_signup_otp(
             "user": {
                 "id": user.id,
                 "fullname": user.fullname,
-                "email": user.email,
                 "username": user.username,
+                "email": user.email,
                 "created_at": user.created_at,
             },
         }
@@ -598,6 +600,74 @@ def get_profile(
             "items": files,
         },
     }
+
+@router.delete("/history/all")
+def delete_all_history(
+    user: Authentication = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        prediction_deleted, files_deleted = delete_all_user_history(
+            db=db,
+            user_id=user.id,
+        )
+
+        return {
+            "status": "success",
+            "message": "All history deleted successfully.",
+            "prediction_deleted": prediction_deleted,
+            "files_deleted": files_deleted,
+            "total_deleted": prediction_deleted + files_deleted,
+        }
+
+    except Exception as e:
+        db.rollback()
+
+        logger.exception("Failed to delete all user history")
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error,
+        )
+
+@router.delete("/file-history", status_code=status.HTTP_200_OK)
+def delete_all_file_history(
+    user: Authentication = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        deleted_count = delete_all_user_uploaded_files(
+            db=db,
+            user_id=user.id,
+        )
+
+        return {
+            "status": "success",
+            "message": "All file history deleted successfully.",
+            "deleted_count": deleted_count,
+        }
+
+    except Exception as e:
+        db.rollback()
+
+        logger.exception("Failed to delete all file history")
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error,
+        )
 
 @router.patch("/profile/name")
 def update_name(

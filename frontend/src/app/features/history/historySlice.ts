@@ -11,6 +11,8 @@ import {
     getFileHistory,
     downloadFileHistory,
     deleteUploadedFile,
+    deleteAllHistory,
+    clearFileHistory as clearFileHistoryApi,
 } from "../../../api/predictionApi";
 
 import type {
@@ -18,6 +20,7 @@ import type {
     PredictionHistoryResponse,
     FileHistoryResponse,
     DeleteFileResponse,
+    DeleteAllHistoryResponse,
 } from "../../../hooks/types/history.type";
 import axios from "axios";
 
@@ -58,6 +61,12 @@ const initialState: HistoryState = {
 
     deletingFileId: null,
     fileDeleteError: null,
+
+    isDeletingAllHistory: false,
+    deleteAllHistoryError: null,
+
+    isClearingFileHistory: false,
+    fileClearError: null,
 };
 
 
@@ -221,6 +230,50 @@ export const deleteFileHistory = createAsyncThunk(
 
             // Default fallback message for non-network/non-Axios errors
             return rejectWithValue("Failed to delete file.");
+        }
+    },
+);
+
+export const clearFileHistory = createAsyncThunk(
+    "history/clearFileHistory",
+    async (_, { rejectWithValue }) => {
+        try {
+            return await clearFileHistoryApi();
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                return rejectWithValue(
+                    error.response?.data?.detail ||
+                    "Failed to clear file history."
+                );
+            }
+
+            return rejectWithValue(
+                "Failed to clear file history."
+            );
+        }
+    },
+);
+
+export const deleteAllHistoryThunk = createAsyncThunk<
+    DeleteAllHistoryResponse,
+    void,
+    { rejectValue: string }
+>(
+    "history/deleteAllHistory",
+    async (_, { rejectWithValue }) => {
+        try {
+            return await deleteAllHistory();
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                return rejectWithValue(
+                    error.response?.data?.detail ||
+                    "Failed to delete all history.",
+                );
+            }
+
+            return rejectWithValue(
+                "Failed to delete all history.",
+            );
         }
     },
 );
@@ -512,6 +565,75 @@ const historySlice = createSlice({
                         "Failed to delete file.";
                 },
             );
+
+        builder
+            .addCase(
+                deleteAllHistoryThunk.pending,
+                (state) => {
+                    state.isDeletingAllHistory = true;
+                    state.deleteAllHistoryError = null;
+                },
+            )
+
+            .addCase(
+                deleteAllHistoryThunk.fulfilled,
+                (state) => {
+                    state.isDeletingAllHistory = false;
+
+                    // Clear prediction history locally
+                    state.predictionHistory = [];
+                    state.predictionTotal = 0;
+                    state.predictionSkip = 0;
+
+                    // Clear file history locally
+                    state.fileHistory = [];
+                    state.fileTotal = 0;
+                    state.fileSkip = 0;
+
+                    // No need to refetch from backend
+                },
+            )
+
+            .addCase(
+                deleteAllHistoryThunk.rejected,
+                (state, action) => {
+                    state.isDeletingAllHistory = false;
+
+                    state.deleteAllHistoryError =
+                        action.payload ||
+                        "Failed to delete all history.";
+                },
+            );
+        builder
+            .addCase(
+                clearFileHistory.pending,
+                (state) => {
+                    state.isClearingFileHistory = true;
+                    state.fileClearError = null;
+                },
+            )
+
+            .addCase(
+                clearFileHistory.fulfilled,
+                (state) => {
+                    state.isClearingFileHistory = false;
+
+                    state.fileHistory = [];
+                    state.fileTotal = 0;
+                    state.fileSkip = 0;
+                },
+            )
+
+            .addCase(
+                clearFileHistory.rejected,
+                (state, action) => {
+                    state.isClearingFileHistory = false;
+
+                    state.fileClearError =
+                        (action.payload as string) ||
+                        "Failed to clear file history.";
+                },
+            )
     },
 });
 
@@ -524,6 +646,7 @@ export const {
     clearFileError,
     clearFileDownloadError,
     clearFileDeleteError,
+
 } = historySlice.actions;
 
 

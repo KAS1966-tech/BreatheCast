@@ -40,6 +40,8 @@ const initialState: ProfileState = {
     deletingAccount: false,
 
     updateError: null,
+
+    changingPassword: false
 };
 
 
@@ -387,7 +389,7 @@ const profileSlice = createSlice({
                     state.settingPassword = false;
 
                     state.updateError =
-                        action.payload ||
+                        action.payload as string ||
                         "Failed to set password.";
                 },
             );
@@ -401,7 +403,7 @@ const profileSlice = createSlice({
             .addCase(
                 changeProfilePassword.pending,
                 (state) => {
-                    state.settingPassword = true;
+                    state.changingPassword = true;
                     state.updateError = null;
                 },
             )
@@ -409,17 +411,17 @@ const profileSlice = createSlice({
             .addCase(
                 changeProfilePassword.fulfilled,
                 (state) => {
-                    state.settingPassword = false;
+                    state.changingPassword = false;
                 },
             )
 
             .addCase(
                 changeProfilePassword.rejected,
                 (state, action) => {
-                    state.settingPassword = false;
+                    state.changingPassword = false;
 
                     state.updateError =
-                        action.payload ||
+                        action.payload as string ||
                         "Failed to change password.";
                 },
             );
@@ -452,7 +454,7 @@ const profileSlice = createSlice({
                     state.deletingAccount = false;
 
                     state.updateError =
-                        action.payload ||
+                        action.payload as string ||
                         "Failed to delete account.";
                 },
             );
