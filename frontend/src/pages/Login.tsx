@@ -338,10 +338,10 @@ const Login: React.FC = () => {
             <header>
                 <Navbar />
             </header>
-            <main className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-[400ms] min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+            <main className="min-h-screen grid grid-cols-1 bg-(--bc-bg) text-(--bc-ink) transition-colors duration-400 min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
                 {/* ---------------- Atmospheric panel ---------------- */}
                 <div
-                    className="relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-[220px] min-[960px]:min-h-screen"
+                    className="relative overflow-hidden bg-[linear-gradient(180deg,var(--bc-panel)_0%,var(--bc-panel-2)_100%)] min-h-55 min-[960px]:min-h-screen"
                     aria-hidden="true"
                 >
                     <svg
@@ -519,18 +519,18 @@ const Login: React.FC = () => {
                         />
                     </svg>
 
-                    <div className="relative z-[2] h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
+                    <div className="relative z-2 h-full flex flex-col justify-end px-6 py-5 min-[960px]:justify-between min-[960px]:px-14 min-[960px]:pt-14 min-[960px]:pb-16">
 
-                        <div className="max-w-[420px]">
-                            <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
+                        <div className="max-w-105">
+                            <p className="hidden min-[960px]:block text-xs tracking-[0.14em] uppercase text-(--bc-accent-strong) font-semibold m-0 mb-2.5">
                                 Environmental intelligence
                             </p>
 
-                            <h2 className="hidden min-[960px]:block font-[var(--bc-font-display)] text-[clamp(28px,3vw,38px)] leading-[1.15] font-semibold m-0 mb-3.5 text-[var(--bc-ink)]">
+                            <h2 className="hidden min-[960px]:block font-(--bc-font-display) text-[clamp(28px,3vw,38px)] leading-[1.15] m-0 mb-3.5 text-(--bc-ink)">
                                 Clear air, read&nbsp;clearly.
                             </h2>
 
-                            <p className="hidden min-[960px]:block text-[15px] leading-[1.6] text-[var(--bc-ink-soft)] m-0">
+                            <p className="hidden min-[960px]:block text-[15px] leading-[1.6] text-(--bc-ink-soft) m-0">
                                 Sign back in to your environmental dashboard — live AQI, hourly forecasts,
                                 and alerts tuned to the air you actually breathe.
                             </p>
@@ -539,20 +539,20 @@ const Login: React.FC = () => {
                 </div>
 
                 {/* ---------------- Form side ---------------- */}
-                <div className="flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:justify-center min-[960px]:px-[72px] min-[960px]:py-12">
+                <div className="flex flex-col bg-(--bc-bg) px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:justify-center min-[960px]:px-18 min-[960px]:py-12">
 
-                    <div className="w-full max-w-[400px] mx-auto mt-8">
-                        <h1 className="font-[var(--bc-font-display)] text-[clamp(26px,4vw,30px)] font-semibold m-0 mb-2 text-[var(--bc-ink)]">
+                    <div className="w-full max-w-100 mx-auto mt-8">
+                        <h1 className="font-(--bc-font-display) text-[clamp(26px,4vw,30px)] m-0 mb-2 text-(--bc-ink)">
                             Welcome back
                         </h1>
 
-                        <p className="text-[14.5px] text-[var(--bc-ink-soft)] m-0 mb-7 leading-[1.55]">
+                        <p className="text-[14.5px] text-(--bc-ink-soft) m-0 mb-7 leading-[1.55]">
                             Sign in to keep tracking the air quality and weather that matter to you.
                         </p>
 
                         {loginError && (
                             <div
-                                className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] leading-[1.5]"
+                                className="flex items-start gap-2 bg-(--bc-danger-bg) border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-(--bc-danger) rounded-[10px] px-3 py-2.5 text-[13px] mb-4.5 leading-normal"
                                 role="alert"
                             >
                                 <AlertCircle size={16} className="mt-px shrink-0" />
@@ -561,16 +561,16 @@ const Login: React.FC = () => {
                         )}
 
                         <form onSubmit={handleSubmit} noValidate>
-                            <div className="mb-[18px]">
+                            <div className="mb-4.5">
                                 <label
                                     htmlFor="login-email"
-                                    className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                    className="block text-[13px] font-semibold text-(--bc-ink) mb-1.75"
                                 >
                                     Email
                                 </label>
 
                                 <div className={emailShellClasses}>
-                                    <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                    <span className="inline-flex pl-3.25 text-(--bc-ink-faint) shrink-0">
                                         <Mail size={17} />
                                     </span>
 
@@ -580,7 +580,7 @@ const Login: React.FC = () => {
                                         type="email"
                                         autoComplete="email"
                                         inputMode="email"
-                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]"
+                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-(--bc-ink) font-(--bc-font-body) min-w-0 placeholder:text-(--bc-ink-faint)"
                                         placeholder="you@example.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -592,7 +592,7 @@ const Login: React.FC = () => {
 
                                 {emailInvalid && (
                                     <p
-                                        className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                        className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-(--bc-danger)"
                                         id="login-email-error"
                                     >
                                         <AlertCircle size={13} />
@@ -601,16 +601,16 @@ const Login: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="mb-[18px]">
+                            <div className="mb-4.5">
                                 <label
                                     htmlFor="login-password"
-                                    className="block text-[13px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                                    className="block text-[13px] font-semibold text-(--bc-ink) mb-1.75"
                                 >
                                     Password
                                 </label>
 
                                 <div className={passwordShellClasses}>
-                                    <span className="inline-flex pl-[13px] text-[var(--bc-ink-faint)] shrink-0">
+                                    <span className="inline-flex pl-3.25 text-(--bc-ink-faint) shrink-0">
                                         <Lock size={17} />
                                     </span>
 
@@ -619,7 +619,7 @@ const Login: React.FC = () => {
                                         name="password"
                                         type={showPassword ? "text" : "password"}
                                         autoComplete="current-password"
-                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-[var(--bc-ink)] font-[var(--bc-font-body)] min-w-0 placeholder:text-[var(--bc-ink-faint)]"
+                                        className="flex-1 border-none bg-transparent outline-none p-3 text-[15px] text-(--bc-ink) font-(--bc-font-body) min-w-0 placeholder:text-(--bc-ink-faint)"
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -632,7 +632,7 @@ const Login: React.FC = () => {
 
                                     <button
                                         type="button"
-                                        className="bg-transparent border-none inline-flex px-3 py-2 text-[var(--bc-ink-faint)] cursor-pointer shrink-0 hover:text-[var(--bc-ink-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:rounded-md"
+                                        className="bg-transparent border-none inline-flex px-3 py-2 text-(--bc-ink-faint) cursor-pointer shrink-0 hover:text-(--bc-ink-soft) focus-visible:outline focus-visible:-outline-offset-2 focus-visible:rounded-md"
                                         onClick={() => setShowPassword((s) => !s)}
                                         aria-label={showPassword ? "Hide password" : "Show password"}
                                         aria-pressed={showPassword}
@@ -643,7 +643,7 @@ const Login: React.FC = () => {
 
                                 {passwordInvalid && (
                                     <p
-                                        className="flex items-center gap-1.5 mt-[7px] text-[12.5px] text-[var(--bc-danger)]"
+                                        className="flex items-center gap-1.5 mt-1.75 text-[12.5px] text-(--bc-danger)"
                                         id="login-password-error"
                                     >
                                         <AlertCircle size={13} />
@@ -652,14 +652,14 @@ const Login: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-end -mt-1.5 mb-[22px]">
+                            <div className="flex items-center justify-end -mt-1.5 mb-5.5">
                                 {/* Forgot-password route intentionally omitted — not in scope. */}
                                 <span />
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-[var(--bc-accent-strong)] text-[#F4FBF9] text-[15px] font-semibold px-4 py-[13px] cursor-pointer transition-[transform,box-shadow,opacity,background-color] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]"
+                                className="w-full inline-flex items-center justify-center gap-2 border-none rounded-[10px] bg-(--bc-accent-strong) text-[#F4FBF9] text-[15px] font-semibold px-4 py-3.25 cursor-pointer transition-[transform,box-shadow,opacity,background-color] duration-150 shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px enabled:active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-offset-[3px] focus-visible:outline-(--bc-ink)"
                                 disabled={isBusy}
                             >
                                 {loginLoading ? (
@@ -676,7 +676,7 @@ const Login: React.FC = () => {
                             </button>
                         </form>
 
-                        <div className="flex items-center gap-3 my-6 text-[var(--bc-ink-faint)] text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-[var(--bc-border)] after:content-[''] after:block after:flex-1 after:h-px after:bg-[var(--bc-border)]">
+                        <div className="flex items-center gap-3 my-6 text-(--bc-ink-faint) text-xs tracking-[0.08em] uppercase before:content-[''] before:block before:flex-1 before:h-px before:bg-(--bc-border) after:content-[''] after:block after:flex-1 after:h-px after:bg-(--bc-border)">
                             or
                         </div>
 
@@ -690,11 +690,11 @@ const Login: React.FC = () => {
                         />
                         {/* </div> */}
 
-                        <p className="text-center mt-[26px] text-sm text-[var(--bc-ink-soft)]">
+                        <p className="text-center mt-6.5 text-sm text-(--bc-ink-soft)">
                             Don&apos;t have an account?{" "}
                             <Link
-                                to="/"
-                                className="text-[13px] text-[var(--bc-accent-strong)] no-underline font-semibold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded"
+                                to="/signup"
+                                className="text-[13px] text-(--bc-accent-strong) no-underline font-semibold hover:underline focus-visible:outline focus-visible:outline-offset-2 focus-visible:rounded"
                             >
                                 Create one
                             </Link>

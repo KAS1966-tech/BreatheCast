@@ -14,7 +14,6 @@ import {
     CloudSun,
     ArrowRight,
     ArrowUpRight,
-    Trash2,
     AlertTriangle,
     Loader2,
     RotateCcw,
@@ -27,22 +26,13 @@ import {
 // TODO: adjust to your project's actual paths -----------------------------
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { fetchProfile, deleteProfileAccount } from "../app/features/profile/profileSlice";
-import type { ProfileResponse, ProfileUser, ProfileFile } from "../hooks/types/profile.type";
+import type { ProfileUser, ProfileFile } from "../hooks/types/profile.type";
 import type { PredictionHistory } from "../hooks/types/history.type";
 import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 // ---------------------------------------------------------------------------
-
-/** TODO: adjust to match your profileSlice state shape. */
-interface ProfileState {
-    profile: ProfileResponse | null;
-    loading: boolean;
-    error: string | null;
-    updateError: string | null;
-    deletingAccount: boolean;
-}
 
 /** TODO: replace with your real settings/edit route when created. */
 const SETTINGS_ROUTE = "/settings";
@@ -231,12 +221,12 @@ const CalmAtmosphere: React.FC<{ isDark: boolean }> = ({ isDark }) => {
 const InfoRow: React.FC<{ icon: React.ReactNode; label: string; children: React.ReactNode }> = ({ icon, label, children }) => (
     <div className="flex items-start justify-between gap-4 px-5 py-4">
         <div className="flex items-center gap-2.5 min-w-0">
-            <span className="text-[color:var(--bc-ink-faint)]" aria-hidden="true">
+            <span className="text-(--bc-ink-faint)" aria-hidden="true">
                 {icon}
             </span>
-            <span className="text-xs font-semibold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">{label}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.06em] text-(--bc-ink-faint)">{label}</span>
         </div>
-        <div className="min-w-0 text-right text-sm font-semibold text-[color:var(--bc-ink)]">{children}</div>
+        <div className="min-w-0 text-right text-sm font-semibold text-(--bc-ink)">{children}</div>
     </div>
 );
 
@@ -277,23 +267,23 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-5">
             <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={() => !busy && onClose()} aria-hidden="true" />
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="pf-delete-title"
-                className="pf-rise relative w-full max-w-md rounded-2xl border border-[color:var(--bc-border-strong)] bg-[color:var(--bc-surface)] p-6 shadow-2xl backdrop-blur-xl"
+                className="pf-rise relative w-full max-w-md rounded-2xl border border-(--bc-border-strong) bg-(--bc-surface) p-6 shadow-2xl backdrop-blur-xl"
             >
                 <div className="mb-3 flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--bc-danger-bg)] text-[color:var(--bc-danger)]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--bc-danger-bg) text-(--bc-danger)">
                         <AlertTriangle size={18} />
                     </span>
-                    <h3 id="pf-delete-title" className="pf-display text-lg font-semibold text-[color:var(--bc-ink)]">
+                    <h3 id="pf-delete-title" className="pf-display text-lg font-semibold text-(--bc-ink)">
                         Delete your account?
                     </h3>
                 </div>
-                <p className="text-sm leading-relaxed text-[color:var(--bc-ink-soft)]">
+                <p className="text-sm leading-relaxed text-(--bc-ink-soft)">
                     This action permanently removes your account and associated data. This cannot be undone.
                 </p>
                 <div className="mt-6 flex justify-end gap-2">
@@ -302,7 +292,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                         type="button"
                         disabled={busy}
                         onClick={onClose}
-                        className="rounded-lg border border-[color:var(--bc-border)] px-4 py-2 text-sm font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                        className="rounded-lg border border-(--bc-border) px-4 py-2 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                     >
                         Cancel
                     </button>
@@ -311,7 +301,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                         disabled={busy}
                         onClick={onConfirm}
                         aria-busy={busy}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--bc-danger)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                        className="inline-flex items-center gap-2 rounded-lg bg-(--bc-danger) px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                     >
                         {busy && <Loader2 size={15} className="animate-spin" />}
                         {busy ? "Deleting account..." : "Delete Account"}
@@ -323,7 +313,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
 };
 
 const SkeletonLine: React.FC<{ className?: string }> = ({ className = "" }) => (
-    <div className={`animate-pulse rounded-lg bg-[color:var(--bc-track)] ${className}`} aria-hidden="true" />
+    <div className={`animate-pulse rounded-lg bg-(--bc-track) ${className}`} aria-hidden="true" />
 );
 
 /* ============================================================================
@@ -377,11 +367,11 @@ const Profile: React.FC = () => {
     };
 
     const cardBase =
-        "rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md";
+        "rounded-2xl border border-(--bc-border) bg-(--bc-surface) shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md";
 
     return (
         <div
-            className="pf-root relative min-h-screen bg-[color:var(--bc-bg)] text-[color:var(--bc-ink)] transition-colors duration-500"
+            className="pf-root relative min-h-screen bg-(--bc-bg) text-(--bc-ink) transition-colors duration-500"
             data-theme={isDark ? "dark" : "day"}
         >
             <style>{`
@@ -454,17 +444,17 @@ const Profile: React.FC = () => {
             <div className="relative z-10 flex min-h-screen flex-col">
                 <Navbar />
 
-                <main className="mx-auto w-full max-w-[1160px] flex-1 px-5 pb-20 sm:px-8">
+                <main className="mx-auto w-full max-w-290 flex-1 px-5 pb-20 sm:px-8">
                     {/* ================= ERROR STATE ================= */}
                     {error && !profile && !loading ? (
                         <div className={`mx-auto mt-16 max-w-md ${cardBase} pf-rise flex flex-col items-center gap-3 p-10 text-center`}>
-                            <AlertCircle size={22} className="text-[color:var(--bc-danger)]" />
+                            <AlertCircle size={22} className="text-(--bc-danger)" />
                             <h1 className="pf-display text-lg font-semibold">Unable to load your profile.</h1>
-                            <p className="text-sm text-[color:var(--bc-ink-soft)]">{error}</p>
+                            <p className="text-sm text-(--bc-ink-soft)">{error}</p>
                             <button
                                 type="button"
                                 onClick={() => dispatch(fetchProfile())}
-                                className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--bc-border)] px-3 py-2 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                             >
                                 <RotateCcw size={13} />
                                 Try Again
@@ -487,7 +477,7 @@ const Profile: React.FC = () => {
                                         <div className="pf-rise">
                                             {/* Generated monogram — no avatar upload */}
                                             <div
-                                                className="pf-display flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold text-[#F4FBF9] ring-4 ring-[color:var(--bc-surface)]"
+                                                className="pf-display flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold text-[#F4FBF9] ring-4 ring-(--bc-surface)"
                                                 style={{ background: `linear-gradient(135deg, var(--bc-accent), var(--bc-accent-strong))` }}
                                                 aria-label={`Profile monogram for ${user?.fullname ?? user?.username ?? "account"}`}
                                             >
@@ -497,27 +487,27 @@ const Profile: React.FC = () => {
                                             <h1 className="pf-display mt-4 text-2xl font-semibold leading-tight sm:text-[28px]">
                                                 {user?.fullname || user?.username || "Your account"}
                                             </h1>
-                                            <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--bc-accent-strong)]">
+                                            <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-(--bc-accent-strong)">
                                                 <AtSign size={14} aria-hidden="true" />
                                                 {user?.username ?? "—"}
                                             </p>
-                                            <p className="mt-3 text-sm leading-relaxed text-[color:var(--bc-ink-soft)]">
+                                            <p className="mt-3 text-sm leading-relaxed text-(--bc-ink-soft)">
                                                 Your {companyName} environmental workspace — predictions, datasets, and
                                                 account context in one calm place.
                                             </p>
 
                                             <div className="mt-4 flex flex-wrap items-center gap-2">
-                                                <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] px-3 py-1 text-xs font-semibold text-[color:var(--bc-ink-soft)]">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full border border-(--bc-border) bg-(--bc-surface-2) px-3 py-1 text-xs font-semibold text-(--bc-ink-soft)">
                                                     <CalendarDays size={12} aria-hidden="true" />
                                                     Member since {user ? formatMemberSince(user.created_at) : "—"}
                                                 </span>
                                                 {user?.has_password ? (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--bc-success-bg)] px-3 py-1 text-xs font-semibold text-[color:var(--bc-success)]">
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-(--bc-success-bg) px-3 py-1 text-xs font-semibold text-(--bc-success)">
                                                         <KeyRound size={12} aria-hidden="true" />
                                                         Password enabled
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--bc-success-bg)] px-3 py-1 text-xs font-semibold text-[color:var(--bc-accent-strong)]">
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-(--bc-success-bg) px-3 py-1 text-xs font-semibold text-(--bc-accent-strong)">
                                                         <LogIn size={12} aria-hidden="true" />
                                                         Google sign-in account
                                                     </span>
@@ -527,14 +517,14 @@ const Profile: React.FC = () => {
                                             <div className="mt-6 flex flex-wrap gap-2">
                                                 <Link
                                                     to={SETTINGS_ROUTE} /* TODO: real settings route */
-                                                    className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--bc-accent-strong)] px-4 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-4 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     <PencilLine size={15} />
                                                     Edit Profile
                                                 </Link>
                                                 <Link
                                                     to="/history"
-                                                    className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] px-4 py-2.5 text-sm font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-2 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-4 py-2.5 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     View History
                                                     <ArrowUpRight size={14} />
@@ -556,22 +546,22 @@ const Profile: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="pf-rise grid grid-cols-3 gap-3">
-                                        <div className="rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
-                                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                                        <div className="rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
+                                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                                 <Gauge size={14} aria-hidden="true" />
                                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Predictions</p>
                                             </div>
                                             <p className="pf-display mt-2 text-2xl font-semibold">{formatInt(historyTotal)}</p>
                                         </div>
-                                        <div className="rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
-                                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                                        <div className="rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
+                                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                                 <FileSpreadsheet size={14} aria-hidden="true" />
                                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Datasets</p>
                                             </div>
                                             <p className="pf-display mt-2 text-2xl font-semibold">{formatInt(filesTotal)}</p>
                                         </div>
-                                        <div className="rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
-                                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                                        <div className="rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
+                                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                                 <CloudSun size={14} aria-hidden="true" />
                                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest AQI</p>
                                             </div>
@@ -579,7 +569,7 @@ const Profile: React.FC = () => {
                                                 {latestPrediction ? (
                                                     <AqiBadge value={latestPrediction.prediction} />
                                                 ) : (
-                                                    <p className="pf-display text-2xl font-semibold text-[color:var(--bc-ink-faint)]">—</p>
+                                                    <p className="pf-display text-2xl font-semibold text-(--bc-ink-faint)">—</p>
                                                 )}
                                             </div>
                                         </div>
@@ -599,24 +589,24 @@ const Profile: React.FC = () => {
                                     </div>
                                 ) : bothEmpty ? (
                                     <div className="pf-rise flex flex-col items-center gap-3 py-8 text-center">
-                                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--bc-surface-2)] text-[color:var(--bc-accent-strong)]">
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--bc-surface-2) text-(--bc-accent-strong)">
                                             <CloudSun size={22} />
                                         </span>
                                         <h3 className="pf-display text-lg font-semibold">Your environmental workspace is ready.</h3>
-                                        <p className="max-w-[38ch] text-sm text-[color:var(--bc-ink-soft)]">
+                                        <p className="max-w-[38ch] text-sm text-(--bc-ink-soft)">
                                             Start with a single prediction, or process an entire dataset at once.
                                         </p>
                                         <div className="mt-1 flex flex-wrap justify-center gap-2">
                                             <Link
                                                 to="/predict"
-                                                className="inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--bc-accent-strong)] px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                className="inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                             >
                                                 Make your first prediction
                                                 <ArrowRight size={14} />
                                             </Link>
                                             <Link
                                                 to="/fileupload"
-                                                className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--bc-border)] px-4 py-2 text-sm font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-4 py-2 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                             >
                                                 Upload your first dataset
                                             </Link>
@@ -627,21 +617,21 @@ const Profile: React.FC = () => {
                                         {/* ---- Recent predictions ---- */}
                                         <div className="min-w-0">
                                             <div className="mb-3 flex items-center justify-between gap-2">
-                                                <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                                                <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                                                     Recent Predictions
                                                 </h3>
                                                 <Link
                                                     to="/history"
-                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--bc-accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--bc-accent-strong) hover:underline focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     View Full History
                                                     <ArrowUpRight size={12} />
                                                 </Link>
                                             </div>
                                             {recentPredictions.length === 0 ? (
-                                                <p className="rounded-xl border border-dashed border-[color:var(--bc-border-strong)] px-4 py-5 text-center text-xs text-[color:var(--bc-ink-faint)]">
+                                                <p className="rounded-xl border border-dashed border-(--bc-border-strong) px-4 py-5 text-center text-xs text-(--bc-ink-faint)">
                                                     No predictions yet —{" "}
-                                                    <Link to="/predict" className="font-semibold text-[color:var(--bc-accent-strong)] hover:underline">
+                                                    <Link to="/predict" className="font-semibold text-(--bc-accent-strong) hover:underline">
                                                         make your first
                                                     </Link>
                                                     .
@@ -651,22 +641,22 @@ const Profile: React.FC = () => {
                                                     {recentPredictions.map((rec: PredictionHistory) => (
                                                         <li
                                                             key={rec.id}
-                                                            className="flex items-center justify-between gap-3 rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] px-3.5 py-2.5"
+                                                            className="flex items-center justify-between gap-3 rounded-xl border border-(--bc-border) bg-(--bc-surface-2) px-3.5 py-2.5"
                                                         >
                                                             <div className="min-w-0">
                                                                 <AqiBadge value={rec.prediction} />
-                                                                <p className="mt-1 truncate text-[11px] text-[color:var(--bc-ink-faint)]">
+                                                                <p className="mt-1 truncate text-[11px] text-(--bc-ink-faint)">
                                                                     {formatDate(rec.created_at)}
                                                                 </p>
                                                             </div>
-                                                            <p className="flex shrink-0 items-center gap-2 text-[11px] font-semibold text-[color:var(--bc-ink-soft)]">
+                                                            <p className="flex shrink-0 items-center gap-2 text-[11px] font-semibold text-(--bc-ink-soft)">
                                                                 <span className="inline-flex items-center gap-1">
                                                                     <Thermometer size={11} aria-hidden="true" />
-                                                                    {fmt(rec.Temperature_C)}°C
+                                                                    {fmt(rec.temperature_c)}°C
                                                                 </span>
                                                                 <span className="inline-flex items-center gap-1">
                                                                     <Wind size={11} aria-hidden="true" />
-                                                                    {fmt(rec.WindSpeed_kmh)} km/h
+                                                                    {fmt(rec.wind_speed_kmh)} km/h
                                                                 </span>
                                                             </p>
                                                         </li>
@@ -678,21 +668,21 @@ const Profile: React.FC = () => {
                                         {/* ---- Recent datasets ---- */}
                                         <div className="min-w-0">
                                             <div className="mb-3 flex items-center justify-between gap-2">
-                                                <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                                                <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                                                     Recent Datasets
                                                 </h3>
                                                 <Link
                                                     to="/history"
-                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--bc-accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-1 text-xs font-semibold text-(--bc-accent-strong) hover:underline focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     View File History
                                                     <ArrowUpRight size={12} />
                                                 </Link>
                                             </div>
                                             {recentFiles.length === 0 ? (
-                                                <p className="rounded-xl border border-dashed border-[color:var(--bc-border-strong)] px-4 py-5 text-center text-xs text-[color:var(--bc-ink-faint)]">
+                                                <p className="rounded-xl border border-dashed border-(--bc-border-strong) px-4 py-5 text-center text-xs text-(--bc-ink-faint)">
                                                     No datasets yet —{" "}
-                                                    <Link to="/fileupload" className="font-semibold text-[color:var(--bc-accent-strong)] hover:underline">
+                                                    <Link to="/fileupload" className="font-semibold text-(--bc-accent-strong) hover:underline">
                                                         upload a CSV
                                                     </Link>
                                                     .
@@ -702,20 +692,20 @@ const Profile: React.FC = () => {
                                                     {recentFiles.map((file: ProfileFile) => (
                                                         <li
                                                             key={file.id}
-                                                            className="flex items-center gap-3 rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] px-3.5 py-2.5"
+                                                            className="flex items-center gap-3 rounded-xl border border-(--bc-border) bg-(--bc-surface-2) px-3.5 py-2.5"
                                                         >
-                                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color:var(--bc-surface)] text-[color:var(--bc-accent-strong)]">
+                                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--bc-surface) text-(--bc-accent-strong)">
                                                                 <FileSpreadsheet size={15} />
                                                             </span>
                                                             <div className="min-w-0 flex-1">
                                                                 <p className="truncate text-sm font-semibold" title={file.original_name}>
                                                                     {file.original_name}
                                                                 </p>
-                                                                <p className="truncate text-[11px] text-[color:var(--bc-ink-faint)]">
+                                                                <p className="truncate text-[11px] text-(--bc-ink-faint)">
                                                                     {formatInt(file.row_count)} rows · {formatInt(file.prediction_count)} predictions · {formatBytes(file.file_size)}
                                                                 </p>
                                                             </div>
-                                                            <p className="shrink-0 text-[11px] text-[color:var(--bc-ink-faint)]">
+                                                            <p className="shrink-0 text-[11px] text-(--bc-ink-faint)">
                                                                 {formatDate(file.created_at)}
                                                             </p>
                                                         </li>
@@ -738,7 +728,7 @@ const Profile: React.FC = () => {
                                         <SkeletonLine className="h-10" />
                                     </div>
                                 ) : (
-                                    <div className="pf-rise divide-y divide-[color:var(--bc-border)]">
+                                    <div className="pf-rise divide-y divide-(--bc-border)">
                                         <InfoRow icon={<Mail size={14} />} label="Full Name">
                                             <span className="block truncate">{user?.fullname || "—"}</span>
                                         </InfoRow>
@@ -757,17 +747,17 @@ const Profile: React.FC = () => {
 
                                         <div className="px-5 py-4">
                                             {user && !user.has_password && (
-                                                <p className="mb-3 rounded-xl bg-[color:var(--bc-surface-2)] px-3.5 py-2.5 text-xs leading-relaxed text-[color:var(--bc-ink-soft)]">
+                                                <p className="mb-3 rounded-xl bg-(--bc-surface-2) px-3.5 py-2.5 text-xs leading-relaxed text-(--bc-ink-soft)">
                                                     You can set a password from Account Settings for an additional sign-in
                                                     option.
                                                 </p>
                                             )}
                                             <Link
                                                 to={SETTINGS_ROUTE} /* TODO: real settings route */
-                                                className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--bc-border)] px-3.5 py-2 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                className="inline-flex items-center gap-2 rounded-lg border border-(--bc-border) px-3.5 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                             >
                                                 <Settings2 size={13} />
-                                                {user?.has_password ? "Manage password" : "Add a password"}
+                                                {user?.has_password ? "Manage Account" : "Add a password"}
                                             </Link>
                                         </div>
                                     </div>
@@ -777,21 +767,21 @@ const Profile: React.FC = () => {
                             {/* ============ PRIVACY & LEGAL ============ */}
                             <section aria-label="Privacy and legal" className={`${cardBase} px-6 py-4 lg:col-span-12`}>
                                 <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <p className="flex items-center gap-2 text-xs text-[color:var(--bc-ink-faint)]">
+                                    <p className="flex items-center gap-2 text-xs text-(--bc-ink-faint)">
                                         <Lock size={12} aria-hidden="true" />
                                         Your prediction and upload history is associated with your account.
                                     </p>
                                     <div className="flex items-center gap-4">
                                         <Link
                                             to={PRIVACY_ROUTE}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                         >
                                             <Lock size={12} aria-hidden="true" />
                                             Privacy Policy
                                         </Link>
                                         <Link
                                             to={TERMS_ROUTE}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                         >
                                             <ScrollText size={12} aria-hidden="true" />
                                             Terms &amp; Conditions
@@ -799,37 +789,12 @@ const Profile: React.FC = () => {
                                     </div>
                                 </div>
                             </section>
-
-                            {/* ============ DANGER ZONE ============ */}
-                            <section
-                                aria-label="Account removal"
-                                className="rounded-2xl border border-[color:var(--bc-danger)] bg-[color:var(--bc-danger-bg)] px-6 py-5 lg:col-span-12"
-                            >
-                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <div className="min-w-0">
-                                        <h2 className="pf-display text-base font-semibold text-[color:var(--bc-danger)]">Danger Zone</h2>
-                                        <p className="mt-1 max-w-[60ch] text-xs leading-relaxed text-[color:var(--bc-ink-soft)]">
-                                            Permanently remove your account and associated data. This action cannot be
-                                            undone.
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeleteOpen(true)}
-                                        disabled={deletingAccount}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--bc-danger)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[color:var(--bc-danger)] transition-colors hover:bg-[color:var(--bc-danger-bg)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
-                                    >
-                                        <Trash2 size={15} />
-                                        Delete Account
-                                    </button>
-                                </div>
-                            </section>
                         </div>
                     )}
                 </main>
 
-                <footer className="px-5 pb-8 text-center text-xs text-[color:var(--bc-ink-faint)]">
-                    <strong className="font-semibold text-[color:var(--bc-ink-soft)]">{companyName}</strong> · Environmental
+                <footer className="px-5 pb-8 text-center text-xs text-(--bc-ink-faint)">
+                    <strong className="font-semibold text-(--bc-ink-soft)">{companyName}</strong> · Environmental
                     intelligence, personally yours.
                 </footer>
             </div>

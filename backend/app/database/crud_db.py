@@ -331,7 +331,7 @@ def update_username(
     user_id: int,
     username: str,
 ) -> Authentication:
-
+    print(user_id)
     user = get_user_by_id(db, user_id)
 
     if not user:
@@ -410,7 +410,6 @@ def change_user_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No password is set for this account. Use set password instead.",
         )
-
     if not verify_password(
         current_password,
         user.hashed_password,

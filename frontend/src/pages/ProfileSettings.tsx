@@ -831,7 +831,6 @@ const ProfileSettings: React.FC = () => {
                                                 {user?.fullname || user?.username || "Your account"}
                                             </h2>
                                             <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--bc-accent-strong)]">
-                                                <AtSign size={13} aria-hidden="true" />
                                                 {user?.username ?? "—"}
                                             </p>
                                             <dl className="mt-5 space-y-3 border-t border-[color:var(--bc-border)] pt-5 text-sm">

@@ -409,7 +409,7 @@ const HeroGauge: React.FC<{ isDark: boolean }> = ({ isDark }) => {
   ];
 
   return (
-    <div className="relative mx-auto flex h-[380px] w-[380px] items-center justify-center lg:h-[440px] lg:w-[440px]">
+    <div className="relative mx-auto flex h-95 w-95 items-center justify-center lg:h-110 lg:w-110">
       <svg viewBox="0 0 400 400" className="h-full w-full" aria-hidden="true" focusable="false">
         <defs>
           <radialGradient id="ip-gauge-glow" cx="50%" cy="50%" r="50%">
@@ -457,8 +457,8 @@ const HeroGauge: React.FC<{ isDark: boolean }> = ({ isDark }) => {
           opacity="0.9"
         />
 
-        <g className="ip-sweep">
-          <line x1="200" y1="200" x2="200" y2="62" stroke={accent} strokeOpacity="0.5" strokeWidth="1.5" />
+        <g className="">
+          <line x1="200" y1="200" x2="400" y2="62" stroke={accent} strokeOpacity="0.5" strokeWidth="1.5" />
         </g>
 
         <circle className="ip-pulse-node" cx="200" cy="200" r="10" fill="none" stroke={accent} strokeOpacity="0.5" strokeWidth="1" />

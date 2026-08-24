@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    Sun,
-    Moon,
     Wind,
     Thermometer,
     Droplets,
@@ -10,15 +8,12 @@ import {
     Activity,
     FileSpreadsheet,
     Clock,
-    ArrowRight,
     ChevronRight,
     AlertCircle,
     RotateCcw,
     Lock,
     ScrollText,
-    History,
     Upload,
-    User,
     Sparkles,
     CloudSun,
 } from "lucide-react";
@@ -26,8 +21,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import { fetchProfile } from "../app/features/profile/profileSlice";
 import { metrics as fetchMetrics } from "../api/predictionApi";
-import type { ProfileResponse, ProfileUser } from "../hooks/types/profile.type";
-import type { PredictionHistory, UploadedFile } from "../hooks/types/history.type";
+import type { ProfileUser } from "../hooks/types/profile.type";
 import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
@@ -39,12 +33,6 @@ interface MetricsResponse {
     mse: number;
     rmse: number;
     r2: number;
-}
-
-interface ProfileState {
-    profile: ProfileResponse | null;
-    loading: boolean;
-    error: string | null;
 }
 
 /* ============================================================================
@@ -225,12 +213,12 @@ const Card: React.FC<{
     children: React.ReactNode;
     className?: string;
 }> = ({ title, icon, action, children, className = "" }) => (
-    <div className={`rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] backdrop-blur-md shadow-[0_18px_50px_-30px_rgba(9,30,34,0.15)] p-5 sm:p-6 ${className}`}>
+    <div className={`rounded-2xl border border-(--bc-border) bg-(--bc-surface) backdrop-blur-md shadow-[0_18px_50px_-30px_rgba(9,30,34,0.15)] p-5 sm:p-6 ${className}`}>
         {(title || action) && (
             <div className="flex items-center justify-between mb-4">
                 {title && (
-                    <h2 className="home-display text-base font-semibold flex items-center gap-2 text-[var(--bc-ink)]">
-                        {icon && <span className="text-[var(--bc-accent-strong)]">{icon}</span>}
+                    <h2 className="home-display text-base font-semibold flex items-center gap-2 text-(--bc-ink)">
+                        {icon && <span className="text-(--bc-accent-strong)">{icon}</span>}
                         {title}
                     </h2>
                 )}
@@ -242,25 +230,25 @@ const Card: React.FC<{
 );
 
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; loading?: boolean }> = ({ icon, label, value, loading }) => (
-    <div className="rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] backdrop-blur-md p-4 sm:p-5">
-        <div className="flex items-center gap-2 text-[var(--bc-ink-faint)] mb-2">
+    <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) backdrop-blur-md p-4 sm:p-5">
+        <div className="flex items-center gap-2 text-(--bc-ink-faint) mb-2">
             {icon}
             <p className="text-[10px] font-bold uppercase tracking-[0.08em]">{label}</p>
         </div>
         {loading ? (
-            <div className="h-7 w-16 animate-pulse rounded-md bg-[var(--bc-track)]" />
+            <div className="h-7 w-16 animate-pulse rounded-md bg-(--bc-track)" />
         ) : (
-            <p className="home-display text-2xl font-semibold text-[var(--bc-ink)]">{value}</p>
+            <p className="home-display text-2xl font-semibold text-(--bc-ink)">{value}</p>
         )}
     </div>
 );
 
 const EnvChip: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
-    <div className="flex items-center gap-2 rounded-lg bg-[var(--bc-surface-2)] border border-[var(--bc-border)] px-3 py-2">
-        <span className="text-[var(--bc-ink-faint)]">{icon}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-(--bc-surface-2) border border-(--bc-border) px-3 py-2">
+        <span className="text-(--bc-ink-faint)">{icon}</span>
         <div className="min-w-0">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--bc-ink-faint)]">{label}</p>
-            <p className="text-xs font-semibold text-[var(--bc-ink)] truncate">{value}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-(--bc-ink-faint)">{label}</p>
+            <p className="text-xs font-semibold text-(--bc-ink) truncate">{value}</p>
         </div>
     </div>
 );
@@ -281,14 +269,14 @@ const AqiBadge: React.FC<{ value: number }> = ({ value }) => {
 const NavLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => (
     <Link
         to={to}
-        className="font-semibold text-[var(--bc-accent-strong)] hover:underline underline-offset-2 decoration-[var(--bc-accent)]/40 transition-colors hover:text-[var(--bc-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
+        className="font-semibold text-(--bc-accent-strong) hover:underline underline-offset-2 decoration-(--bc-accent)/40 transition-colors hover:text-(--bc-accent) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
     >
         {children}
     </Link>
 );
 
 const SkeletonLine: React.FC<{ className?: string }> = ({ className = "" }) => (
-    <div className={`animate-pulse rounded-lg bg-[var(--bc-track)] ${className}`} aria-hidden="true" />
+    <div className={`animate-pulse rounded-lg bg-(--bc-track) ${className}`} aria-hidden="true" />
 );
 
 /* ============================================================================
@@ -299,7 +287,7 @@ const Home: React.FC = () => {
     const mode = useAppSelector((state) => state.theme.mode);
     const isDark = mode === "dark";
 
-    const profileState = useAppSelector((state) => (state as any).profile) as ProfileState | undefined;
+    const profileState = useAppSelector((state) => state.profile);
     const profile = profileState?.profile ?? null;
     const profileLoading = profileState?.loading ?? false;
 
@@ -372,7 +360,7 @@ const Home: React.FC = () => {
 
     return (
         <div
-            className="home-root relative min-h-screen bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-500"
+            className="home-root relative min-h-screen bg-(--bc-bg) text-(--bc-ink) transition-colors duration-500"
             data-theme={isDark ? "dark" : "day"}
         >
             <style>{`
@@ -435,7 +423,7 @@ const Home: React.FC = () => {
             <div className="relative z-10 flex min-h-screen flex-col">
                 <Navbar />
 
-                <main className="flex-1 w-full max-w-[1240px] mx-auto px-5 sm:px-8 py-8 sm:py-12">
+                <main className="flex-1 w-full max-w-310 mx-auto px-5 sm:px-8 py-8 sm:py-12">
                     
                     {/* ================= HERO ================= */}
                     <section className="mb-10">
@@ -455,29 +443,29 @@ const Home: React.FC = () => {
                             /* Returning User */
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                                 <div className="md:col-span-5">
-                                    <p className="text-sm font-semibold text-[var(--bc-accent-strong)] uppercase tracking-wider mb-2">
+                                    <p className="text-sm font-semibold text-(--bc-accent-strong) uppercase tracking-wider mb-2">
                                         {getGreeting()}, {userName}
                                     </p>
                                     <h1 className="home-display text-3xl sm:text-4xl font-semibold mb-3 leading-tight">
                                         Your atmosphere at a glance.
                                     </h1>
-                                    <p className="text-[var(--bc-ink-soft)] mb-6 max-w-md">
+                                    <p className="text-(--bc-ink-soft) mb-6 max-w-md">
                                         Here is the latest environmental synthesis from your workspace.
                                     </p>
                                     <Link
                                         to="/predict"
-                                        className="inline-flex items-center gap-2 rounded-lg bg-[var(--bc-accent-strong)] px-5 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
+                                        className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-5 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                     >
                                         <Sparkles size={15} />
                                         Analyze Air Quality
                                     </Link>
                                 </div>
                                 <div className="md:col-span-7">
-                                    <div className="rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] backdrop-blur-md p-6 shadow-lg">
+                                    <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) backdrop-blur-md p-6 shadow-lg">
                                         <div className="flex items-start justify-between mb-4">
                                             <div>
-                                                <p className="text-xs font-bold uppercase tracking-wider text-[var(--bc-ink-faint)]">Latest Prediction</p>
-                                                <p className="text-sm text-[var(--bc-ink-soft)] mt-1">{formatDate(latestPrediction.created_at)}</p>
+                                                <p className="text-xs font-bold uppercase tracking-wider text-(--bc-ink-faint)">Latest Prediction</p>
+                                                <p className="text-sm text-(--bc-ink-soft) mt-1">{formatDate(latestPrediction.created_at)}</p>
                                             </div>
                                             <span
                                                 className="px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -491,14 +479,14 @@ const Home: React.FC = () => {
                                             <span className="home-display text-6xl font-semibold" style={{ color: aqiMeta?.color }}>
                                                 {Math.round(latestPrediction.prediction)}
                                             </span>
-                                            <span className="text-lg font-medium text-[var(--bc-ink-faint)]">AQI</span>
+                                            <span className="text-lg font-medium text-(--bc-ink-faint)">AQI</span>
                                         </div>
 
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                            <EnvChip icon={<Thermometer size={14} />} label="Temp" value={`${fmt(latestPrediction.Temperature_C)}°C`} />
-                                            <EnvChip icon={<Droplets size={14} />} label="Humidity" value={`${fmt(latestPrediction.Humidity_pct)}%`} />
-                                            <EnvChip icon={<Wind size={14} />} label="Wind" value={`${fmt(latestPrediction.WindSpeed_kmh)} km/h`} />
-                                            <EnvChip icon={<Gauge size={14} />} label="Pressure" value={`${fmt(latestPrediction.Pressure_hPa)} hPa`} />
+                                            <EnvChip icon={<Thermometer size={14} />} label="Temp" value={`${fmt(latestPrediction.temperature_c)}°C`} />
+                                            <EnvChip icon={<Droplets size={14} />} label="Humidity" value={`${fmt(latestPrediction.humidity_pct)}%`} />
+                                            <EnvChip icon={<Wind size={14} />} label="Wind" value={`${fmt(latestPrediction.wind_speed_kmh)} km/h`} />
+                                            <EnvChip icon={<Gauge size={14} />} label="Pressure" value={`${fmt(latestPrediction.pressure_hpa)} hPa`} />
                                         </div>
                                     </div>
                                 </div>
@@ -506,18 +494,18 @@ const Home: React.FC = () => {
                         ) : (
                             /* New User */
                             <div className="text-center max-w-2xl mx-auto py-12">
-                                <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--bc-surface-2)] text-[var(--bc-accent-strong)] mb-6 border border-[var(--bc-border)]">
+                                <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-(--bc-surface-2) text-(--bc-accent-strong) mb-6 border border-(--bc-border)">
                                     <CloudSun size={28} />
                                 </span>
                                 <h1 className="home-display text-3xl sm:text-4xl font-semibold mb-3 leading-tight">
                                     Your environmental workspace is ready.
                                 </h1>
-                                <p className="text-[var(--bc-ink-soft)] mb-8 max-w-lg mx-auto">
+                                <p className="text-(--bc-ink-soft) mb-8 max-w-lg mx-auto">
                                     Start by analyzing current air quality conditions, or upload a dataset to process environmental records at scale.
                                 </p>
                                 <Link
                                     to="/predict"
-                                    className="inline-flex items-center gap-2 rounded-lg bg-[var(--bc-accent-strong)] px-6 py-3 text-base font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
+                                    className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-6 py-3 text-base font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                 >
                                     <Sparkles size={16} />
                                     Analyze Air Quality
@@ -544,7 +532,7 @@ const Home: React.FC = () => {
                                 icon={<Gauge size={16} />}
                                 action={
                                     historyTotal > 0 && (
-                                        <Link to="/history" className="text-xs font-semibold text-[var(--bc-accent-strong)] hover:underline flex items-center gap-1">
+                                        <Link to="/history" className="text-xs font-semibold text-(--bc-accent-strong) hover:underline flex items-center gap-1">
                                             View full history <ChevronRight size={12} />
                                         </Link>
                                     )
@@ -558,25 +546,25 @@ const Home: React.FC = () => {
                                     </div>
                                 ) : recentPredictions.length === 0 ? (
                                     <div className="text-center py-8">
-                                        <p className="text-sm text-[var(--bc-ink-soft)] mb-3">No environmental predictions yet.</p>
-                                        <Link to="/predict" className="text-sm font-semibold text-[var(--bc-accent-strong)] hover:underline">
+                                        <p className="text-sm text-(--bc-ink-soft) mb-3">No environmental predictions yet.</p>
+                                        <Link to="/predict" className="text-sm font-semibold text-(--bc-accent-strong) hover:underline">
                                             Run your first analysis →
                                         </Link>
                                     </div>
                                 ) : (
-                                    <ul className="divide-y divide-[var(--bc-border)] -mx-5 sm:-mx-6">
+                                    <ul className="divide-y divide-(--bc-border) -mx-5 sm:-mx-6">
                                         {recentPredictions.map((p) => (
-                                            <li key={p.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-[var(--bc-surface-2)] transition-colors">
+                                            <li key={p.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <AqiBadge value={p.prediction} />
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-medium truncate">{formatDate(p.created_at)}</p>
-                                                        <p className="text-xs text-[var(--bc-ink-faint)]">
-                                                            {fmt(p.Temperature_C)}°C · {fmt(p.WindSpeed_kmh)} km/h
+                                                        <p className="text-xs text-(--bc-ink-faint)">
+                                                            {fmt(p.temperature_c)}°C · {fmt(p.wind_speed_kmh)} km/h
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <ChevronRight size={16} className="text-[var(--bc-ink-faint)] shrink-0" />
+                                                <ChevronRight size={16} className="text-(--bc-ink-faint) shrink-0" />
                                             </li>
                                         ))}
                                     </ul>
@@ -589,7 +577,7 @@ const Home: React.FC = () => {
                                 icon={<Upload size={16} />}
                                 action={
                                     filesTotal > 0 && (
-                                        <Link to="/history" className="text-xs font-semibold text-[var(--bc-accent-strong)] hover:underline flex items-center gap-1">
+                                        <Link to="/history" className="text-xs font-semibold text-(--bc-accent-strong) hover:underline flex items-center gap-1">
                                             View file history <ChevronRight size={12} />
                                         </Link>
                                     )
@@ -602,27 +590,27 @@ const Home: React.FC = () => {
                                     </div>
                                 ) : recentFiles.length === 0 ? (
                                     <div className="text-center py-8">
-                                        <p className="text-sm text-[var(--bc-ink-soft)] mb-3">No datasets processed yet.</p>
-                                        <Link to="/fileupload" className="text-sm font-semibold text-[var(--bc-accent-strong)] hover:underline">
+                                        <p className="text-sm text-(--bc-ink-soft) mb-3">No datasets processed yet.</p>
+                                        <Link to="/fileupload" className="text-sm font-semibold text-(--bc-accent-strong) hover:underline">
                                             Upload a CSV →
                                         </Link>
                                     </div>
                                 ) : (
-                                    <ul className="divide-y divide-[var(--bc-border)] -mx-5 sm:-mx-6">
+                                    <ul className="divide-y divide-(--bc-border) -mx-5 sm:-mx-6">
                                         {recentFiles.map((f) => (
-                                            <li key={f.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-[var(--bc-surface-2)] transition-colors">
+                                            <li key={f.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--bc-surface-2)] text-[var(--bc-accent-strong)] border border-[var(--bc-border)]">
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--bc-surface-2) text-(--bc-accent-strong) border border-(--bc-border)">
                                                         <FileSpreadsheet size={16} />
                                                     </span>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-medium truncate" title={f.original_name}>{f.original_name}</p>
-                                                        <p className="text-xs text-[var(--bc-ink-faint)]">
+                                                        <p className="text-xs text-(--bc-ink-faint)">
                                                             {formatInt(f.row_count)} rows · {formatInt(f.prediction_count)} predictions
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <span className="text-xs text-[var(--bc-ink-faint)] shrink-0">{formatRelative(f.created_at)}</span>
+                                                <span className="text-xs text-(--bc-ink-faint) shrink-0">{formatRelative(f.created_at)}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -642,36 +630,36 @@ const Home: React.FC = () => {
                                     </div>
                                 ) : metricsError ? (
                                     <div className="flex flex-col items-center text-center py-6 gap-3">
-                                        <AlertCircle size={20} className="text-[var(--bc-danger)]" />
-                                        <p className="text-sm text-[var(--bc-ink-soft)]">Unable to load model metrics.</p>
+                                        <AlertCircle size={20} className="text-(--bc-danger)" />
+                                        <p className="text-sm text-(--bc-ink-soft)">Unable to load model metrics.</p>
                                         <button
                                             onClick={() => window.location.reload()}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--bc-accent-strong)] hover:underline"
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--bc-accent-strong) hover:underline"
                                         >
                                             <RotateCcw size={12} /> Try Again
                                         </button>
                                     </div>
                                 ) : metricsData ? (
                                     <div className="space-y-4">
-                                        <div className="rounded-xl bg-[var(--bc-surface-2)] border border-[var(--bc-border)] p-4">
+                                        <div className="rounded-xl bg-(--bc-surface-2) border border-(--bc-border) p-4">
                                             <div className="flex items-baseline justify-between mb-1">
-                                                <span className="text-xs font-bold uppercase tracking-wider text-[var(--bc-ink-faint)]">R² Score</span>
-                                                <span className="home-display text-xl font-semibold text-[var(--bc-accent-strong)]">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-(--bc-ink-faint)">R² Score</span>
+                                                <span className="home-display text-xl font-semibold text-(--bc-accent-strong)">
                                                     {metricsData.r2.toFixed(3)}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-[var(--bc-ink-soft)]">Variance explained by the model</p>
+                                            <p className="text-xs text-(--bc-ink-soft)">Variance explained by the model</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="rounded-xl bg-[var(--bc-surface-2)] border border-[var(--bc-border)] p-3">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--bc-ink-faint)]">MAE</span>
+                                            <div className="rounded-xl bg-(--bc-surface-2) border border-(--bc-border) p-3">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-(--bc-ink-faint)">MAE</span>
                                                 <p className="home-display text-lg font-semibold mt-1">{metricsData.mae.toFixed(2)}</p>
-                                                <p className="text-[10px] text-[var(--bc-ink-faint)] mt-0.5">Mean Absolute Error</p>
+                                                <p className="text-[10px] text-(--bc-ink-faint) mt-0.5">Mean Absolute Error</p>
                                             </div>
-                                            <div className="rounded-xl bg-[var(--bc-surface-2)] border border-[var(--bc-border)] p-3">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--bc-ink-faint)]">RMSE</span>
+                                            <div className="rounded-xl bg-(--bc-surface-2) border border-(--bc-border) p-3">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-(--bc-ink-faint)">RMSE</span>
                                                 <p className="home-display text-lg font-semibold mt-1">{metricsData.rmse.toFixed(2)}</p>
-                                                <p className="text-[10px] text-[var(--bc-ink-faint)] mt-0.5">Root Mean Square</p>
+                                                <p className="text-[10px] text-(--bc-ink-faint) mt-0.5">Root Mean Square</p>
                                             </div>
                                         </div>
                                     </div>
@@ -680,7 +668,7 @@ const Home: React.FC = () => {
 
                             {/* Workspace Guidance */}
                             <Card title="Your Workspace" icon={<Sparkles size={16} />}>
-                                <div className="text-sm text-[var(--bc-ink-soft)] space-y-3 leading-relaxed">
+                                <div className="text-sm text-(--bc-ink-soft) space-y-3 leading-relaxed">
                                     <p>
                                         Need a prediction? Open <NavLink to="/predict">Analyze Air Quality</NavLink>.
                                     </p>
@@ -697,11 +685,11 @@ const Home: React.FC = () => {
                             </Card>
 
                             {/* Legal */}
-                            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[var(--bc-ink-faint)] pt-2">
-                                <Link to="/privacy-policy" className="inline-flex items-center gap-1.5 hover:text-[var(--bc-ink-soft)] transition-colors">
+                            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-(--bc-ink-faint) pt-2">
+                                <Link to="/privacy-policy" className="inline-flex items-center gap-1.5 hover:text-(--bc-ink-soft) transition-colors">
                                     <Lock size={11} /> Privacy Policy
                                 </Link>
-                                <Link to="/terms-and-conditions" className="inline-flex items-center gap-1.5 hover:text-[var(--bc-ink-soft)] transition-colors">
+                                <Link to="/terms-and-conditions" className="inline-flex items-center gap-1.5 hover:text-(--bc-ink-soft) transition-colors">
                                     <ScrollText size={11} /> Terms & Conditions
                                 </Link>
                             </div>

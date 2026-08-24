@@ -222,7 +222,7 @@ export const changePassword = async (
     currentPassword: string,
     newPassword: string,
 ): Promise<ChangePasswordResponse> => {
-    const response = await API.post("/password/change", {
+    const response = await API.patch("/password/change", {
         current_password: currentPassword,
         new_password: newPassword,
     });

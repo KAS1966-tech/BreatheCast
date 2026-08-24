@@ -720,7 +720,7 @@ def update_name(
         )
 
 @router.patch("/profile/username")
-def update_username(
+def update_user_profile_username(
     payload: UpdateUsernameRequest,
     user: Authentication = Depends(current_user),
     db: Session = Depends(get_db),
