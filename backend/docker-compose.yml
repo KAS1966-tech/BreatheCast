@@ -12,11 +12,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - breathecast_postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   backend:
     build: .
+    image: breathecast-backend:latest
     container_name: fastapi_backend
     restart: unless-stopped
     ports:
@@ -28,6 +29,7 @@ services:
 
   frontend:
     build: ../frontend
+    image: breathecast-frontend:latest
     container_name: vite_frontend
     restart: unless-stopped
     ports:
@@ -41,4 +43,4 @@ services:
       - backend
 
 volumes:
-  postgres_data:
+  breathecast_postgres_data:
