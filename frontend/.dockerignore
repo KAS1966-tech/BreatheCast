@@ -1,0 +1,43 @@
+# Dependencies (Crucial to ignore)
+node_modules/
+.pnpm-store/
+.yarn/
+
+# Local Environment Files (Security risk if included)
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Build Artifacts / Framework Outputs
+dist/
+build/
+.next/
+.nuxt/
+out/
+.docusaurus/
+
+# IDEs and Text Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS System Files
+.DS_Store
+Thumbs.db
+
+# Logs and Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Version Control
+.git
+.gitignore
