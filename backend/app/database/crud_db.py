@@ -254,7 +254,7 @@ def delete_refresh_token(
 def generate_user_tokens(db: Session, user: Authentication):
 
     payload = {
-        "id": user.id,
+        "sub": user.id,
         "username": user.username,
         "email": user.email
     }

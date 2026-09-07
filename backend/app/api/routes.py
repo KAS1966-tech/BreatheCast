@@ -298,40 +298,96 @@ def sign_up(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error,
         )
-
-@router.post("/login",response_model=LoginResponse)
-def login(response : Response,formdata:LoginRequest,db:Session = Depends(get_db)):
+@router.post("/refresh")
+def refresh(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     try:
-        user_credientials = verify_user(db,formdata)
+        old_token = request.cookies.get("refresh_token")
+
+        if not old_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token missing"
+            )
+
+        stored = get_refresh_token(
+            db,
+            old_token
+        )
+
+        if not stored:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token revoked"
+            )
+
+        payload = decode_refresh_token(old_token)
+
+        user = get_user_by_id(
+            db,
+            int(payload["sub"])
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+
+        delete_refresh_token(
+            db,
+            old_token
+        )
+
+        access_token, refresh_token = generate_user_tokens(
+            db,
+            user
+        )
+
         response.set_cookie(
             key="access_token",
-            value=user_credientials["access_token"],
+            value=access_token,
             httponly=True,
-            samesite="lax",
             secure=settings.IS_PROD,
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
-            path="/"
+            path="/",
         )
 
         response.set_cookie(
             key="refresh_token",
-            value=user_credientials["refresh_token"],
+            value=refresh_token,
             httponly=True,
-            samesite="lax",
             secure=settings.IS_PROD,
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
-            path="/"
+            path="/",
         )
 
-        return user_credientials
-    except HTTPException:
-        logger.exception("Login failed")
-        raise
-    except Exception as e:
-        logger.exception("Login failed")
-        error = str(e) if settings.DEBUG else settings.ERROR_MESSAGE
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=error)
+        return {
+            "message": "Token refreshed"
+        }
 
+    except HTTPException:
+        logger.warning("Token refresh failed")
+        raise
+
+    except Exception as e:
+        logger.exception("Unexpected error during token refresh")
+
+        error = (
+            str(e)
+            if settings.DEBUG
+            else settings.ERROR_MESSAGE
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error
+        )
 @router.post("/auth/google", response_model=GoogleLoginResponse)
 def google_login(
     response: Response,
@@ -467,7 +523,7 @@ def refresh(
 
     user = get_user_by_id(
         db,
-        int(payload["id"])
+        int(payload["sub"])
     )
 
     if not user:
