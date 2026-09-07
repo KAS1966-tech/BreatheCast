@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, Wind, ArrowRight } from "lucide-react";
 import Animated from "./Animated"; // Adjust path if needed
-import { companyName } from "../core/config";
+import { companyName, PRIVACY_EMAIL } from "../core/config";
 import { useAppSelector } from "../app/redux";
 
 /* ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ const Footer = () => {
             <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
                 {/* Giant Background Text */}
                 <div className="absolute inset-0 flex items-end justify-center pointer-events-none select-none overflow-hidden">
-                    <span className="font-[var(--bc-font-display)] text-[160px] sm:text-[220px] leading-none font-bold text-[var(--bc-border)] opacity-60 tracking-tighter whitespace-nowrap">
+                    <span className="font-bold text-[160px] sm:text-[220px] leading-none text-(--bc-border) opacity-60 tracking-tighter whitespace-nowrap">
                         {companyName}
                     </span>
                 </div>
@@ -159,7 +159,7 @@ const Footer = () => {
                                 <Link
                                     to="/login"
                                     className={cx(
-                                        "inline-flex items-center justify-center gap-[7px] rounded-[10px] px-4 py-[9px] text-[13.5px] font-semibold font-body transition-[transform,box-shadow,border-color,background-color,color] duration-200 ease-in-out",
+                                        "inline-flex items-center justify-center gap-1.75 rounded-[10px] px-4 py-2.25 text-[13.5px] font-semibold font-body transition-[transform,box-shadow,border-color,background-color,color] duration-200 ease-in-out",
                                         ui.ghostBtn
                                     )}
                                 >
@@ -168,7 +168,7 @@ const Footer = () => {
                                 <Link
                                     to="/signup"
                                     className={cx(
-                                        "inline-flex items-center justify-center gap-[7px] rounded-[10px] px-4 py-[9px] text-[13.5px] font-semibold font-body transition-[transform,box-shadow,border-color,background-color,color] duration-200 ease-in-out",
+                                        "inline-flex items-center justify-center gap-1.75 rounded-[10px] px-4 py-2.25 text-[13.5px] font-semibold font-body transition-[transform,box-shadow,border-color,background-color,color] duration-200 ease-in-out",
                                         ui.primaryBtn
                                     )}
                                 >
@@ -304,7 +304,7 @@ const Footer = () => {
                             <div className="flex flex-col gap-4">
                                 <Animated delay={0.35}>
                                     <a
-                                        href="mailto:hello@breathecast.app"
+                                        href={`mailto:${PRIVACY_EMAIL}`}
                                         className={cx(
                                             "flex items-center gap-2.5 text-sm font-medium transition-colors duration-200",
                                             ui.textSoft,
@@ -315,12 +315,12 @@ const Footer = () => {
                                             size={16}
                                             className={cx("shrink-0", ui.accent)}
                                         />
-                                        hello@breathecast.app
+                                        {PRIVACY_EMAIL}
                                     </a>
                                 </Animated>
                                 <Animated delay={0.4}>
                                     <a
-                                        href="tel:+15550198372"
+                                        href="tel:+923021234567"
                                         className={cx(
                                             "flex items-center gap-2.5 text-sm font-medium transition-colors duration-200",
                                             ui.textSoft,
@@ -331,7 +331,7 @@ const Footer = () => {
                                             size={16}
                                             className={cx("shrink-0", ui.accent)}
                                         />
-                                        +1 (555) 019-8372
+                                        +92-302-1234567
                                     </a>
                                 </Animated>
                             </div>
