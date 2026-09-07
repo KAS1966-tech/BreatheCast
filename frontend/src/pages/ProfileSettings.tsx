@@ -2,14 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-    AtSign,
     Mail,
     CalendarDays,
     KeyRound,
     LogIn,
     Pencil,
     Check,
-    X,
     Trash2,
     AlertTriangle,
     Loader2,

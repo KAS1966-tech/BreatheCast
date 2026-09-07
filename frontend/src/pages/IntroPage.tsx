@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowDown,
@@ -16,22 +16,21 @@ import {
   Layers,
   Lock,
   Mail,
-  Moon,
   ScanLine,
   ShieldCheck,
   SlidersHorizontal,
-  Sun,
   Upload,
   Wind,
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
-import { useAppDispatch, useAppSelector } from "../app/redux";
-import { toggleTheme } from "../app/features/theme/themeSlice";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import { metrics } from "../api/predictionApi";
+import Animated from "../components/Animated";
+import Navbar from "../components/Navbar";
+import { useAppSelector } from "../app/redux";
 // ---------------------------------------------------------------------------
 
 /* ---------------------------------------------------------------------------
@@ -73,15 +72,9 @@ const BTN_PRIMARY =
   "hover:shadow-[0_14px_30px_-14px_color-mix(in_srgb,var(--bc-cta-bg)_65%,transparent)]";
 
 const BTN_GHOST =
-  `${BTN_BASE} border border-[var(--bc-border-strong)] ` +
-  "bg-[color-mix(in_srgb,var(--bc-surface)_55%,transparent)] text-[var(--bc-ink)] " +
-  "backdrop-blur-sm hover:bg-[var(--bc-surface)]";
-
-const ICON_BTN =
-  "inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--bc-border)] " +
-  "bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] transition-colors hover:border-[var(--bc-border-strong)] " +
-  "hover:text-[var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-[var(--bc-accent)]";
+  `${BTN_BASE} border border-(--bc-border-strong) ` +
+  "bg-[color-mix(in_srgb,var(--bc-surface)_55%,transparent)] text-(--bc-ink) " +
+  "backdrop-blur-sm hover:bg-(--bc-surface)";
 
 /* ---------------------------------------------------------------------------
 Content data
@@ -184,59 +177,6 @@ function clamp01(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(1, Math.max(0, value));
 }
-
-/* ---------------------------------------------------------------------------
-Scroll reveal (CSS-driven, IntersectionObserver only — no animation loop)
---------------------------------------------------------------------------- */
-function useReveal<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVisible(true);
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -48px 0px" }
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  return { ref, visible };
-}
-
-const Reveal: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}> = ({ children, className = "", delay = 0 }) => {
-  const { ref, visible } = useReveal<HTMLDivElement>();
-
-  return (
-    <div
-      ref={ref}
-      className={`ip-reveal ${visible ? "is-visible" : ""} ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-    >
-      {children}
-    </div>
-  );
-};
 
 /* ---------------------------------------------------------------------------
 Atmospheric backdrop (manual SVG + CSS only)
@@ -473,9 +413,9 @@ const HeroGauge: React.FC<{ isDark: boolean }> = ({ isDark }) => {
         <span
           key={chip.label}
           aria-hidden="true"
-          className={`ip-float-chip absolute ${chip.className} rounded-full border border-[var(--bc-border-strong)] ` +
+          className={`ip-float-chip absolute ${chip.className} rounded-full border border-(--bc-border-strong) ` +
             "bg-[color-mix(in_srgb,var(--bc-surface)_70%,transparent)] px-3 py-1 text-xs font-medium " +
-            "text-[var(--bc-ink-soft)] backdrop-blur-sm"}
+            "text-(--bc-ink-soft) backdrop-blur-sm"}
           style={{ animationDelay: chip.delay }}
         >
           {chip.label}
@@ -575,14 +515,18 @@ const SectionHeader: React.FC<{
 }> = ({ eyebrow, title, sub }) => (
   <div className="mx-auto max-w-2xl text-center">
     {eyebrow && (
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--bc-accent-strong)]">
+      <Animated y={-50}>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--bc-accent-strong)">
         {eyebrow}
       </p>
+      </Animated>
     )}
-    <h2 className="mt-3 font-[var(--bc-font-display)] text-3xl font-semibold text-[var(--bc-ink)] sm:text-4xl">
+    <Animated y={20}>
+      <h2 className="mt-3 text-3xl font-semibold text-(--bc-ink) sm:text-4xl">
       {title}
     </h2>
-    {sub && <p className="mt-4 text-base leading-relaxed text-[var(--bc-ink-soft)]">{sub}</p>}
+    </Animated>
+    {sub && <Animated delay={0.2} y={50}><p className="mt-4 text-base leading-relaxed text-(--bc-ink-soft)">{sub}</p></Animated>}
   </div>
 );
 
@@ -590,12 +534,12 @@ const SectionHeader: React.FC<{
 Model metrics (real data only)
 --------------------------------------------------------------------------- */
 const MetricSkeleton: React.FC = () => (
-  <div className="ip-skeleton rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6">
-    <div className="h-3 w-16 rounded-full bg-[var(--bc-track)]" />
-    <div className="mt-4 h-8 w-24 rounded-md bg-[var(--bc-track)]" />
-    <div className="mt-3 h-3 w-28 rounded-full bg-[var(--bc-track)]" />
-    <div className="mt-4 h-3 w-full rounded-full bg-[var(--bc-track)]" />
-    <div className="mt-2 h-3 w-2/3 rounded-full bg-[var(--bc-track)]" />
+  <div className="ip-skeleton rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6">
+    <div className="h-3 w-16 rounded-full bg-(--bc-track)" />
+    <div className="mt-4 h-8 w-24 rounded-md bg-(--bc-track)" />
+    <div className="mt-3 h-3 w-28 rounded-full bg-(--bc-track)" />
+    <div className="mt-4 h-3 w-full rounded-full bg-(--bc-track)" />
+    <div className="mt-2 h-3 w-2/3 rounded-full bg-(--bc-track)" />
   </div>
 );
 
@@ -624,13 +568,11 @@ const ModelMetrics: React.FC = () => {
   return (
     <section id="model-performance" className="py-20 sm:py-24">
       <div className={CONTAINER}>
-        <Reveal>
           <SectionHeader
             eyebrow="Model performance"
             title="How well the model predicts"
             sub="Every prediction comes from a model evaluated against observed data. These metrics summarize that performance."
           />
-        </Reveal>
 
         <div className="mt-12">
           {status === "loading" && (
@@ -643,49 +585,49 @@ const ModelMetrics: React.FC = () => {
           )}
 
           {status === "error" && (
-            <Reveal>
-              <div className="mx-auto max-w-xl rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-8 text-center">
-                <p className="text-sm text-[var(--bc-ink-soft)]">
+            <Animated y={-60}>
+              <div className="mx-auto max-w-xl rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-8 text-center">
+                <p className="text-sm text-(--bc-ink-soft)">
                   Model performance metrics are temporarily unavailable. The rest of{" "}
                   {companyName} works as usual.
                 </p>
               </div>
-            </Reveal>
+            </Animated>
           )}
 
           {status === "success" && (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {cards.map((card, i) => (
-                <Reveal key={card.key} delay={i * 70}>
-                  <div className="h-full rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6 shadow-[var(--bc-shadow)]">
+                <Animated key={card.key} delay={i * 0.15}>
+                  <div className="h-full rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 shadow-(--bc-shadow)">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-[var(--bc-ink-faint)]">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-(--bc-ink-faint)">
                         {card.label}
                       </span>
-                      <span className="text-[10px] font-medium text-[var(--bc-ink-faint)]">
+                      <span className="text-[10px] font-medium text-(--bc-ink-faint)">
                         {card.direction === "lower" ? "↓ lower is better" : "↑ closer to 1"}
                       </span>
                     </div>
 
-                    <p className="mt-4 font-[var(--bc-font-display)] text-3xl font-semibold text-[var(--bc-ink)]">
+                    <p className="mt-4 text-3xl font-semibold text-(--bc-ink)">
                       {formatMetric(card.value, card.unit)}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-[var(--bc-ink-soft)]">{card.name}</p>
+                    <p className="mt-1 text-sm font-medium text-(--bc-ink-soft)">{card.name}</p>
 
                     {card.unit === "ratio" && (
-                      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bc-track)]">
+                      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-(--bc-track)">
                         <div
-                          className="h-full origin-left rounded-full bg-[var(--bc-accent)]"
+                          className="h-full origin-left rounded-full bg-(--bc-accent)"
                           style={{ transform: `scaleX(${clamp01(card.value)})` }}
                         />
                       </div>
                     )}
 
-                    <p className="mt-4 text-xs leading-relaxed text-[var(--bc-ink-faint)]">
+                    <p className="mt-4 text-xs leading-relaxed text-(--bc-ink-faint)">
                       {card.description}
                     </p>
                   </div>
-                </Reveal>
+                </Animated>
               ))}
             </div>
           )}
@@ -709,24 +651,22 @@ const HowItWorks: React.FC = () => {
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)] " +
     (active
       ? "bg-[var(--bc-cta-bg)] text-[var(--bc-cta-ink)]"
-      : "text-[var(--bc-ink-soft)] hover:text-[var(--bc-ink)]");
+      : "text-(--bc-ink-soft) hover:text-(--bc-ink)");
 
   return (
     <section id="how-it-works" className="py-20 sm:py-24">
       <div className={CONTAINER}>
-        <Reveal>
           <SectionHeader
             eyebrow="Process"
             title="How it works"
             sub="From input to result in a few clear steps."
           />
-        </Reveal>
 
-        <Reveal className="mt-8 flex justify-center">
+        <Animated className="mt-8 flex justify-center">
           <div
             role="tablist"
             aria-label="Prediction flow"
-            className="inline-flex rounded-full border border-[var(--bc-border-strong)] bg-[var(--bc-surface)] p-1"
+            className="inline-flex rounded-full border border-(--bc-border-strong) bg-(--bc-surface) p-1"
           >
             <button
               type="button"
@@ -747,34 +687,34 @@ const HowItWorks: React.FC = () => {
               CSV batch
             </button>
           </div>
-        </Reveal>
+        </Animated>
 
         <div key={flow} className="ip-fade-in mt-12">
           <ol className="flex flex-col gap-6 md:flex-row md:items-stretch md:gap-2">
             {steps.map((step, i) => (
-              <React.Fragment key={step.title}>
-                <li className="flex-1 rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-5 shadow-[var(--bc-shadow)]">
+              <Animated key={step.title} delay={i * 0.15}>
+                <li className="flex-1 rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-5 shadow-(--bc-shadow)">
                   <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-sm font-semibold text-[var(--bc-accent-strong)]">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-sm font-semibold text-(--bc-accent-strong)">
                       {i + 1}
                     </span>
-                    <step.icon className="h-5 w-5 text-[var(--bc-accent-strong)]" aria-hidden="true" />
+                    <step.icon className="h-5 w-5 text-(--bc-accent-strong)" aria-hidden="true" />
                   </div>
-                  <h3 className="mt-4 text-base font-semibold text-[var(--bc-ink)]">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--bc-ink-soft)]">{step.body}</p>
+                  <h3 className="mt-4 text-base font-semibold text-(--bc-ink)">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-(--bc-ink-soft)">{step.body}</p>
                 </li>
 
                 {i < steps.length - 1 && (
                   <div className="hidden items-center md:flex" aria-hidden="true">
-                    <ArrowRight className="h-4 w-4 text-[var(--bc-ink-faint)]" />
+                    <ArrowRight className="h-4 w-4 text-(--bc-ink-faint)" />
                   </div>
                 )}
                 {i < steps.length - 1 && (
                   <div className="flex justify-center md:hidden" aria-hidden="true">
-                    <ArrowDown className="h-4 w-4 text-[var(--bc-ink-faint)]" />
+                    <ArrowDown className="h-4 w-4 text-(--bc-ink-faint)" />
                   </div>
                 )}
-              </React.Fragment>
+              </Animated>
             ))}
           </ol>
         </div>
@@ -868,25 +808,12 @@ const GLOBAL_CSS = `
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--bc-ink) 6%, transparent), transparent);
     animation: ip-shimmer 1.6s ease-in-out infinite;
   }
-
-  .ip-reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s ease, transform .7s cubic-bezier(.16,1,.3,1); }
-  .ip-reveal.is-visible { opacity: 1; transform: none; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ip-cloud-a, .ip-cloud-b, .ip-particle, .ip-wind, .ip-star,
-    .ip-ring-rot, .ip-ring-rot-rev, .ip-sweep, .ip-pulse-node,
-    .ip-float-chip, .ip-hero-anim, .ip-fade-in, .ip-skeleton::after {
-      animation: none !important;
-    }
-    .ip-reveal { opacity: 1; transform: none; transition: none; }
-  }
 `;
 
 /* ---------------------------------------------------------------------------
 Page
 --------------------------------------------------------------------------- */
 const IntroPage: React.FC = () => {
-  const dispatch = useAppDispatch();
   const mode = useAppSelector((state) => state.theme.mode);
   const isDark = mode === "dark";
 
@@ -898,50 +825,16 @@ const IntroPage: React.FC = () => {
   useGoogleFont("Fraunces");
   useGoogleFont("Plus Jakarta Sans");
 
-  const handleToggleTheme = () => dispatch(toggleTheme());
-
   return (
     <div
-      className="ip-root min-h-screen bg-[var(--bc-bg)] font-[var(--bc-font-body)] text-[var(--bc-ink)] antialiased"
+      className="ip-root min-h-screen bg-(--bc-bg) font-(--bc-font-body) text-(--bc-ink) antialiased"
       data-theme={isDark ? "dark" : "day"}
     >
       <style>{GLOBAL_CSS}</style>
 
       {/* ============================ NAV ============================ */}
-      <header className="sticky top-0 z-40 border-b border-[var(--bc-border)] bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
-        <div className={`${CONTAINER} flex h-16 items-center justify-between`}>
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 rounded-lg p-1 text-[var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]"
-            aria-label={`${companyName} home`}
-          >
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-[9px] bg-[color-mix(in_srgb,var(--bc-accent)_16%,transparent)] text-[var(--bc-accent-strong)]">
-              <Wind size={16} strokeWidth={2.25} aria-hidden="true" />
-            </span>
-            <span className="font-[var(--bc-font-display)] text-lg font-semibold tracking-[0.01em]">
-              {companyName}
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              className={ICON_BTN}
-              onClick={handleToggleTheme}
-              aria-label={isDark ? "Switch to day theme" : "Switch to dark theme"}
-            >
-              {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
-            </button>
-
-            <Link to="/login" className={`${BTN_GHOST} hidden !px-4 !py-2 sm:inline-flex`}>
-              Sign in
-            </Link>
-
-            <Link to="/signup" className={`${BTN_PRIMARY} !px-4 !py-2`}>
-              Get Started
-            </Link>
-          </div>
-        </div>
+      <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+        <Navbar/>
       </header>
 
       <main>
@@ -952,21 +845,28 @@ const IntroPage: React.FC = () => {
           <div className={`${CONTAINER} relative z-10 flex min-h-[calc(100vh-4rem)] items-center py-16`}>
             <div className="grid w-full items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="ip-hero-anim max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--bc-accent-strong)]">
+                <Animated y={-20}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--bc-accent-strong)">
                   Environmental intelligence
                 </p>
+                </Animated>
 
-                <h1 className="mt-4 font-[var(--bc-font-display)] text-4xl font-semibold leading-[1.05] text-[var(--bc-ink)] sm:text-5xl lg:text-6xl">
+                <Animated y={50}>
+                  <h1 className="mt-4 font-(--bc-font-display) text-4xl leading-[1.05] text-(--bc-ink) sm:text-5xl lg:text-6xl">
                   Predict air quality from the environment itself.
                 </h1>
+                </Animated>
 
-                <p className="mt-5 text-base leading-relaxed text-[var(--bc-ink-soft)] sm:text-lg">
+                <Animated x={-30} delay={0.15}>
+                  <p className="mt-5 text-base leading-relaxed text-(--bc-ink-soft) sm:text-lg">
                   {companyName} turns environmental and weather conditions into AQI predictions.
                   Analyze a single scenario, or upload a CSV and process every record — with your
                   history kept in your account.
                 </p>
+                </Animated>
 
-                <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Animated delay={0.2}>
+                  <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link to="/signup" className={BTN_PRIMARY}>
                     Get Started
                     <ArrowRight size={16} aria-hidden="true" />
@@ -975,8 +875,9 @@ const IntroPage: React.FC = () => {
                     Sign in
                   </Link>
                 </div>
+                </Animated>
 
-                <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--bc-ink-faint)]">
+                <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-(--bc-ink-faint)">
                   <span>Single predictions</span>
                   <span aria-hidden="true">·</span>
                   <span>CSV batches</span>
@@ -993,21 +894,21 @@ const IntroPage: React.FC = () => {
         </section>
 
         {/* ======================= CAPABILITY STRIP ======================= */}
-        <section className="border-y border-[var(--bc-border)] bg-[var(--bc-bg-soft)]">
+        <section className="border-y border-(--bc-border) bg-(--bc-bg-soft)">
           <div className={`${CONTAINER} py-10`}>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {CAPABILITIES.map((cap, i) => (
-                <Reveal key={cap.title} delay={i * 70}>
+                <Animated key={cap.title} delay={i * 70}>
                   <div className="flex items-start gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)]">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong)">
                       <cap.icon size={18} aria-hidden="true" />
                     </span>
                     <div>
-                      <h2 className="text-sm font-semibold text-[var(--bc-ink)]">{cap.title}</h2>
-                      <p className="mt-1 text-xs leading-relaxed text-[var(--bc-ink-soft)]">{cap.desc}</p>
+                      <h2 className="text-sm font-semibold text-(--bc-ink)">{cap.title}</h2>
+                      <p className="mt-1 text-xs leading-relaxed text-(--bc-ink-soft)">{cap.desc}</p>
                     </div>
                   </div>
-                </Reveal>
+                </Animated>
               ))}
             </div>
           </div>
@@ -1016,26 +917,24 @@ const IntroPage: React.FC = () => {
         {/* ========================= TWO MODES ========================= */}
         <section id="capabilities" className="py-20 sm:py-24">
           <div className={CONTAINER}>
-            <Reveal>
               <SectionHeader
                 eyebrow="Capabilities"
                 title="Two ways to predict"
                 sub="Start with a single scenario, or bring an entire dataset."
               />
-            </Reveal>
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
               {/* Single prediction */}
-              <Reveal>
-                <div className="h-full rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6 shadow-[var(--bc-shadow)] transition-transform duration-300 hover:-translate-y-1 sm:p-8">
+              <Animated scale={0.90}>
+                <div className="h-full rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 shadow-(--bc-shadow) transition-transform duration-300 hover:-translate-y-1 sm:p-8">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)]">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong)">
                       <Gauge size={18} aria-hidden="true" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[var(--bc-ink)]">Single prediction</h3>
+                    <h3 className="text-lg font-semibold text-(--bc-ink)">Single prediction</h3>
                   </div>
 
-                  <p className="mt-4 text-sm leading-relaxed text-[var(--bc-ink-soft)]">
+                  <p className="mt-4 text-sm leading-relaxed text-(--bc-ink-soft)">
                     Describe environmental and weather conditions in an interactive form and receive
                     an AQI prediction with clear context. {companyName} reads multiple signals —
                     temperature, humidity, wind, pressure, and more — rather than relying on a single
@@ -1046,32 +945,32 @@ const IntroPage: React.FC = () => {
                     <SingleVisual isDark={isDark} />
                   </div>
                 </div>
-              </Reveal>
+              </Animated>
 
               {/* CSV batch */}
-              <Reveal delay={90}>
-                <div className="h-full rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6 shadow-[var(--bc-shadow)] transition-transform duration-300 hover:-translate-y-1 sm:p-8">
+              <Animated x={50} scale={0.9}>
+                <div className="h-full rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 shadow-(--bc-shadow) transition-transform duration-300 hover:-translate-y-1 sm:p-8">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)]">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong)">
                       <FileSpreadsheet size={18} aria-hidden="true" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[var(--bc-ink)]">CSV batch processing</h3>
+                    <h3 className="text-lg font-semibold text-(--bc-ink)">CSV batch processing</h3>
                   </div>
 
-                  <p className="mt-4 text-sm leading-relaxed text-[var(--bc-ink-soft)]">
+                  <p className="mt-4 text-sm leading-relaxed text-(--bc-ink-soft)">
                     Upload a CSV of environmental records. {companyName} validates the structure,
                     analyzes each row, and returns your file enriched with results — ready to download.
                   </p>
 
                   <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--bc-ink-faint)]">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-(--bc-ink-faint)">
                       Your returned CSV adds
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {["prediction", "status", "message"].map((col) => (
                         <span
                           key={col}
-                          className="rounded-full border border-[var(--bc-border-strong)] bg-[color-mix(in_srgb,var(--bc-accent)_10%,transparent)] px-3 py-1 font-mono text-xs text-[var(--bc-accent-strong)]"
+                          className="rounded-full border border-(--bc-border-strong) bg-[color-mix(in_srgb,var(--bc-accent)_10%,transparent)] px-3 py-1 font-mono text-xs text-(--bc-accent-strong)"
                         >
                           {col}
                         </span>
@@ -1083,7 +982,7 @@ const IntroPage: React.FC = () => {
                     <BatchVisual isDark={isDark} />
                   </div>
                 </div>
-              </Reveal>
+              </Animated>
             </div>
           </div>
         </section>
@@ -1097,26 +996,24 @@ const IntroPage: React.FC = () => {
         {/* ====================== ACCOUNT & AUTH ====================== */}
         <section id="account" className="py-20 sm:py-24">
           <div className={CONTAINER}>
-            <Reveal>
               <SectionHeader
                 eyebrow="Your space"
                 title="Predictions that stay with you"
                 sub="Your history belongs to your account, and signing in is flexible."
               />
-            </Reveal>
 
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
               {/* History / privacy */}
-              <Reveal>
-                <div className="h-full rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6 shadow-[var(--bc-shadow)] sm:p-8">
+              <Animated scale={0.90} x={-50}>
+                <div className="h-full rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 shadow-(--bc-shadow) sm:p-8">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)]">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong)">
                       <History size={18} aria-hidden="true" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[var(--bc-ink)]">Private prediction history</h3>
+                    <h3 className="text-lg font-semibold text-(--bc-ink)">Private prediction history</h3>
                   </div>
 
-                  <p className="mt-4 text-sm leading-relaxed text-[var(--bc-ink-soft)]">
+                  <p className="mt-4 text-sm leading-relaxed text-(--bc-ink-soft)">
                     Your prediction history stays associated with your account. Revisit past analyses,
                     track how conditions change, and keep everything organized in one place.
                   </p>
@@ -1125,56 +1022,59 @@ const IntroPage: React.FC = () => {
                     <HistoryVisual isDark={isDark} />
                   </div>
                 </div>
-              </Reveal>
+              </Animated>
 
               {/* Auth methods */}
-              <Reveal delay={90}>
-                <div className="h-full rounded-2xl border border-[var(--bc-border)] bg-[var(--bc-surface)] p-6 shadow-[var(--bc-shadow)] sm:p-8">
+              <Animated delay={0.15} scale={0.80} x={50}>
+                <div className="h-full rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 shadow-(--bc-shadow) sm:p-8">
                   <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-[var(--bc-accent-strong)]">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--bc-accent)_14%,transparent)] text-(--bc-accent-strong)">
                       <Lock size={18} aria-hidden="true" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[var(--bc-ink)]">Sign in the way you prefer</h3>
+                    <h3 className="text-lg font-semibold text-(--bc-ink)">Sign in the way you prefer</h3>
                   </div>
 
-                  <p className="mt-4 text-sm leading-relaxed text-[var(--bc-ink-soft)]">
+                  <p className="mt-4 text-sm leading-relaxed text-(--bc-ink-soft)">
                     Secure account access with familiar options.
                   </p>
 
                   <ul className="mt-6 space-y-4">
                     {AUTH_METHODS.map((method) => (
                       <li key={method.title} className="flex items-start gap-3">
-                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--bc-accent)_12%,transparent)] text-[var(--bc-accent-strong)]">
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--bc-accent)_12%,transparent)] text-(--bc-accent-strong)">
                           <method.icon size={16} aria-hidden="true" />
                         </span>
                         <div>
-                          <p className="text-sm font-semibold text-[var(--bc-ink)]">{method.title}</p>
-                          <p className="mt-0.5 text-xs leading-relaxed text-[var(--bc-ink-soft)]">{method.desc}</p>
+                          <p className="text-sm font-semibold text-(--bc-ink)">{method.title}</p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-(--bc-ink-soft)">{method.desc}</p>
                         </div>
                       </li>
                     ))}
                   </ul>
                 </div>
-              </Reveal>
+              </Animated>
             </div>
           </div>
         </section>
 
         {/* ========================= FINAL CTA ========================= */}
-        <section className="relative overflow-hidden border-t border-[var(--bc-border)]">
+        <section className="relative overflow-hidden border-t border-(--bc-border)">
           <AtmosphereBackdrop isDark={isDark} idPrefix="cta" />
 
           <div className={`${CONTAINER} relative z-10 py-24 text-center sm:py-28`}>
-            <Reveal>
-              <h2 className="mx-auto max-w-2xl font-[var(--bc-font-display)] text-3xl font-semibold text-[var(--bc-ink)] sm:text-4xl">
+            <Animated y={-20}>
+              <h2 className="mx-auto max-w-2xl text-3xl font-semibold text-(--bc-ink) sm:text-4xl">
                 Ready to understand your air?
               </h2>
-              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--bc-ink-soft)]">
+            </Animated>
+            <Animated y={20}>
+              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-(--bc-ink-soft)">
                 Create an account to start predicting, upload datasets, and keep your history in one
                 place.
               </p>
+            </Animated>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Animated className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <Link to="/signup" className={BTN_PRIMARY}>
                   Get Started
                   <ArrowRight size={16} aria-hidden="true" />
@@ -1182,21 +1082,20 @@ const IntroPage: React.FC = () => {
                 <Link to="/login" className={BTN_GHOST}>
                   Sign in
                 </Link>
-              </div>
-            </Reveal>
+              </Animated>
           </div>
         </section>
       </main>
 
       {/* ============================ FOOTER ============================ */}
-      <footer className="border-t border-[var(--bc-border)] bg-[var(--bc-bg)]">
+      <footer className="border-t border-(--bc-border) bg-(--bc-bg)">
         <div className={`${CONTAINER} flex flex-col items-center justify-between gap-3 py-8 sm:flex-row`}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--bc-ink)]">
-            <Wind size={15} className="text-[var(--bc-accent-strong)]" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-sm font-semibold text-(--bc-ink)">
+            <Wind size={15} className="text-(--bc-accent-strong)" aria-hidden="true" />
             {companyName}
           </div>
-          <p className="text-xs text-[var(--bc-ink-faint)]">Environmental intelligence · AQI prediction</p>
-          <p className="text-xs text-[var(--bc-ink-faint)]">
+          <p className="text-xs text-(--bc-ink-faint)">Environmental intelligence · AQI prediction</p>
+          <p className="text-xs text-(--bc-ink-faint)">
             © {new Date().getFullYear()} {companyName}
           </p>
         </div>

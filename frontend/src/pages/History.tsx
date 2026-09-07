@@ -43,6 +43,7 @@ import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
+import Animated from "../components/Animated";
 // ---------------------------------------------------------------------------
 
 /* ============================================================================
@@ -298,13 +299,13 @@ const AqiBadge: React.FC<{ value: number; size?: "sm" | "lg" }> = ({ value, size
 };
 
 const DetailItem: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
-    <div className="flex items-start gap-2.5 rounded-xl border border-(--bc-border) bg-[color:var(--bc-surface-2)] px-3 py-2.5">
-        <span className="mt-0.5 text-[color:var(--bc-ink-faint)]" aria-hidden="true">
+    <div className="flex items-start gap-2.5 rounded-xl border border-(--bc-border) bg-(--bc-surface-2) px-3 py-2.5">
+        <span className="mt-0.5 text-(--bc-ink-faint)" aria-hidden="true">
             {icon}
         </span>
         <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">{label}</p>
-            <p className="truncate text-[13px] font-semibold text-[color:var(--bc-ink)]">{value}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-(--bc-ink-faint)">{label}</p>
+            <p className="truncate text-[13px] font-semibold text-(--bc-ink)">{value}</p>
         </div>
     </div>
 );
@@ -346,7 +347,7 @@ const Pagination: React.FC<PaginationProps> = ({ skip, limit, total, busy, onPag
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-            <p className="text-xs text-[color:var(--bc-ink-faint)]">
+            <p className="text-xs text-(--bc-ink-faint)">
                 Showing <span className="font-semibold text-(--bc-ink-soft)">{from}–{to}</span> of{" "}
                 <span className="font-semibold text-(--bc-ink-soft)">{total}</span>
                 <span className="mx-2 opacity-50" aria-hidden="true">·</span>
@@ -357,7 +358,7 @@ const Pagination: React.FC<PaginationProps> = ({ skip, limit, total, busy, onPag
                     type="button"
                     disabled={!canPrev || busy}
                     onClick={() => onPage(Math.max(0, skip - limit))}
-                    className="inline-flex items-center gap-1 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                    className="inline-flex items-center gap-1 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                 >
                     <ChevronLeft size={14} />
                     Previous
@@ -366,7 +367,7 @@ const Pagination: React.FC<PaginationProps> = ({ skip, limit, total, busy, onPag
                     type="button"
                     disabled={!canNext || busy}
                     onClick={() => onPage(skip + limit)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                    className="inline-flex items-center gap-1 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                 >
                     Next
                     <ChevronRight size={14} />
@@ -402,19 +403,19 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, title, confirmLabel, 
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-5">
             <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={() => !loading && onClose()} aria-hidden="true" />
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="hist-confirm-title"
-                className="hist-rise relative w-full max-w-md rounded-2xl border border-[color:var(--bc-border-strong)] bg-[color:var(--bc-surface)] p-6 shadow-2xl backdrop-blur-xl"
+                className="hist-rise relative w-full max-w-md rounded-2xl border border-(--bc-border-strong) bg-(--bc-surface) p-6 shadow-2xl backdrop-blur-xl"
             >
                 <div className="mb-3 flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--bc-danger-bg)] text-(--bc-danger)">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-(--bc-danger-bg) text-(--bc-danger)">
                         <AlertCircle size={18} />
                     </span>
-                    <h3 id="hist-confirm-title" className="hist-display text-lg font-semibold text-[color:var(--bc-ink)]">
+                    <h3 id="hist-confirm-title" className="hist-display text-lg font-semibold text-(--bc-ink)">
                         {title}
                     </h3>
                 </div>
@@ -425,7 +426,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, title, confirmLabel, 
                         type="button"
                         disabled={loading}
                         onClick={onClose}
-                        className="rounded-lg border border-(--bc-border) bg-transparent px-4 py-2 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                        className="rounded-lg border border-(--bc-border) bg-transparent px-4 py-2 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                     >
                         Cancel
                     </button>
@@ -434,7 +435,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, title, confirmLabel, 
                         disabled={loading}
                         onClick={onConfirm}
                         aria-busy={loading}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--bc-danger)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                        className="inline-flex items-center gap-2 rounded-lg bg-(--bc-danger) px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                     >
                         {loading && <Loader2 size={15} className="animate-spin" />}
                         {loading ? "Working…" : confirmLabel}
@@ -448,7 +449,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, title, confirmLabel, 
 const SkeletonBlock: React.FC<{ rows?: number }> = ({ rows = 4 }) => (
     <div className="animate-pulse space-y-3 p-5" aria-hidden="true">
         {Array.from({ length: rows }, (_, i) => (
-            <div key={i} className="h-12 rounded-xl bg-[color:var(--bc-track)]" />
+            <div key={i} className="h-12 rounded-xl bg-(--bc-track)" />
         ))}
     </div>
 );
@@ -578,7 +579,7 @@ const History: React.FC = () => {
 
     /* ================================================================== */
     return (
-        <div className="hist-root relative min-h-screen bg-[color:var(--bc-bg)] text-[color:var(--bc-ink)] transition-colors duration-500" data-theme={isDark ? "dark" : "day"}>
+        <div className="hist-root relative min-h-screen bg-(--bc-bg) text-(--bc-ink) transition-colors duration-500" data-theme={isDark ? "dark" : "day"}>
             <style>{`
                 .hist-root {
                     --bc-font-display: 'Fraunces', 'Georgia', serif;
@@ -646,23 +647,29 @@ const History: React.FC = () => {
             <div className="relative z-10 flex min-h-screen flex-col">
                 <Navbar />
 
-                <main className="mx-auto w-full max-w-[1240px] flex-1 px-5 pb-24 sm:px-8">
+                <main className="mx-auto w-full max-w-310 flex-1 px-5 pb-24 sm:px-8">
                     {/* ================= HERO ================= */}
                     <section className="pb-6 pt-8 sm:pt-10">
-                        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-(--bc-accent-strong)">
-                            Private Activity
-                        </p>
+                        <Animated y={-20} delay={0.2}>
+                            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-(--bc-accent-strong)">
+                                Private Activity
+                            </p>
+                        </Animated>
                         <div className="flex flex-wrap items-end justify-between gap-4">
                             <div>
-                                <h1 className="hist-display text-3xl font-semibold leading-tight sm:text-4xl">
-                                    Your Environmental History
-                                </h1>
-                                <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-(--bc-ink-soft) sm:text-[15px]">
-                                    Every prediction and processed dataset associated with your account — ready to review,
-                                    export, or manage.
-                                </p>
+                                <Animated>
+                                    <h1 className="hist-display text-3xl font-semibold leading-tight sm:text-4xl">
+                                        Your Environmental History
+                                    </h1>
+                                </Animated>
+                                <Animated delay={0.2}>
+                                    <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-(--bc-ink-soft) sm:text-[15px]">
+                                        Every prediction and processed dataset associated with your account — ready to review,
+                                        export, or manage.
+                                    </p>
+                                </Animated>
                             </div>
-                            <span className="inline-flex items-center gap-1.5 rounded-full border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md">
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-(--bc-border) bg-(--bc-surface) px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md">
                                 <Lock size={12} className="text-(--bc-accent-strong)" />
                                 Visible only to you
                             </span>
@@ -671,22 +678,27 @@ const History: React.FC = () => {
 
                     {/* ================= SUMMARY ================= */}
                     <section aria-label="Activity summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <div className="rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                        <Animated delay={0.1}>
+                            <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                 <Gauge size={14} />
                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Total Predictions</p>
                             </div>
                             <p className="hist-display mt-2 text-2xl font-semibold">{predictionLoading && predictionTotal === 0 ? "—" : predictionTotal.toLocaleString()}</p>
                         </div>
-                        <div className="rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                        </Animated>
+                        <Animated delay={0.2}>
+                            <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                 <FileSpreadsheet size={14} />
                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Uploaded Datasets</p>
                             </div>
                             <p className="hist-display mt-2 text-2xl font-semibold">{fileLoading && fileTotal === 0 ? "—" : fileTotal.toLocaleString()}</p>
                         </div>
-                        <div className="rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                        </Animated>
+                        <Animated delay={0.3}>
+                            <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                 <CloudSun size={14} />
                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest AQI</p>
                             </div>
@@ -694,12 +706,14 @@ const History: React.FC = () => {
                                 {predictionHistory[0] ? (
                                     <AqiBadge value={predictionHistory[0].prediction} />
                                 ) : (
-                                    <p className="hist-display text-2xl font-semibold text-[color:var(--bc-ink-faint)]">—</p>
+                                    <p className="hist-display text-2xl font-semibold text-(--bc-ink-faint)">—</p>
                                 )}
                             </div>
                         </div>
-                        <div className="rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-[color:var(--bc-ink-faint)]">
+                        </Animated>
+                        <Animated delay={0.4}>
+                            <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
+                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
                                 <HistoryIcon size={14} />
                                 <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest Activity</p>
                             </div>
@@ -707,20 +721,21 @@ const History: React.FC = () => {
                                 {latestActivity ? formatDate(latestActivity) : "—"}
                             </p>
                         </div>
+                        </Animated>
                     </section>
 
                     {/* ================= PREDICTION HISTORY ================= */}
                     <section aria-labelledby="hist-pred-title" className="mt-12">
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--bc-surface)] text-(--bc-accent-strong) border border-(--bc-border) backdrop-blur-md">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--bc-surface) text-(--bc-accent-strong) border border-(--bc-border) backdrop-blur-md">
                                     <Gauge size={16} />
                                 </span>
                                 <div>
                                     <h2 id="hist-pred-title" className="hist-display text-lg font-semibold leading-none">
                                         Prediction History
                                     </h2>
-                                    <p className="mt-1 text-xs text-[color:var(--bc-ink-faint)]">
+                                    <p className="mt-1 text-xs text-(--bc-ink-faint)">
                                         Individual environmental analyses · select a record to revisit its atmosphere
                                     </p>
                                 </div>
@@ -731,7 +746,7 @@ const History: React.FC = () => {
                                     onClick={() => void onExportPredictions()}
                                     disabled={isDownloadingPredictionHistory || predictionTotal === 0}
                                     aria-busy={isDownloadingPredictionHistory}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                 >
                                     {isDownloadingPredictionHistory ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                                     Export Prediction History
@@ -740,7 +755,7 @@ const History: React.FC = () => {
                                     type="button"
                                     onClick={() => setClearPredictionOpen(true)}
                                     disabled={isClearingPredictionHistory || predictionTotal === 0}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-2 text-xs font-semibold text-(--bc-danger) backdrop-blur-md transition-colors hover:border-[color:var(--bc-danger)] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-2 text-xs font-semibold text-(--bc-danger) backdrop-blur-md transition-colors hover:border-(--bc-danger) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                                 >
                                     <Trash2 size={14} />
                                     Clear
@@ -748,7 +763,7 @@ const History: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
+                        <div className="overflow-hidden rounded-2xl border border-(--bc-border) bg-(--bc-surface) shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
                             {predictionError ? (
                                 <div className="flex flex-col items-center gap-3 p-10 text-center">
                                     <AlertCircle size={22} className="text-(--bc-danger)" />
@@ -756,7 +771,7 @@ const History: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => dispatch(fetchPredictionHistory({ skip: predictionSkip, limit: predLimit }))}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                     >
                                         <RotateCcw size={13} />
                                         Try Again
@@ -766,7 +781,7 @@ const History: React.FC = () => {
                                 <SkeletonBlock rows={5} />
                             ) : predictionHistory.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-12 text-center">
-                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--bc-surface-2)] text-(--bc-accent-strong)">
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--bc-surface-2) text-(--bc-accent-strong)">
                                         <CloudSun size={22} />
                                     </span>
                                     <h3 className="hist-display text-lg font-semibold">No predictions yet</h3>
@@ -775,7 +790,7 @@ const History: React.FC = () => {
                                     </p>
                                     <Link
                                         to="/predict"
-                                        className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                        className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                     >
                                         Make a Prediction
                                         <ArrowRightSmall size={15} />
@@ -787,7 +802,7 @@ const History: React.FC = () => {
                                     <div className="hidden md:block">
                                         <table className="w-full text-left text-[13px]">
                                             <thead>
-                                                <tr className="border-b border-(--bc-border) text-[10px] uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                                                <tr className="border-b border-(--bc-border) text-[10px] uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                                                     <th scope="col" className="px-5 py-3 font-bold">AQI</th>
                                                     <th scope="col" className="px-4 py-3 font-bold">Conditions</th>
                                                     <th scope="col" className="px-4 py-3 font-bold">Wind</th>
@@ -803,7 +818,7 @@ const History: React.FC = () => {
                                                         <React.Fragment key={rec.id}>
                                                             <tr
                                                                 onClick={() => togglePrediction(rec)}
-                                                                className={`cursor-pointer border-b border-(--bc-border) transition-colors hover:bg-[color:var(--bc-surface-2)] ${active ? "bg-[color:var(--bc-surface-2)] shadow-[inset_2px_0_0_0_var(--bc-accent)]" : ""}`}
+                                                                className={`cursor-pointer border-b border-(--bc-border) transition-colors hover:bg-(--bc-surface-2) ${active ? "bg-(--bc-surface-2) shadow-[inset_2px_0_0_0_var(--bc-accent)]" : ""}`}
                                                             >
                                                                 <td className="px-5 py-3.5">
                                                                     <AqiBadge value={rec.prediction} />
@@ -824,14 +839,14 @@ const History: React.FC = () => {
                                                                         }}
                                                                         aria-expanded={active}
                                                                         aria-label={active ? "Collapse prediction details" : "Expand prediction details"}
-                                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-(--bc-border) text-[color:var(--bc-ink-faint)] transition-transform hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-(--bc-border) text-(--bc-ink-faint) transition-transform hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                                     >
                                                                         <ChevronDown size={14} className={`transition-transform duration-200 ${active ? "rotate-180" : ""}`} />
                                                                     </button>
                                                                 </td>
                                                             </tr>
                                                             {active && (
-                                                                <tr className="border-b border-(--bc-border) bg-[color:var(--bc-surface-2)]">
+                                                                <tr className="border-b border-(--bc-border) bg-(--bc-surface-2)">
                                                                     <td colSpan={5} className="px-5 py-4">
                                                                         {selected && (
                                                                             <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold text-(--bc-accent-strong)">
@@ -851,7 +866,7 @@ const History: React.FC = () => {
                                     </div>
 
                                     {/* ---------- Mobile cards ---------- */}
-                                    <ul className="divide-y divide-[color:var(--bc-border)] md:hidden">
+                                    <ul className="divide-y divide-(--bc-border) md:hidden">
                                         {predictionHistory.map((rec) => {
                                             const active = activePredictionId === rec.id;
                                             return (
@@ -860,16 +875,16 @@ const History: React.FC = () => {
                                                         type="button"
                                                         onClick={() => togglePrediction(rec)}
                                                         aria-expanded={active}
-                                                        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-[color:var(--bc-surface-2)] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-(--bc-surface-2) focus-visible:outline focus-visible:-outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                     >
                                                         <div className="min-w-0">
                                                             <AqiBadge value={rec.prediction} />
-                                                            <p className="mt-1.5 text-xs text-[color:var(--bc-ink-faint)]">{formatDate(rec.created_at)}</p>
+                                                            <p className="mt-1.5 text-xs text-(--bc-ink-faint)">{formatDate(rec.created_at)}</p>
                                                             <p className="mt-1 text-xs text-(--bc-ink-soft)">
                                                                 {fmt(rec.temperature_c)} °C · {fmt(rec.humidity_pct)} % · {fmt(rec.wind_speed_kmh)} km/h
                                                             </p>
                                                         </div>
-                                                        <ChevronDown size={16} className={`shrink-0 text-[color:var(--bc-ink-faint)] transition-transform duration-200 ${active ? "rotate-180" : ""}`} />
+                                                        <ChevronDown size={16} className={`shrink-0 text-(--bc-ink-faint) transition-transform duration-200 ${active ? "rotate-180" : ""}`} />
                                                     </button>
                                                     {active && (
                                                         <div className="hist-rise px-4 pb-4">
@@ -897,14 +912,14 @@ const History: React.FC = () => {
                     <section aria-labelledby="hist-file-title" className="mt-14">
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--bc-surface)] text-(--bc-accent-strong) border border-(--bc-border) backdrop-blur-md">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--bc-surface) text-(--bc-accent-strong) border border-(--bc-border) backdrop-blur-md">
                                     <FileSpreadsheet size={16} />
                                 </span>
                                 <div>
                                     <h2 id="hist-file-title" className="hist-display text-lg font-semibold leading-none">
                                         Uploaded File History
                                     </h2>
-                                    <p className="mt-1 text-xs text-[color:var(--bc-ink-faint)]">
+                                    <p className="mt-1 text-xs text-(--bc-ink-faint)">
                                         CSV datasets processed for batch prediction
                                     </p>
                                 </div>
@@ -915,7 +930,7 @@ const History: React.FC = () => {
                                     onClick={() => void onExportFiles()}
                                     disabled={isDownloadingFileHistory || fileTotal === 0}
                                     aria-busy={isDownloadingFileHistory}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) backdrop-blur-md transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                 >
                                     {isDownloadingFileHistory ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                                     Export File History
@@ -924,7 +939,7 @@ const History: React.FC = () => {
                                     type="button"
                                     onClick={() => void setClearFileOpen(true)}
                                     disabled={isClearingFileHistory || fileTotal === 0}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-[color:var(--bc-surface)] px-3 py-2 text-xs font-semibold text-(--bc-danger) backdrop-blur-md transition-colors hover:border-[color:var(--bc-danger)] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) bg-(--bc-surface) px-3 py-2 text-xs font-semibold text-(--bc-danger) backdrop-blur-md transition-colors hover:border-(--bc-danger) disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                                 >
                                     {isClearingFileHistory ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                                     Clear
@@ -932,7 +947,7 @@ const History: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-2xl border border-(--bc-border) bg-[color:var(--bc-surface)] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
+                        <div className="overflow-hidden rounded-2xl border border-(--bc-border) bg-(--bc-surface) shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
                             {fileError ? (
                                 <div className="flex flex-col items-center gap-3 p-10 text-center">
                                     <AlertCircle size={22} className="text-(--bc-danger)" />
@@ -940,7 +955,7 @@ const History: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => dispatch(fetchFileHistory({ skip: fileSkip, limit: fileLimitSafe }))}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-(--bc-border) px-3 py-2 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                     >
                                         <RotateCcw size={13} />
                                         Try Again
@@ -950,7 +965,7 @@ const History: React.FC = () => {
                                 <SkeletonBlock rows={4} />
                             ) : fileHistory.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 p-12 text-center">
-                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--bc-surface-2)] text-(--bc-accent-strong)">
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--bc-surface-2) text-(--bc-accent-strong)">
                                         <FileSpreadsheet size={22} />
                                     </span>
                                     <h3 className="hist-display text-lg font-semibold">No uploaded datasets yet</h3>
@@ -959,7 +974,7 @@ const History: React.FC = () => {
                                     </p>
                                     <Link
                                         to="/fileupload" /* TODO: adjust route if needed */
-                                        className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                        className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                     >
                                         Upload CSV
                                         <ArrowRightSmall size={15} />
@@ -971,7 +986,7 @@ const History: React.FC = () => {
                                     <div className="hidden md:block">
                                         <table className="w-full text-left text-[13px]">
                                             <thead>
-                                                <tr className="border-b border-(--bc-border) text-[10px] uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                                                <tr className="border-b border-(--bc-border) text-[10px] uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                                                     <th scope="col" className="px-5 py-3 font-bold">File</th>
                                                     <th scope="col" className="px-4 py-3 font-bold">File Size</th>
                                                     <th scope="col" className="px-4 py-3 font-bold">Rows Processed</th>
@@ -986,15 +1001,15 @@ const History: React.FC = () => {
                                                 {fileHistory.map((file) => {
                                                     const deleting = deletingFileId === file.id;
                                                     return (
-                                                        <tr key={file.id} className="border-b border-(--bc-border) transition-colors hover:bg-[color:var(--bc-surface-2)]">
+                                                        <tr key={file.id} className="border-b border-(--bc-border) transition-colors hover:bg-(--bc-surface-2)">
                                                             <td className="px-5 py-3.5">
                                                                 <div className="flex items-center gap-2.5">
-                                                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--bc-surface-2)] text-(--bc-accent-strong)">
+                                                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--bc-surface-2) text-(--bc-accent-strong)">
                                                                         <FileSpreadsheet size={14} />
                                                                     </span>
                                                                     <div className="min-w-0">
-                                                                        <p className="max-w-[220px] truncate font-semibold" title={file.original_name}>{file.original_name}</p>
-                                                                        <p className="text-[11px] uppercase text-[color:var(--bc-ink-faint)]">CSV</p>
+                                                                        <p className="max-w-55 truncate font-semibold" title={file.original_name}>{file.original_name}</p>
+                                                                        <p className="text-[11px] uppercase text-(--bc-ink-faint)">CSV</p>
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -1009,7 +1024,7 @@ const History: React.FC = () => {
                                                                     disabled={deleting}
                                                                     aria-busy={deleting}
                                                                     aria-label={`Remove ${file.original_name} from history`}
-                                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--bc-border) text-[color:var(--bc-ink-faint)] transition-colors hover:border-[color:var(--bc-danger)] hover:text-(--bc-danger) disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-(--bc-border) text-(--bc-ink-faint) transition-colors hover:border-(--bc-danger) hover:text-(--bc-danger) disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                                                                 >
                                                                     {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                                                                 </button>
@@ -1022,19 +1037,19 @@ const History: React.FC = () => {
                                     </div>
 
                                     {/* ---------- Mobile cards ---------- */}
-                                    <ul className="divide-y divide-[color:var(--bc-border)] md:hidden">
+                                    <ul className="divide-y divide-(--bc-border) md:hidden">
                                         {fileHistory.map((file) => {
                                             const deleting = deletingFileId === file.id;
                                             return (
                                                 <li key={file.id} className="px-4 py-4">
                                                     <div className="flex items-start justify-between gap-3">
                                                         <div className="flex min-w-0 items-start gap-2.5">
-                                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color:var(--bc-surface-2)] text-(--bc-accent-strong)">
+                                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--bc-surface-2) text-(--bc-accent-strong)">
                                                                 <FileSpreadsheet size={15} />
                                                             </span>
                                                             <div className="min-w-0">
                                                                 <p className="truncate text-sm font-semibold" title={file.original_name}>{file.original_name}</p>
-                                                                <p className="mt-0.5 text-xs text-[color:var(--bc-ink-faint)]">{formatDate(file.created_at)}</p>
+                                                                <p className="mt-0.5 text-xs text-(--bc-ink-faint)">{formatDate(file.created_at)}</p>
                                                             </div>
                                                         </div>
                                                         <button
@@ -1043,22 +1058,22 @@ const History: React.FC = () => {
                                                             disabled={deleting}
                                                             aria-busy={deleting}
                                                             aria-label={`Remove ${file.original_name} from history`}
-                                                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-(--bc-border) text-[color:var(--bc-ink-faint)] transition-colors hover:border-[color:var(--bc-danger)] hover:text-(--bc-danger) disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                                                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-(--bc-border) text-(--bc-ink-faint) transition-colors hover:border-(--bc-danger) hover:text-(--bc-danger) disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                                                         >
                                                             {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                                                         </button>
                                                     </div>
                                                     <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
-                                                        <div className="rounded-lg bg-[color:var(--bc-surface-2)] px-2 py-1.5">
-                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Size</dt>
+                                                        <div className="rounded-lg bg-(--bc-surface-2) px-2 py-1.5">
+                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Size</dt>
                                                             <dd className="text-xs font-semibold">{formatBytes(file.file_size)}</dd>
                                                         </div>
-                                                        <div className="rounded-lg bg-[color:var(--bc-surface-2)] px-2 py-1.5">
-                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Rows</dt>
+                                                        <div className="rounded-lg bg-(--bc-surface-2) px-2 py-1.5">
+                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Rows</dt>
                                                             <dd className="text-xs font-semibold">{file.row_count.toLocaleString()}</dd>
                                                         </div>
-                                                        <div className="rounded-lg bg-[color:var(--bc-surface-2)] px-2 py-1.5">
-                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Predictions</dt>
+                                                        <div className="rounded-lg bg-(--bc-surface-2) px-2 py-1.5">
+                                                            <dt className="text-[9px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Predictions</dt>
                                                             <dd className="text-xs font-semibold">{file.prediction_count.toLocaleString()}</dd>
                                                         </div>
                                                     </dl>
@@ -1103,7 +1118,7 @@ const History: React.FC = () => {
                 onConfirm={() => void onDeleteConfirm()}
                 onClose={() => setPendingDelete(null)}
             >
-                <span className="font-semibold text-[color:var(--bc-ink)]">{pendingDelete?.original_name}</span> and its
+                <span className="font-semibold text-(--bc-ink)">{pendingDelete?.original_name}</span> and its
                 upload record will be removed from your history. Processed results already downloaded to your device are
                 not affected.
             </ConfirmModal>

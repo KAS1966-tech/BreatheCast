@@ -26,6 +26,7 @@ import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
+import Animated from "../components/Animated";
 // ---------------------------------------------------------------------------
 
 interface MetricsResponse {
@@ -105,7 +106,7 @@ const Atmosphere: React.FC<{ isDark: boolean; particleCount: number; mistColor: 
             })),
         []
     );
-    
+
     const stars = useMemo(
         () =>
             Array.from({ length: 16 }, (_, i) => ({
@@ -146,7 +147,7 @@ const Atmosphere: React.FC<{ isDark: boolean; particleCount: number; mistColor: 
 
                 <rect x="0" y="0" width="480" height="480" fill="url(#home-sky)" />
                 <rect x="0" y="0" width="480" height="480" fill="url(#home-sun)" />
-                
+
                 {/* Activity/AQI Mist */}
                 <rect
                     x="0"
@@ -421,10 +422,12 @@ const Home: React.FC = () => {
             <Atmosphere isDark={isDark} particleCount={particleCount} mistColor={mistColor} mistOpacity={mistOpacity} />
 
             <div className="relative z-10 flex min-h-screen flex-col">
-                <Navbar />
+                <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+                    <Navbar />
+                </header>
 
                 <main className="flex-1 w-full max-w-310 mx-auto px-5 sm:px-8 py-8 sm:py-12">
-                    
+
                     {/* ================= HERO ================= */}
                     <section className="mb-10">
                         {profileLoading && !profile ? (
@@ -443,24 +446,32 @@ const Home: React.FC = () => {
                             /* Returning User */
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                                 <div className="md:col-span-5">
-                                    <p className="text-sm font-semibold text-(--bc-accent-strong) uppercase tracking-wider mb-2">
-                                        {getGreeting()}, {userName}
-                                    </p>
-                                    <h1 className="home-display text-3xl sm:text-4xl font-semibold mb-3 leading-tight">
-                                        Your atmosphere at a glance.
-                                    </h1>
-                                    <p className="text-(--bc-ink-soft) mb-6 max-w-md">
-                                        Here is the latest environmental synthesis from your workspace.
-                                    </p>
-                                    <Link
-                                        to="/predict"
-                                        className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-5 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
-                                    >
-                                        <Sparkles size={15} />
-                                        Analyze Air Quality
-                                    </Link>
+                                    <Animated y={-20}>
+                                        <p className="text-sm font-semibold text-(--bc-accent-strong) uppercase tracking-wider mb-2">
+                                            {getGreeting()}, {userName}
+                                        </p>
+                                    </Animated>
+                                    <Animated>
+                                        <h1 className="home-display text-3xl sm:text-4xl font-semibold mb-3 leading-tight">
+                                            Your atmosphere at a glance.
+                                        </h1>
+                                    </Animated>
+                                    <Animated delay={0.2}>
+                                        <p className="text-(--bc-ink-soft) mb-6 max-w-md">
+                                            Here is the latest environmental synthesis from your workspace.
+                                        </p>
+                                    </Animated>
+                                    <Animated>
+                                        <Link
+                                            to="/predict"
+                                            className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-5 py-2.5 text-sm font-semibold text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
+                                        >
+                                            <Sparkles size={15} />
+                                            Analyze Air Quality
+                                        </Link>
+                                    </Animated>
                                 </div>
-                                <div className="md:col-span-7">
+                                <Animated y={0} x={50} delay={0.2} className="md:col-span-7">
                                     <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) backdrop-blur-md p-6 shadow-lg">
                                         <div className="flex items-start justify-between mb-4">
                                             <div>
@@ -474,7 +485,7 @@ const Home: React.FC = () => {
                                                 {aqiMeta?.label}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="flex items-baseline gap-3 mb-6">
                                             <span className="home-display text-6xl font-semibold" style={{ color: aqiMeta?.color }}>
                                                 {Math.round(latestPrediction.prediction)}
@@ -489,7 +500,7 @@ const Home: React.FC = () => {
                                             <EnvChip icon={<Gauge size={14} />} label="Pressure" value={`${fmt(latestPrediction.pressure_hpa)} hPa`} />
                                         </div>
                                     </div>
-                                </div>
+                                </Animated>
                             </div>
                         ) : (
                             /* New User */
@@ -516,60 +527,71 @@ const Home: React.FC = () => {
 
                     {/* ================= SUMMARY ANALYTICS ================= */}
                     <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                        <StatCard icon={<Activity size={14} />} label="Total Predictions" value={formatInt(historyTotal)} loading={profileLoading && !profile} />
-                        <StatCard icon={<FileSpreadsheet size={14} />} label="Uploaded Datasets" value={formatInt(filesTotal)} loading={profileLoading && !profile} />
-                        <StatCard icon={<Clock size={14} />} label="Latest Activity" value={latestActivityDate ? formatRelative(latestActivityDate) : "—"} loading={profileLoading && !profile} />
+                        <Animated delay={0.2}>
+                            <StatCard icon={<Activity size={14} />} label="Total Predictions" value={formatInt(historyTotal)} loading={profileLoading && !profile} />
+                        </Animated>
+                        <Animated delay={0.4}>
+                            <StatCard icon={<FileSpreadsheet size={14} />} label="Uploaded Datasets" value={formatInt(filesTotal)} loading={profileLoading && !profile} />
+                        </Animated>
+                        <Animated delay={0.6}>
+                            <StatCard icon={<Clock size={14} />} label="Latest Activity" value={latestActivityDate ? formatRelative(latestActivityDate) : "—"} loading={profileLoading && !profile} />
+                        </Animated>
                     </section>
 
                     {/* ================= MAIN GRID ================= */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
-                        
+
                         {/* LEFT COLUMN: ACTIVITY */}
                         <div className="lg:col-span-7 space-y-6">
                             {/* Recent Predictions */}
-                            <Card
-                                title="Recent Predictions"
-                                icon={<Gauge size={16} />}
-                                action={
-                                    historyTotal > 0 && (
-                                        <Link to="/history" className="text-xs font-semibold text-(--bc-accent-strong) hover:underline flex items-center gap-1">
-                                            View full history <ChevronRight size={12} />
-                                        </Link>
-                                    )
-                                }
-                            >
-                                {profileLoading && !profile ? (
-                                    <div className="space-y-3">
-                                        <SkeletonLine className="h-12" />
-                                        <SkeletonLine className="h-12" />
-                                        <SkeletonLine className="h-12" />
-                                    </div>
-                                ) : recentPredictions.length === 0 ? (
-                                    <div className="text-center py-8">
-                                        <p className="text-sm text-(--bc-ink-soft) mb-3">No environmental predictions yet.</p>
-                                        <Link to="/predict" className="text-sm font-semibold text-(--bc-accent-strong) hover:underline">
-                                            Run your first analysis →
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <ul className="divide-y divide-(--bc-border) -mx-5 sm:-mx-6">
-                                        {recentPredictions.map((p) => (
-                                            <li key={p.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <AqiBadge value={p.prediction} />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-medium truncate">{formatDate(p.created_at)}</p>
-                                                        <p className="text-xs text-(--bc-ink-faint)">
-                                                            {fmt(p.temperature_c)}°C · {fmt(p.wind_speed_kmh)} km/h
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <ChevronRight size={16} className="text-(--bc-ink-faint) shrink-0" />
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </Card>
+                            <Animated delay={0.2} scale={0.9}>
+                                <Card
+                                    title="Recent Predictions"
+                                    icon={<Gauge size={16} />}
+                                    action={
+                                        historyTotal > 0 && (
+                                            <Link to="/history" className="text-xs font-semibold text-(--bc-accent-strong) hover:underline flex items-center gap-1">
+                                                View full history <ChevronRight size={12} />
+                                            </Link>
+                                        )
+                                    }
+                                >
+                                    {profileLoading && !profile ? (
+                                        <div className="space-y-3">
+                                            <SkeletonLine className="h-12" />
+                                            <SkeletonLine className="h-12" />
+                                            <SkeletonLine className="h-12" />
+                                        </div>
+                                    ) : recentPredictions.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-sm text-(--bc-ink-soft) mb-3">No environmental predictions yet.</p>
+                                            <Link to="/predict" className="text-sm font-semibold text-(--bc-accent-strong) hover:underline">
+                                                Run your first analysis →
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <ul className="divide-y divide-(--bc-border) -mx-5 sm:-mx-6">
+                                            {recentPredictions.map((p, idx) => (
+                                                <Animated delay={idx * 0.15}>
+                                                    <li key={p.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <AqiBadge value={p.prediction} />
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-medium truncate">{formatDate(p.created_at)}</p>
+                                                                <p className="text-xs text-(--bc-ink-faint)">
+                                                                    {fmt(p.temperature_c)}°C · {fmt(p.wind_speed_kmh)} km/h
+                                                                </p>
+                                                                <p></p>
+                                                            </div>
+                                                        </div>
+                                                        <ChevronRight size={16} className="text-(--bc-ink-faint) shrink-0" />
+                                                    </li>
+                                                </Animated>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </Card>
+                            </Animated>
 
                             {/* Recent Files */}
                             <Card
@@ -621,7 +643,8 @@ const Home: React.FC = () => {
                         {/* RIGHT COLUMN: METRICS & GUIDANCE */}
                         <div className="lg:col-span-5 space-y-6">
                             {/* Model Performance */}
-                            <Card title="Model Performance" icon={<Activity size={16} />}>
+                            <Animated delay={0.2}>
+                                <Card title="Model Performance" icon={<Activity size={16} />}>
                                 {metricsLoading ? (
                                     <div className="space-y-4">
                                         <SkeletonLine className="h-14" />
@@ -665,9 +688,11 @@ const Home: React.FC = () => {
                                     </div>
                                 ) : null}
                             </Card>
+                            </Animated>
 
                             {/* Workspace Guidance */}
-                            <Card title="Your Workspace" icon={<Sparkles size={16} />}>
+                            <Animated delay={0.2} x={50} y={0}>
+                                <Card title="Your Workspace" icon={<Sparkles size={16} />}>
                                 <div className="text-sm text-(--bc-ink-soft) space-y-3 leading-relaxed">
                                     <p>
                                         Need a prediction? Open <NavLink to="/predict">Analyze Air Quality</NavLink>.
@@ -683,6 +708,7 @@ const Home: React.FC = () => {
                                     </p>
                                 </div>
                             </Card>
+                            </Animated>
 
                             {/* Legal */}
                             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-(--bc-ink-faint) pt-2">

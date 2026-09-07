@@ -488,7 +488,6 @@ const Profile: React.FC = () => {
                                                 {user?.fullname || user?.username || "Your account"}
                                             </h1>
                                             <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-(--bc-accent-strong)">
-                                                <AtSign size={14} aria-hidden="true" />
                                                 {user?.username ?? "—"}
                                             </p>
                                             <p className="mt-3 text-sm leading-relaxed text-(--bc-ink-soft)">
@@ -733,7 +732,7 @@ const Profile: React.FC = () => {
                                             <span className="block truncate">{user?.fullname || "—"}</span>
                                         </InfoRow>
                                         <InfoRow icon={<AtSign size={14} />} label="Username">
-                                            <span className="block truncate">@{user?.username ?? "—"}</span>
+                                            <span className="block truncate">{user?.username ?? "—"}</span>
                                         </InfoRow>
                                         <InfoRow icon={<Mail size={14} />} label="Email">
                                             <span className="block truncate">{user?.email ?? "—"}</span>

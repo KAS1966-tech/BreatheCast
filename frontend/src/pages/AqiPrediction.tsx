@@ -371,7 +371,7 @@ const FIELD_ICONS: Record<string, React.ReactNode> = {
 const btnBase =
     "inline-flex items-center justify-center gap-2 rounded-[10px] text-[14.5px] font-semibold px-[18px] py-[13px] cursor-pointer transition-[transform,box-shadow,opacity,border-color] duration-150";
 
-const ghostBtn = `${btnBase} border-[1.5px] border-[var(--bc-border)] bg-[var(--bc-surface)] text-[var(--bc-ink-soft)] backdrop-blur-[8px] enabled:hover:text-[var(--bc-ink)] enabled:hover:border-[var(--bc-border-strong)] enabled:hover:bg-[var(--bc-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]`;
+const ghostBtn = `${btnBase} border-[1.5px] border-(--bc-border) bg-(--bc-surface) text-(--bc-ink-soft) backdrop-blur-sm enabled:hover:text-(--bc-ink) enabled:hover:border-(--bc-border-strong) enabled:hover:bg-(--bc-surface-2) disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--bc-accent)]`;
 
 const primaryBtn = `${btnBase} flex-1 border-none bg-[var(--bc-accent-strong)] text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] enabled:hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--bc-ink)]`;
 
@@ -427,19 +427,19 @@ const NumberField: React.FC<NumberFieldProps> = ({
     };
 
     const shellClasses = [
-        "relative flex items-center justify-between rounded-[10px] bg-[var(--bc-surface-2)] min-h-[42px] backdrop-blur-[8px] border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms] focus-within:outline-none",
+        "relative flex items-center justify-between rounded-[10px] bg-(--bc-surface-2) min-h-[42px] backdrop-blur-sm border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms] focus-within:outline-none",
         showError
             ? "border-[var(--bc-danger)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--bc-danger)_22%,transparent)]"
-            : "border-[var(--bc-border)] focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+            : "border-(--bc-border) focus-within:border-[var(--bc-accent)] focus-within:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
     ].join(" ");
 
     return (
         <div className="min-w-0 relative">
             <label
                 htmlFor={`aqi-${field.name}`}
-                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-(--bc-ink) mb-1.75"
             >
-                <span className="inline-flex text-[var(--bc-ink-faint)]">
+                <span className="inline-flex text-(--bc-ink-faint)">
                     {FIELD_ICONS[field.name]}
                 </span>
                 {field.label}
@@ -451,7 +451,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
                     name={field.name}
                     type="number"
                     inputMode="decimal"
-                    className="aqi-input flex-1 min-w-0 border-none bg-transparent outline-none px-3 text-[14.5px] text-[var(--bc-ink)] h-full"
+                    className="aqi-input flex-1 min-w-0 border-none bg-transparent outline-none px-3 text-[14.5px] text-(--bc-ink) h-full"
                     min={field.min}
                     max={field.max}
                     step={step}
@@ -462,24 +462,24 @@ const NumberField: React.FC<NumberFieldProps> = ({
                     aria-invalid={showError}
                     aria-describedby={showError ? `aqi-${field.name}-error` : undefined}
                 />
-                <span className="shrink-0 pr-3 text-[11px] text-[var(--bc-ink-faint)] whitespace-nowrap">
+                <span className="shrink-0 pr-3 text-[11px] text-(--bc-ink-faint) whitespace-nowrap">
                     {field.min}–{field.max}
                 </span>
             </div>
 
             <div
-                className="relative h-1 rounded-full bg-[var(--bc-track)] mt-2 overflow-hidden"
+                className="relative h-1 rounded-full bg-(--bc-track) mt-2 overflow-hidden"
                 aria-hidden="true"
             >
                 <span
-                    className="absolute inset-0 bg-[var(--bc-accent)] rounded-full origin-left transition-transform duration-[250ms]"
+                    className="absolute inset-0 bg-(--bc-accent) rounded-full origin-left transition-transform duration-250"
                     style={{ transform: `scaleX(${pct / 100})` }}
                 />
             </div>
 
             {showError && (
                 <p
-                    className="flex items-center gap-1.5 mt-[7px] text-xs text-[var(--bc-danger)]"
+                    className="flex items-center gap-1.5 mt-1.75 text-xs text-(--bc-danger)"
                     id={`aqi-${field.name}-error`}
                 >
                     <AlertCircle size={12} />
@@ -560,19 +560,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     };
 
     const triggerClasses = [
-        "aqi-select-trigger relative flex w-full items-center justify-between rounded-[10px] bg-[var(--bc-surface-2)] min-h-[42px] backdrop-blur-[8px] px-3 text-[14.5px] text-[var(--bc-ink)] cursor-pointer outline-none border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms]",
+        "aqi-select-trigger relative flex w-full items-center justify-between rounded-[10px] bg-(--bc-surface-2) min-h-[42px] backdrop-blur-sm px-3 text-[14.5px] text-(--bc-ink) cursor-pointer outline-none border-[1.5px] transition-[border-color,box-shadow,background-color] duration-[180ms]",
         open
             ? "is-open border-[var(--bc-accent)] shadow-[0_0_0_4px_var(--bc-focus-ring)]"
-            : "border-[var(--bc-border)] hover:border-[var(--bc-border-strong)] hover:bg-[var(--bc-surface)] focus-visible:border-[var(--bc-accent)] focus-visible:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
+            : "border-(--bc-border) hover:border-(--bc-border-strong) hover:bg-(--bc-surface) focus-visible:border-[var(--bc-accent)] focus-visible:shadow-[0_0_0_4px_var(--bc-focus-ring)]",
     ].join(" ");
 
     return (
         <div className="min-w-0 relative" ref={containerRef}>
             <span
                 id={`${fieldId}-label`}
-                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--bc-ink)] mb-[7px]"
+                className="flex items-center gap-1.5 text-[12.5px] font-semibold text-(--bc-ink) mb-1.75"
             >
-                <span className="inline-flex text-[var(--bc-ink-faint)]">{icon}</span>
+                <span className="inline-flex text-(--bc-ink-faint)">{icon}</span>
                 {label}
             </span>
 
@@ -597,14 +597,14 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 <span>{value}</span>
                 <ChevronDown
                     size={16}
-                    className={`shrink-0 text-[var(--bc-ink-faint)] transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "rotate-180" : ""
+                    className={`shrink-0 text-(--bc-ink-faint) transition-transform duration-200 ease-in-out ${open ? "rotate-180" : ""
                         }`}
                 />
             </button>
 
             {open && (
                 <ul
-                    className="aqi-select-list absolute z-[1000] top-full left-0 right-0 mt-1.5 p-1.5 list-none w-full max-h-[240px] overflow-y-auto bg-[var(--bc-surface)] border border-[var(--bc-border-strong)] rounded-[10px] shadow-[0_18px_40px_-20px_rgba(9,30,34,0.25)] animate-[aqi-dropdown-in_0.15s_cubic-bezier(0.16,1,0.3,1)] backdrop-blur-[12px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--bc-border-strong)] [&::-webkit-scrollbar-thumb]:rounded-full"
+                    className="aqi-select-list absolute z-1000 top-full left-0 right-0 mt-1.5 p-1.5 list-none w-full max-h-60 overflow-y-auto bg-(--bc-surface) border border-(--bc-border-strong) rounded-[10px] shadow-[0_18px_40px_-20px_rgba(9,30,34,0.25)] animate-[aqi-dropdown-in_0.15s_cubic-bezier(0.16,1,0.3,1)] backdrop-blur-md [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-(--bc-border-strong) [&::-webkit-scrollbar-thumb]:rounded-full"
                     role="listbox"
                     aria-labelledby={`${fieldId}-label`}
                     tabIndex={-1}
@@ -613,10 +613,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                         const optionClasses = [
                             "aqi-select-option flex items-center gap-2 px-2.5 py-2 rounded-[7px] text-sm cursor-pointer transition-[background-color,color] duration-[150ms]",
                             index === activeIndex
-                                ? "is-active bg-[var(--bc-accent)] text-white"
+                                ? "is-active bg-(--bc-accent) text-white"
                                 : opt === value
-                                    ? "is-selected text-[var(--bc-accent-strong)] font-semibold bg-[color-mix(in_srgb,var(--bc-accent)_8%,transparent)]"
-                                    : "text-[var(--bc-ink-soft)] hover:bg-[var(--bc-surface-2)] hover:text-[var(--bc-ink)]",
+                                    ? "is-selected text-(--bc-accent-strong) font-semibold bg-[color-mix(in_srgb,var(--bc-accent)_8%,transparent)]"
+                                    : "text-(--bc-ink-soft) hover:bg-(--bc-surface-2) hover:text-(--bc-ink)",
                         ].join(" ");
 
                         return (
@@ -1214,7 +1214,7 @@ const AqiPrediction: React.FC = () => {
             <header>
                 <Navbar />
             </header>
-            <main className="bg-[var(--bc-bg)] text-[var(--bc-ink)] min-h-screen transition-colors duration-[400ms]">
+            <main className="bg-(--bc-bg) text-(--bc-ink) min-h-screen transition-colors duration-400">
                 {/* ✨ FULL-SCREEN BACKGROUND ANIMATION ✨ */}
                 <div className="fixed inset-0 z-0 w-screen h-screen pointer-events-none">
                     <AtmosphereScene
@@ -1228,31 +1228,31 @@ const AqiPrediction: React.FC = () => {
                 {/* ✨ FOREGROUND CONTENT (Sits above background) ✨ */}
                 <div className="relative z-1">
 
-                    <section className="max-w-310 mx-auto px-5 pt-2 pb-5 md:px-10 md:pb-8 md:max-w-[760px]">
-                        <p className="text-xs tracking-[0.14em] uppercase text-[var(--bc-accent-strong)] font-semibold m-0 mb-2.5">
+                    <section className="max-w-310 mx-auto px-5 pt-2 pb-5 md:px-10 md:pb-8 md:max-w-190">
+                        <p className="text-xs tracking-[0.14em] uppercase text-(--bc-accent-strong) font-semibold m-0 mb-2.5">
                             Environmental Intelligence
                         </p>
-                        <h1 className="font-[var(--bc-font-display)] font-semibold text-[clamp(26px,4vw,38px)] leading-[1.15] m-0 mb-3">
+                        <h1 className="font-semibold text-[clamp(26px,4vw,38px)] leading-[1.15] m-0 mb-3">
                             Atmospheric Synthesis Engine
                         </h1>
-                        <p className="text-[15px] leading-[1.6] text-[var(--bc-ink-soft)] m-0 max-w-[60ch]">
+                        <p className="text-[15px] leading-[1.6] text-(--bc-ink-soft) m-0 max-w-[60ch]">
                             Enter the environmental conditions below and {companyName} will synthesize a
                             real-time air quality prediction — and transform the atmosphere around it to
                             match.
                         </p>
                     </section>
 
-                    <div className="max-w-[1240px] mx-auto px-5 pt-2 pb-16 grid grid-cols-1 gap-7 sm:px-10 sm:pb-[72px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-9 lg:items-start">
+                    <div className="max-w-310 mx-auto px-5 pt-2 pb-16 grid grid-cols-1 gap-7 sm:px-10 sm:pb-18 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-9 lg:items-start">
                         <div className="min-w-0">
                             <form onSubmit={handleSubmit} noValidate>
                                 <fieldset className="border-none p-0 m-0 min-w-0 disabled:opacity-70" disabled={loading}>
                                     {FIELD_GROUPS.map((group) => (
                                         <section
                                             key={group.title}
-                                            className="aqi-group bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-5 mb-[18px] backdrop-blur-[12px]"
+                                            className="aqi-group bg-(--bc-surface) border border-(--bc-border) rounded-[18px] p-5 mb-4.5 backdrop-blur-md"
                                         >
-                                            <div className="flex items-center gap-[9px] mb-4 text-[var(--bc-ink)]">
-                                                <span className="inline-flex text-[var(--bc-accent-strong)]">
+                                            <div className="flex items-center gap-2.25 mb-4 text-(--bc-ink)">
+                                                <span className="inline-flex text-(--bc-accent-strong)">
                                                     {group.icon}
                                                 </span>
                                                 <h2 className="text-[15px] font-bold m-0">{group.title}</h2>
@@ -1307,7 +1307,7 @@ const AqiPrediction: React.FC = () => {
 
                                     {error && (
                                         <div
-                                            className="flex items-start gap-2 bg-[var(--bc-danger-bg)] border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-[var(--bc-danger)] rounded-[10px] px-3 py-2.5 text-[13px] mb-[18px] backdrop-blur-[8px]"
+                                            className="flex items-start gap-2 bg-(--bc-danger-bg) border border-[color-mix(in_srgb,var(--bc-danger)_35%,transparent)] text-(--bc-danger) rounded-[10px] px-3 py-2.5 text-[13px] mb-4.5 backdrop-blur-sm"
                                             role="alert"
                                         >
                                             <AlertCircle size={16} className="mt-px shrink-0" />
@@ -1348,7 +1348,7 @@ const AqiPrediction: React.FC = () => {
 
                         <aside className="relative lg:sticky lg:top-6">
                             <div
-                                className="bg-[var(--bc-surface)] border border-[var(--bc-border)] rounded-[18px] p-[22px] text-center backdrop-blur-[16px] shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)]"
+                                className="bg-(--bc-surface) border border-(--bc-border) rounded-[18px] p-5.5 text-center backdrop-blur-lg shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)]"
                                 aria-live="polite"
                             >
                                 {result && !loading ? (
@@ -1360,19 +1360,19 @@ const AqiPrediction: React.FC = () => {
                                             {atmosphere.shortLabel}
                                         </span>
 
-                                        <p className="font-[var(--bc-font-display)] text-[44px] font-semibold mt-3 mb-1 leading-none">
+                                        <p className="text-[44px] font-semibold mt-3 mb-1 leading-none">
                                             {Math.round(result.prediction)}
-                                            <span className="text-[15px] font-semibold text-[var(--bc-ink-faint)] ml-1.5 font-[var(--bc-font-body)]">
+                                            <span className="text-[15px] font-semibold text-(--bc-ink-faint) ml-1.5">
                                                 AQI
                                             </span>
                                         </p>
 
-                                        <p className="text-[13.5px] text-[var(--bc-ink-soft)] m-0 mb-1.5 leading-[1.5]">
+                                        <p className="text-[13.5px] text-(--bc-ink-soft) m-0 mb-1.5 leading-normal">
                                             {atmosphere.description}
                                         </p>
 
                                         {resultSource === "restored" && (
-                                            <p className="text-[11.5px] text-[var(--bc-ink-faint)] m-0 mb-2.5 italic">
+                                            <p className="text-[11.5px] text-(--bc-ink-faint) m-0 mb-2.5 italic">
                                                 Restored from your last analysis
                                             </p>
                                         )}
@@ -1381,12 +1381,12 @@ const AqiPrediction: React.FC = () => {
                                             {summaryChips.map((chip) => (
                                                 <span
                                                     key={chip.label}
-                                                    className="inline-flex flex-col items-center gap-0.5 border border-[var(--bc-border)] rounded-[10px] px-2.5 py-[7px] min-w-[68px] bg-[var(--bc-surface-2)]"
+                                                    className="inline-flex flex-col items-center gap-0.5 border border-(--bc-border) rounded-[10px] px-2.5 py-1.75 min-w-17 bg-(--bc-surface-2)"
                                                 >
-                                                    <span className="text-[10px] uppercase tracking-[0.05em] text-[var(--bc-ink-faint)]">
+                                                    <span className="text-[10px] uppercase tracking-wider text-(--bc-ink-faint)">
                                                         {chip.label}
                                                     </span>
-                                                    <span className="text-[12.5px] font-semibold text-[var(--bc-ink)]">
+                                                    <span className="text-[12.5px] font-semibold text-(--bc-ink)">
                                                         {chip.value}
                                                     </span>
                                                 </span>
@@ -1394,13 +1394,13 @@ const AqiPrediction: React.FC = () => {
                                         </div>
                                     </>
                                 ) : loading ? (
-                                    <p className="text-sm text-[var(--bc-ink-soft)] mt-2.5 m-0">
+                                    <p className="text-sm text-(--bc-ink-soft) mt-2.5 m-0">
                                         Analyzing atmospheric conditions…
                                     </p>
                                 ) : (
                                     <>
-                                        <Sparkles size={20} className="text-[var(--bc-accent-strong)]" />
-                                        <p className="text-sm text-[var(--bc-ink-soft)] mt-2.5 m-0">
+                                        <Sparkles size={20} className="text-(--bc-accent-strong)" />
+                                        <p className="text-sm text-(--bc-ink-soft) mt-2.5 m-0">
                                             Ready to synthesize environmental conditions.
                                         </p>
                                     </>

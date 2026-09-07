@@ -20,6 +20,7 @@ import { companyName, PREVIEW_LIMIT, MAX_UPLOAD_SIZE_MB } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Navbar from "../components/Navbar";
+import type { AxiosError } from "axios";
 // ---------------------------------------------------------------------------
 
 const REQUIRED_COLUMNS: string[] = fieldSchema.map((f) => f.name);
@@ -334,7 +335,7 @@ Page
 const FileUpload: React.FC = () => {
     const dispatch = useAppDispatch();
     const mode = useAppSelector((state) => state.theme.mode);
-    const upload = useAppSelector((state) => (state).file ?? (state).upload) as FileUploadState;
+    const upload = useAppSelector((state) => (state).file) as FileUploadState;
     const isDark = mode === "dark";
 
     useSEO(
@@ -461,7 +462,7 @@ const FileUpload: React.FC = () => {
             let msg = "Batch processing failed. Please try again.";
             if (err instanceof Error) msg = err.message;
             if (typeof err === "object" && err !== null && "response" in err) {
-                const axiosErr = err as any;
+                const axiosErr = err as AxiosError;
                 if (axiosErr.response?.data instanceof Blob) {
                     try {
                         const errorText = await axiosErr.response.data.text();

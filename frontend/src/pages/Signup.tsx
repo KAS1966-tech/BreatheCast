@@ -377,9 +377,9 @@ const Signup: React.FC = () => {
             }
         }
         `}</style>
-            <header>
-                <Navbar />
-            </header>
+            <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+        <Navbar/>
+      </header>
             <main className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-400 min-[960px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
                 {/* ---------------- Form side ---------------- */}
                 <div className="order-2 flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:order-1 min-[960px]:justify-center min-[960px]:px-18 min-[960px]:py-12">

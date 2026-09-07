@@ -57,9 +57,14 @@ const Navbar: React.FC = () => {
 
     /* ---- close menus on route change ---- */
     useEffect(() => {
-        setMobileOpen(false);
-        setSettingsOpen(false);
+        const timer = setTimeout(() => {
+            setMobileOpen(false);
+            setSettingsOpen(false);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, [location.pathname]);
+
 
     /* ---- settings dropdown: outside click + escape ---- */
     useEffect(() => {
@@ -249,12 +254,12 @@ const Navbar: React.FC = () => {
         >
             <header
                 className={cx(
-                    "sticky top-0 z-50 border-b backdrop-blur-[14px] transition-[background-color,border-color] duration-[400ms] ease-in-out motion-reduce:transition-none",
+                    "sticky top-0 z-50 border-b backdrop-blur-[14px] transition-[background-color,border-color] duration-400 ease-in-out motion-reduce:transition-none",
                     ui.header
                 )}
             >
                 <nav
-                    className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-3 px-5 md:px-10"
+                    className="mx-auto flex h-16 max-w-310 items-center justify-between gap-3 px-5 md:px-10"
                     aria-label="Primary"
                 >
                     {/* ---------- Brand ---------- */}
@@ -262,7 +267,7 @@ const Navbar: React.FC = () => {
                         type="button"
                         className={cx(
                             "inline-flex cursor-pointer items-center gap-2.5 rounded-lg border-none bg-transparent p-1",
-                            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none",
+                            "focus-visible:outline focus-visible:outline-offset-2 motion-reduce:transition-none",
                             ui.brand
                         )}
                         onClick={() => goTo(isAuthenticated ? "/home" : "/")}
@@ -345,7 +350,7 @@ const Navbar: React.FC = () => {
                             {settingsOpen && (
                                 <div
                                     className={cx(
-                                        "absolute right-0 top-[calc(100%+10px)] z-[60] w-[224px] rounded-[14px] border p-2",
+                                        "absolute right-0 top-[calc(100%+10px)] z-60 w-56 rounded-[14px] border p-2",
                                         "animate-nb-pop-in motion-reduce:animate-none",
                                         ui.menu
                                     )}
@@ -406,7 +411,7 @@ const Navbar: React.FC = () => {
                                                         onClick={() => void navigate("/settings")}
                                                     >
                                                         <ArrowRight size={15} />
-                                                        go to settings
+                                                        Go to Settings
                                                     </button>
                                                 </div>
                                             ) : (
@@ -468,7 +473,7 @@ const Navbar: React.FC = () => {
                                     className={cx(buttonBase, ui.primaryBtn)}
                                     onClick={() => goTo("/signup")}
                                 >
-                                    Register
+                                    Get Started
                                 </button>
                             </div>
                         )}

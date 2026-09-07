@@ -18,6 +18,7 @@ import History from "./pages/History"
 import Profile from "./pages/Profile"
 import ProfileSettings from "./pages/ProfileSettings"
 import Home from "./pages/Home"
+import LenisScroll from "./components/LenisScroll"
 
 
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
 
   return (
     <div>
+      <LenisScroll/>
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/" element={<IntroPage />} />

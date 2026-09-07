@@ -335,9 +335,9 @@ const Login: React.FC = () => {
           }
         }
       `}</style>
-            <header>
-                <Navbar />
-            </header>
+            <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+        <Navbar/>
+      </header>
             <main className="min-h-screen grid grid-cols-1 bg-(--bc-bg) text-(--bc-ink) transition-colors duration-400 min-[960px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
                 {/* ---------------- Atmospheric panel ---------------- */}
                 <div
