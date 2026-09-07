@@ -20,6 +20,8 @@ from app.helpers.cleaner import clean_text
 from datetime import datetime, timedelta, timezone
 from app.core.config import settings
 
+from app.core.logger import logger
+
 
 def get_user_by_email(db:Session,email: str)->Authentication | None:
 
@@ -125,8 +127,8 @@ def get_or_create_google_user(
     counter = 1
 
     while get_user_by_username(db, username):
-        username = f"{username_base}{counter}"
         counter += 1
+        username = f"{username_base}{counter}"
 
     new_user = Authentication(
         fullname=fullname,
@@ -331,9 +333,8 @@ def update_username(
     user_id: int,
     username: str,
 ) -> Authentication:
-    print(user_id)
     user = get_user_by_id(db, user_id)
-
+    logger.debug(f"Updating username for user_id: {user_id}")
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

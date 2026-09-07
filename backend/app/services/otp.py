@@ -36,7 +36,7 @@ def create_otp(
     )
 
     db.add(otp_record)
-
+    db.commit()
     return otp
 
 
