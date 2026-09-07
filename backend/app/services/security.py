@@ -44,7 +44,7 @@ def create_access_token(
         )
     )
     to_encode.update({
-        "sub": str(data["id"]),
+        "sub": str(data["sub"]),
         "exp": expire,
     })
 
@@ -87,7 +87,7 @@ def create_refresh_token(data: dict) -> str:
     )
 
     payload.update({
-        "sub": str(data["id"]),
+        "sub": str(data["sub"]),
         "exp": expire,
         "type": "refresh",
     })

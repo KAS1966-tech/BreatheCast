@@ -298,6 +298,8 @@ def sign_up(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error,
         )
+
+
 @router.post("/refresh")
 def refresh(
     request: Request,
@@ -388,6 +390,41 @@ def refresh(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error
         )
+
+@router.post("/login",response_model=LoginResponse)
+def login(response : Response,formdata:LoginRequest,db:Session = Depends(get_db)):
+    try:
+        user_credientials = verify_user(db,formdata)
+        response.set_cookie(
+            key="access_token",
+            value=user_credientials["access_token"],
+            httponly=True,
+            samesite="lax",
+            secure=settings.IS_PROD,
+            max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
+            path="/"
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=user_credientials["refresh_token"],
+            httponly=True,
+            samesite="lax",
+            secure=settings.IS_PROD,
+            max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
+            path="/"
+        )
+
+        return user_credientials
+    except HTTPException:
+        logger.exception("Login failed")
+        raise
+    except Exception as e:
+        logger.exception("Login failed")
+        error = str(e) if settings.DEBUG else settings.ERROR_MESSAGE
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail=error)
+
+
 @router.post("/auth/google", response_model=GoogleLoginResponse)
 def google_login(
     response: Response,
