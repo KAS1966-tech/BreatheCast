@@ -27,14 +27,9 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Animated from "../components/Animated";
+import type { MetricsResponse } from "../hooks/types/metrics.type";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
-
-interface MetricsResponse {
-    mae: number;
-    mse: number;
-    rmse: number;
-    r2: number;
-}
 
 /* ============================================================================
  * Helpers
@@ -572,8 +567,8 @@ const Home: React.FC = () => {
                                     ) : (
                                         <ul className="divide-y divide-(--bc-border) -mx-5 sm:-mx-6">
                                             {recentPredictions.map((p, idx) => (
-                                                <Animated delay={idx * 0.15}>
-                                                    <li key={p.id} className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
+                                                <Animated key={p.id} delay={idx * 0.15}>
+                                                    <li className="px-5 sm:px-6 py-3.5 flex items-center justify-between gap-4 hover:bg-(--bc-surface-2) transition-colors">
                                                         <div className="flex items-center gap-3 min-w-0">
                                                             <AqiBadge value={p.prediction} />
                                                             <div className="min-w-0">
@@ -722,6 +717,7 @@ const Home: React.FC = () => {
                         </div>
                     </div>
                 </main>
+                <Footer/>
             </div>
         </div>
     );

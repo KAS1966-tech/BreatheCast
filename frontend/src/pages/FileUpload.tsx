@@ -21,6 +21,7 @@ import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Navbar from "../components/Navbar";
 import type { AxiosError } from "axios";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
 
 const REQUIRED_COLUMNS: string[] = fieldSchema.map((f) => f.name);
@@ -101,8 +102,8 @@ function parseCsvHead(text: string, maxPreviewRows: number): { headers: string[]
     }
     if (field.length > 0 || row.length > 0) { if (!inQuotes) pushRow(); }
     const headers = (allRows.shift() ?? []).map((h) =>
-    h.replace(/^\uFEFF/, "").trim()
-);
+        h.replace(/^\uFEFF/, "").trim()
+    );
     return { headers, rows: allRows };
 }
 
@@ -346,7 +347,7 @@ const FileUpload: React.FC = () => {
     useGoogleFont("Plus Jakarta Sans");
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const fileRef = useRef<File | null>(null);
+    const [file, setFile] = useState<File | null>(null);
     const abortRef = useRef<AbortController | null>(null);
     const blobUrlRef = useRef<string | null>(null);
     const dragDepth = useRef(0);
@@ -363,7 +364,7 @@ const FileUpload: React.FC = () => {
     const hasAnalysis = headers.length > 0 || rowCount !== null;
     const stepStates = getStepStates(phase, isValid, hasAnalysis);
     const sizeExceeded = fileSizeBytes !== null && fileSizeBytes > MAX_UPLOAD_SIZE_BYTES;
-    const canProcess = phase === "ready" && isValid && !sizeExceeded && fileRef.current !== null;
+    const canProcess = phase === "ready" && isValid && !sizeExceeded && file !== null;
     const realProgress = uploadProgress > 0 ? Math.min(100, uploadProgress) : null;
 
     const liveStatus =
@@ -403,7 +404,7 @@ const FileUpload: React.FC = () => {
             toast.error(msg);
             return;
         }
-        fileRef.current = file;
+        setFile(file);
         dispatch(selectFile({ fileName: file.name, fileType: file.type || "text/csv", fileSizeBytes: file.size }));
         try {
             const analysis = await analyzeCsvFile(file, PREVIEW_LIMIT);
@@ -431,7 +432,6 @@ const FileUpload: React.FC = () => {
     };
 
     const handleProcess = async () => {
-        const file = fileRef.current;
         if (!file || !canProcess) return;
         const controller = new AbortController();
         abortRef.current = controller;
@@ -484,7 +484,7 @@ const FileUpload: React.FC = () => {
         abortRef.current?.abort();
         abortRef.current = null;
         dispatch(resetUpload());
-        fileRef.current = null;
+        setFile(null);
         if (blobUrlRef.current) {
             URL.revokeObjectURL(blobUrlRef.current);
             blobUrlRef.current = null;
@@ -571,7 +571,7 @@ const FileUpload: React.FC = () => {
 
             <Atmosphere isDark={isDark} mood={mood} />
 
-            <header>
+            <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
                 <Navbar />
             </header>
             <main className="relative z-1 bg-transparent text-(--bc-ink) min-h-screen overflow-x-hidden">
@@ -832,7 +832,7 @@ const FileUpload: React.FC = () => {
                                             <RotateCcw size={15} />
                                             Start over
                                         </button>
-                                        {fileRef.current && isValid && (
+                                        {file && isValid && (
                                             <button type="button" className="inline-flex items-center justify-center gap-1.5 rounded-[10px] text-[13px] font-semibold px-3.5 py-2.75 cursor-pointer transition-[transform,box-shadow,opacity,border-color,background] duration-150 min-h-10.5 focus-visible:outline-2 focus-visible:outline-(--bc-accent) focus-visible:outline-offset-2 sm:gap-2 sm:text-sm sm:px-4.5 sm:py-3 flex-1 border-none bg-(--bc-accent-strong) text-[#F4FBF9] shadow-[0_10px_30px_-12px_color-mix(in_srgb,var(--bc-accent-strong)_60%,transparent)] hover:enabled:-translate-y-px disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none" onClick={() => void handleProcess()}>
                                                 Retry processing
                                                 <ArrowRight size={16} />
@@ -916,6 +916,7 @@ const FileUpload: React.FC = () => {
                     </div>
                 </div>
             </main>
+            <Footer/>
         </div>
     );
 };

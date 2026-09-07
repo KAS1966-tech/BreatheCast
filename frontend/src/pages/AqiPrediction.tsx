@@ -37,6 +37,7 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 // ---------------------------------------------------------------------------
 const STORAGE_KEY = "breathecast:aqi-synthesis-form:v1";
@@ -1211,7 +1212,7 @@ const AqiPrediction: React.FC = () => {
           }
         }
       `}</style>
-            <header>
+            <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
                 <Navbar />
             </header>
             <main className="bg-(--bc-bg) text-(--bc-ink) min-h-screen transition-colors duration-400">
@@ -1410,6 +1411,7 @@ const AqiPrediction: React.FC = () => {
                     </div>
                 </div>
             </main>
+            <Footer/>
         </div>
     );
 };

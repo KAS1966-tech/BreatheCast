@@ -31,6 +31,7 @@ import { metrics } from "../api/predictionApi";
 import Animated from "../components/Animated";
 import Navbar from "../components/Navbar";
 import { useAppSelector } from "../app/redux";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
 
 /* ---------------------------------------------------------------------------
@@ -1088,18 +1089,7 @@ const IntroPage: React.FC = () => {
       </main>
 
       {/* ============================ FOOTER ============================ */}
-      <footer className="border-t border-(--bc-border) bg-(--bc-bg)">
-        <div className={`${CONTAINER} flex flex-col items-center justify-between gap-3 py-8 sm:flex-row`}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-(--bc-ink)">
-            <Wind size={15} className="text-(--bc-accent-strong)" aria-hidden="true" />
-            {companyName}
-          </div>
-          <p className="text-xs text-(--bc-ink-faint)">Environmental intelligence · AQI prediction</p>
-          <p className="text-xs text-(--bc-ink-faint)">
-            © {new Date().getFullYear()} {companyName}
-          </p>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 };

@@ -44,6 +44,7 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Animated from "../components/Animated";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
 
 /* ============================================================================
@@ -645,7 +646,9 @@ const History: React.FC = () => {
             <Atmosphere isDark={isDark} atmosphere={atmosphere} />
 
             <div className="relative z-10 flex min-h-screen flex-col">
-                <Navbar />
+                <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+                    <Navbar />
+                </header>
 
                 <main className="mx-auto w-full max-w-310 flex-1 px-5 pb-24 sm:px-8">
                     {/* ================= HERO ================= */}
@@ -680,47 +683,47 @@ const History: React.FC = () => {
                     <section aria-label="Activity summary" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                         <Animated delay={0.1}>
                             <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
-                                <Gauge size={14} />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Total Predictions</p>
+                                <div className="flex items-center gap-2 text-(--bc-ink-faint)">
+                                    <Gauge size={14} />
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Total Predictions</p>
+                                </div>
+                                <p className="hist-display mt-2 text-2xl font-semibold">{predictionLoading && predictionTotal === 0 ? "—" : predictionTotal.toLocaleString()}</p>
                             </div>
-                            <p className="hist-display mt-2 text-2xl font-semibold">{predictionLoading && predictionTotal === 0 ? "—" : predictionTotal.toLocaleString()}</p>
-                        </div>
                         </Animated>
                         <Animated delay={0.2}>
                             <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
-                                <FileSpreadsheet size={14} />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Uploaded Datasets</p>
+                                <div className="flex items-center gap-2 text-(--bc-ink-faint)">
+                                    <FileSpreadsheet size={14} />
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Uploaded Datasets</p>
+                                </div>
+                                <p className="hist-display mt-2 text-2xl font-semibold">{fileLoading && fileTotal === 0 ? "—" : fileTotal.toLocaleString()}</p>
                             </div>
-                            <p className="hist-display mt-2 text-2xl font-semibold">{fileLoading && fileTotal === 0 ? "—" : fileTotal.toLocaleString()}</p>
-                        </div>
                         </Animated>
                         <Animated delay={0.3}>
                             <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
-                                <CloudSun size={14} />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest AQI</p>
+                                <div className="flex items-center gap-2 text-(--bc-ink-faint)">
+                                    <CloudSun size={14} />
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest AQI</p>
+                                </div>
+                                <div className="mt-2">
+                                    {predictionHistory[0] ? (
+                                        <AqiBadge value={predictionHistory[0].prediction} />
+                                    ) : (
+                                        <p className="hist-display text-2xl font-semibold text-(--bc-ink-faint)">—</p>
+                                    )}
+                                </div>
                             </div>
-                            <div className="mt-2">
-                                {predictionHistory[0] ? (
-                                    <AqiBadge value={predictionHistory[0].prediction} />
-                                ) : (
-                                    <p className="hist-display text-2xl font-semibold text-(--bc-ink-faint)">—</p>
-                                )}
-                            </div>
-                        </div>
                         </Animated>
                         <Animated delay={0.4}>
                             <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-4 backdrop-blur-md">
-                            <div className="flex items-center gap-2 text-(--bc-ink-faint)">
-                                <HistoryIcon size={14} />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest Activity</p>
+                                <div className="flex items-center gap-2 text-(--bc-ink-faint)">
+                                    <HistoryIcon size={14} />
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.08em]">Latest Activity</p>
+                                </div>
+                                <p className="mt-2 truncate text-sm font-semibold" title={latestActivity ?? undefined}>
+                                    {latestActivity ? formatDate(latestActivity) : "—"}
+                                </p>
                             </div>
-                            <p className="mt-2 truncate text-sm font-semibold" title={latestActivity ?? undefined}>
-                                {latestActivity ? formatDate(latestActivity) : "—"}
-                            </p>
-                        </div>
                         </Animated>
                     </section>
 
@@ -1094,6 +1097,7 @@ const History: React.FC = () => {
                         </div>
                     </section>
                 </main>
+                <Footer/>
             </div>
 
             {/* ================= CONFIRM: CLEAR PREDICTIONS ================= */}

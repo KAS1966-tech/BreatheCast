@@ -32,6 +32,7 @@ import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
 
 /** TODO: replace with your real settings/edit route when created. */
@@ -442,7 +443,9 @@ const Profile: React.FC = () => {
             <CalmAtmosphere isDark={isDark} />
 
             <div className="relative z-10 flex min-h-screen flex-col">
-                <Navbar />
+                <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+                    <Navbar />
+                </header>
 
                 <main className="mx-auto w-full max-w-290 flex-1 px-5 pb-20 sm:px-8">
                     {/* ================= ERROR STATE ================= */}
@@ -792,10 +795,7 @@ const Profile: React.FC = () => {
                     )}
                 </main>
 
-                <footer className="px-5 pb-8 text-center text-xs text-(--bc-ink-faint)">
-                    <strong className="font-semibold text-(--bc-ink-soft)">{companyName}</strong> · Environmental
-                    intelligence, personally yours.
-                </footer>
+                <Footer/>
             </div>
 
             <DeleteModal

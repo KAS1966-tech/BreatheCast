@@ -35,12 +35,12 @@ import Navbar from "../components/Navbar";
 import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
+import Footer from "../components/Footer";
 // TODO: move these two regex constants to your constraints folder and
 // import them as USERNAME_REGEX and PASSWORD_REGEX — kept local here only
 // because the existing exports are not visible to this file.
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{2,49}$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-const USERNAME_ALLOWED_REGEX = /^[a-zA-Z0-9_]+$/;
 // ---------------------------------------------------------------------------
 
 /** TODO: adjust to match your profileSlice state shape. */
@@ -222,15 +222,15 @@ const SectionCard: React.FC<{
             id={id}
             aria-labelledby={id ? `${id}-title` : undefined}
             className={`rounded-2xl border backdrop-blur-md shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] ${danger
-                    ? "border-[color:var(--bc-danger)] bg-[color:var(--bc-danger-bg)]"
-                    : "border-[color:var(--bc-border)] bg-[color:var(--bc-surface)]"
+                ? "border-(--bc-danger) bg-(--bc-danger-bg)"
+                : "border-(--bc-border) bg-(--bc-surface)"
                 }`}
         >
             <div className="px-5 pb-2 pt-5 sm:px-6">
                 <div className="flex items-center gap-2.5">
                     {icon && (
                         <span
-                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${danger ? "bg-[color:var(--bc-danger)]/10 text-[color:var(--bc-danger)]" : "bg-[color:var(--bc-surface-2)] text-[color:var(--bc-accent-strong)]"
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${danger ? "bg-(--bc-danger)/10 text-(--bc-danger)" : "bg-(--bc-surface-2) text-(--bc-accent-strong)"
                                 }`}
                             aria-hidden="true"
                         >
@@ -239,13 +239,13 @@ const SectionCard: React.FC<{
                     )}
                     <h2
                         id={id ? `${id}-title` : undefined}
-                        className={`pfs-display text-base font-semibold ${danger ? "text-[color:var(--bc-danger)]" : ""}`}
+                        className={`pfs-display text-base font-semibold ${danger ? "text-(--bc-danger)" : ""}`}
                     >
                         {title}
                     </h2>
                 </div>
                 {description && (
-                    <p className={`mt-2 max-w-[60ch] text-sm leading-relaxed ${danger ? "text-[color:var(--bc-ink-soft)]" : "text-[color:var(--bc-ink-soft)]"}`}>
+                    <p className={`mt-2 max-w-[60ch] text-sm leading-relaxed ${danger ? "text-(--bc-ink-soft)" : "text-(--bc-ink-soft)"}`}>
                         {description}
                     </p>
                 )}
@@ -268,14 +268,14 @@ const PasswordField: React.FC<{
     const [show, setShow] = useState(false);
     return (
         <div>
-            <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-[color:var(--bc-ink)]">
+            <label htmlFor={id} className="mb-1.5 block text-xs font-semibold text-(--bc-ink)">
                 {label}
             </label>
             <div
-                className={`flex items-center gap-2 rounded-lg border bg-[color:var(--bc-surface-2)] px-3 transition-colors focus-within:border-[color:var(--bc-accent)] focus-within:ring-2 focus-within:ring-[color:var(--bc-accent)]/20 ${error ? "border-[color:var(--bc-danger)]" : "border-[color:var(--bc-border)]"
+                className={`flex items-center gap-2 rounded-lg border bg-(--bc-surface-2) px-3 transition-colors focus-within:border-(--bc-accent) focus-within:ring-2 focus-within:ring-(--bc-accent)/20 ${error ? "border-(--bc-danger)" : "border-(--bc-border)"
                     }`}
             >
-                <Lock size={14} className="shrink-0 text-[color:var(--bc-ink-faint)]" aria-hidden="true" />
+                <Lock size={14} className="shrink-0 text-(--bc-ink-faint)" aria-hidden="true" />
                 <input
                     id={id}
                     type={show ? "text" : "password"}
@@ -285,7 +285,7 @@ const PasswordField: React.FC<{
                     disabled={disabled}
                     aria-invalid={Boolean(error)}
                     aria-describedby={describedBy}
-                    className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-[color:var(--bc-ink)] outline-none placeholder:text-[color:var(--bc-ink-faint)] disabled:opacity-60"
+                    className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-(--bc-ink) outline-none placeholder:text-(--bc-ink-faint) disabled:opacity-60"
                     placeholder="••••••••"
                 />
                 <button
@@ -293,13 +293,13 @@ const PasswordField: React.FC<{
                     onClick={() => setShow((s) => !s)}
                     aria-label={show ? `Hide ${label}` : `Show ${label}`}
                     aria-pressed={show}
-                    className="shrink-0 rounded-md p-1 text-[color:var(--bc-ink-faint)] transition-colors hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                    className="shrink-0 rounded-md p-1 text-(--bc-ink-faint) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                 >
                     {show ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
             </div>
             {error && (
-                <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1 text-xs text-[color:var(--bc-danger)]" role="alert">
+                <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1 text-xs text-(--bc-danger)" role="alert">
                     <AlertTriangle size={11} />
                     {error}
                 </p>
@@ -313,25 +313,25 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
     if (password.length === 0) return null;
     const color =
         level === "strong"
-            ? "bg-[color:var(--bc-success,#10B981)]"
+            ? "bg-(--bc-success,#10B981)"
             : level === "fair"
-                ? "bg-[color:var(--bc-warn,#F59E0B)]"
-                : "bg-[color:var(--bc-danger)]";
+                ? "bg-(--bc-warn,#F59E0B)"
+                : "bg-(--bc-danger)";
     const label =
         level === "strong" ? "Strong" : level === "fair" ? "Fair" : level === "weak" ? "Weak" : "Too short";
 
     return (
         <div className="mt-3">
             <div className="mb-2 flex items-center justify-between text-[11px]">
-                <span className="font-semibold uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                <span className="font-semibold uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                     Strength
                 </span>
                 <span
                     className={`font-semibold ${level === "strong"
-                            ? "text-[color:var(--bc-success,#10B981)]"
-                            : level === "fair"
-                                ? "text-[color:var(--bc-warn,#F59E0B)]"
-                                : "text-[color:var(--bc-danger)]"
+                        ? "text-(--bc-success,#10B981)"
+                        : level === "fair"
+                            ? "text-(--bc-warn,#F59E0B)"
+                            : "text-(--bc-danger)"
                         }`}
                 >
                     {label}
@@ -341,7 +341,7 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
                 {[1, 2, 3, 4, 5].map((i) => (
                     <div
                         key={i}
-                        className={`h-1 flex-1 rounded-full transition-all ${i <= score ? color : "bg-[color:var(--bc-track)]"}`}
+                        className={`h-1 flex-1 rounded-full transition-all ${i <= score ? color : "bg-(--bc-track)"}`}
                     />
                 ))}
             </div>
@@ -352,7 +352,7 @@ const PasswordStrength: React.FC<{ password: string }> = ({ password }) => {
                 ].map((item, i) => (
                     <li
                         key={i}
-                        className={`flex items-center gap-1.5 ${item.ok ? "text-[color:var(--bc-success,#10B981)]" : "text-[color:var(--bc-ink-faint)]"
+                        className={`flex items-center gap-1.5 ${item.ok ? "text-(--bc-success,#10B981)" : "text-(--bc-ink-faint)"
                             }`}
                     >
                         {item.ok ? <Check size={11} /> : <span className="inline-block h-1 w-1 rounded-full bg-current" aria-hidden="true" />}
@@ -377,8 +377,9 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
 
     useEffect(() => {
         if (!open) {
-            setTyped("");
-            return;
+            // Defer the state update to avoid cascading synchronous renders
+            const id = setTimeout(() => setTyped(""), 0);
+            return () => clearTimeout(id);
         }
         // Focus input when dialog opens
         const id = window.setTimeout(() => inputRef.current?.focus(), 50);
@@ -397,7 +398,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
     const canConfirm = typed === "DELETE" && !busy;
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-5">
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={() => !busy && onClose()}
@@ -408,17 +409,17 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                 aria-modal="true"
                 aria-labelledby="pfs-delete-title"
                 aria-describedby="pfs-delete-desc"
-                className="pfs-rise relative w-full max-w-md rounded-2xl border border-[color:var(--bc-danger)] bg-[color:var(--bc-surface)] p-6 shadow-2xl backdrop-blur-xl"
+                className="pfs-rise relative w-full max-w-md rounded-2xl border border-(--bc-danger) bg-(--bc-surface) p-6 shadow-2xl backdrop-blur-xl"
             >
                 <div className="mb-3 flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--bc-danger-bg)] text-[color:var(--bc-danger)]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-(--bc-danger-bg) text-(--bc-danger)">
                         <AlertTriangle size={18} />
                     </span>
                     <div>
-                        <h3 id="pfs-delete-title" className="pfs-display text-lg font-semibold text-[color:var(--bc-ink)]">
+                        <h3 id="pfs-delete-title" className="pfs-display text-lg font-semibold text-(--bc-ink)">
                             Permanently delete your account
                         </h3>
-                        <p id="pfs-delete-desc" className="mt-1 text-sm leading-relaxed text-[color:var(--bc-ink-soft)]">
+                        <p id="pfs-delete-desc" className="mt-1 text-sm leading-relaxed text-(--bc-ink-soft)">
                             This action permanently removes your account and associated prediction and upload
                             history. This cannot be undone.
                         </p>
@@ -426,8 +427,8 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                 </div>
 
                 <div className="mt-5">
-                    <label htmlFor="pfs-delete-confirm" className="mb-1.5 block text-xs font-semibold text-[color:var(--bc-ink)]">
-                        Type <span className="font-mono text-[color:var(--bc-danger)]">DELETE</span> to confirm
+                    <label htmlFor="pfs-delete-confirm" className="mb-1.5 block text-xs font-semibold text-(--bc-ink)">
+                        Type <span className="font-mono text-(--bc-danger)">DELETE</span> to confirm
                     </label>
                     <input
                         ref={inputRef}
@@ -438,7 +439,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                         disabled={busy}
                         autoComplete="off"
                         spellCheck={false}
-                        className="w-full rounded-lg border border-[color:var(--bc-danger)] bg-transparent px-3 py-2.5 font-mono text-sm text-[color:var(--bc-ink)] outline-none transition-colors focus:ring-2 focus:ring-[color:var(--bc-danger)]/30 disabled:opacity-60"
+                        className="w-full rounded-lg border border-(--bc-danger) bg-transparent px-3 py-2.5 font-mono text-sm text-(--bc-ink) outline-none transition-colors focus:ring-2 focus:ring-(--bc-danger)/30 disabled:opacity-60"
                         placeholder="DELETE"
                     />
                 </div>
@@ -448,7 +449,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                         type="button"
                         disabled={busy}
                         onClick={onClose}
-                        className="rounded-lg border border-[color:var(--bc-border)] px-4 py-2 text-sm font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:border-[color:var(--bc-border-strong)] hover:text-[color:var(--bc-ink)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                        className="rounded-lg border border-(--bc-border) px-4 py-2 text-sm font-semibold text-(--bc-ink-soft) transition-colors hover:border-(--bc-border-strong) hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                     >
                         Cancel
                     </button>
@@ -457,7 +458,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ open, busy, onConfirm, onClos
                         disabled={!canConfirm}
                         onClick={onConfirm}
                         aria-busy={busy}
-                        className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--bc-danger)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                        className="inline-flex items-center gap-2 rounded-lg bg-(--bc-danger) px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                     >
                         {busy && <Loader2 size={15} className="animate-spin" />}
                         {busy ? "Deleting account..." : "Delete Account"}
@@ -686,11 +687,11 @@ const ProfileSettings: React.FC = () => {
      * Common styles
      * ====================================================================*/
     const inputShell =
-        "w-full rounded-lg border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] px-3 py-2.5 text-sm text-[color:var(--bc-ink)] outline-none transition-colors focus:border-[color:var(--bc-accent)] focus:ring-2 focus:ring-[color:var(--bc-accent)]/20 disabled:opacity-60";
+        "w-full rounded-lg border border-(--bc-border) bg-(--bc-surface-2) px-3 py-2.5 text-sm text-(--bc-ink) outline-none transition-colors focus:border-(--bc-accent) focus:ring-2 focus:ring-[color:var(--bc-accent)]/20 disabled:opacity-60";
 
     return (
         <div
-            className="pfs-root relative min-h-screen bg-[color:var(--bc-bg)] text-[color:var(--bc-ink)] transition-colors duration-500"
+            className="pfs-root relative min-h-screen bg-(--bc-bg) text-(--bc-ink) transition-colors duration-500"
             data-theme={isDark ? "dark" : "day"}
         >
             <style>{`
@@ -761,26 +762,28 @@ const ProfileSettings: React.FC = () => {
             <CalmAtmosphere isDark={isDark} />
 
             <div className="relative z-10 flex min-h-screen flex-col">
-                <Navbar />
+                <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
+                    <Navbar />
+                </header>
 
-                <main className="mx-auto w-full max-w-[1160px] flex-1 px-5 pb-20 sm:px-8">
+                <main className="mx-auto w-full max-w-290 flex-1 px-5 pb-20 sm:px-8">
                     {/* ================= Page header ================= */}
                     <div className="pt-6 sm:pt-8">
                         <Link
                             to="/profile"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[color:var(--bc-ink-faint)] transition-colors hover:text-[color:var(--bc-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--bc-ink-faint) transition-colors hover:text-(--bc-ink) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                         >
                             <ArrowLeft size={13} />
                             Back to Profile
                         </Link>
                         <div className="mt-3">
-                            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[color:var(--bc-accent-strong)]">
+                            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-(--bc-accent-strong)">
                                 Account Management
                             </p>
                             <h1 className="pfs-display text-2xl font-semibold leading-tight sm:text-3xl">
                                 Account Settings
                             </h1>
-                            <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-[color:var(--bc-ink-soft)]">
+                            <p className="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-(--bc-ink-soft)">
                                 Manage your identity, sign-in options, and account preferences inside {companyName}.
                             </p>
                         </div>
@@ -788,24 +791,24 @@ const ProfileSettings: React.FC = () => {
 
                     {loading && !profile ? (
                         <div className="mt-8 grid gap-5 lg:grid-cols-12">
-                            <div className="rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] p-6 lg:col-span-4">
-                                <div className="h-20 w-20 animate-pulse rounded-2xl bg-[color:var(--bc-track)]" aria-hidden="true" />
-                                <div className="mt-4 h-5 w-3/4 animate-pulse rounded-md bg-[color:var(--bc-track)]" aria-hidden="true" />
-                                <div className="mt-2 h-4 w-1/2 animate-pulse rounded-md bg-[color:var(--bc-track)]" aria-hidden="true" />
+                            <div className="rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-6 lg:col-span-4">
+                                <div className="h-20 w-20 animate-pulse rounded-2xl bg-(--bc-track)" aria-hidden="true" />
+                                <div className="mt-4 h-5 w-3/4 animate-pulse rounded-md bg-(--bc-track)" aria-hidden="true" />
+                                <div className="mt-2 h-4 w-1/2 animate-pulse rounded-md bg-(--bc-track)" aria-hidden="true" />
                             </div>
                             <div className="space-y-5 lg:col-span-8">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className="h-32 animate-pulse rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)]" aria-hidden="true" />
+                                    <div key={i} className="h-32 animate-pulse rounded-2xl border border-(--bc-border) bg-(--bc-surface)" aria-hidden="true" />
                                 ))}
                             </div>
                         </div>
                     ) : !profile ? (
-                        <div className="mt-10 rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] p-10 text-center">
-                            <p className="text-sm text-[color:var(--bc-ink-soft)]">Unable to load your account information.</p>
+                        <div className="mt-10 rounded-2xl border border-(--bc-border) bg-(--bc-surface) p-10 text-center">
+                            <p className="text-sm text-(--bc-ink-soft)">Unable to load your account information.</p>
                             <button
                                 type="button"
                                 onClick={() => dispatch(fetchProfile())}
-                                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--bc-accent-strong)] px-4 py-2 text-sm font-semibold text-[#F4FBF9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-4 py-2 text-sm font-semibold text-[#F4FBF9] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                             >
                                 Retry
                             </button>
@@ -815,11 +818,11 @@ const ProfileSettings: React.FC = () => {
                             {/* ================= Identity sidebar ================= */}
                             <aside className="lg:col-span-4">
                                 <div className="lg:sticky lg:top-24">
-                                    <div className="overflow-hidden rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
+                                    <div className="overflow-hidden rounded-2xl border border-(--bc-border) bg-(--bc-surface) shadow-[0_18px_50px_-30px_rgba(9,30,34,0.35)] backdrop-blur-md">
                                         <div className="h-20" style={{ background: "linear-gradient(120deg, var(--bc-grad-1), var(--bc-grad-2))" }} />
                                         <div className="-mt-10 px-6 pb-6">
                                             <div
-                                                className="pfs-display flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold text-[#F4FBF9] ring-4 ring-[color:var(--bc-surface)]"
+                                                className="pfs-display flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold text-[#F4FBF9] ring-4 ring-(--bc-surface)"
                                                 style={{ background: "linear-gradient(135deg, var(--bc-accent), var(--bc-accent-strong))" }}
                                                 aria-hidden="true"
                                             >
@@ -828,21 +831,21 @@ const ProfileSettings: React.FC = () => {
                                             <h2 className="pfs-display mt-4 text-xl font-semibold leading-tight">
                                                 {user?.fullname || user?.username || "Your account"}
                                             </h2>
-                                            <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--bc-accent-strong)]">
+                                            <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-(--bc-accent-strong)">
                                                 {user?.username ?? "—"}
                                             </p>
-                                            <dl className="mt-5 space-y-3 border-t border-[color:var(--bc-border)] pt-5 text-sm">
+                                            <dl className="mt-5 space-y-3 border-t border-(--bc-border) pt-5 text-sm">
                                                 <div className="flex items-center gap-2.5">
-                                                    <Mail size={14} className="text-[color:var(--bc-ink-faint)]" aria-hidden="true" />
+                                                    <Mail size={14} className="text-(--bc-ink-faint)" aria-hidden="true" />
                                                     <div className="min-w-0">
-                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Email</dt>
+                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Email</dt>
                                                         <dd className="truncate font-medium">{user?.email ?? "—"}</dd>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2.5">
-                                                    <CalendarDays size={14} className="text-[color:var(--bc-ink-faint)]" aria-hidden="true" />
+                                                    <CalendarDays size={14} className="text-(--bc-ink-faint)" aria-hidden="true" />
                                                     <div className="min-w-0">
-                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Member since</dt>
+                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Member since</dt>
                                                         <dd className="font-medium">
                                                             {user?.created_at ? formatMemberSince(user.created_at) : "—"}
                                                         </dd>
@@ -850,12 +853,12 @@ const ProfileSettings: React.FC = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2.5">
                                                     {hasPassword ? (
-                                                        <KeyRound size={14} className="text-[color:var(--bc-ink-faint)]" aria-hidden="true" />
+                                                        <KeyRound size={14} className="text-(--bc-ink-faint)" aria-hidden="true" />
                                                     ) : (
-                                                        <LogIn size={14} className="text-[color:var(--bc-ink-faint)]" aria-hidden="true" />
+                                                        <LogIn size={14} className="text-(--bc-ink-faint)" aria-hidden="true" />
                                                     )}
                                                     <div className="min-w-0">
-                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">Sign-in</dt>
+                                                        <dt className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">Sign-in</dt>
                                                         <dd className="font-medium">{hasPassword ? "Password enabled" : "Google sign-in"}</dd>
                                                     </div>
                                                 </div>
@@ -864,8 +867,8 @@ const ProfileSettings: React.FC = () => {
                                     </div>
 
                                     {/* Legal */}
-                                    <div className="mt-4 rounded-2xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] px-5 py-4 backdrop-blur-md">
-                                        <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[color:var(--bc-ink-faint)]">
+                                    <div className="mt-4 rounded-2xl border border-(--bc-border) bg-(--bc-surface) px-5 py-4 backdrop-blur-md">
+                                        <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-(--bc-ink-faint)">
                                             <ScrollText size={12} />
                                             Legal
                                         </p>
@@ -873,7 +876,7 @@ const ProfileSettings: React.FC = () => {
                                             <li>
                                                 <Link
                                                     to="/privacy-policy"
-                                                    className="inline-flex items-center gap-2 font-medium text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-2 font-medium text-(--bc-ink-soft) transition-colors hover:text-(--bc-accent-strong) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     <Lock size={13} aria-hidden="true" />
                                                     Privacy Policy
@@ -882,7 +885,7 @@ const ProfileSettings: React.FC = () => {
                                             <li>
                                                 <Link
                                                     to="/terms-and-conditions"
-                                                    className="inline-flex items-center gap-2 font-medium text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-2 font-medium text-(--bc-ink-soft) transition-colors hover:text-(--bc-accent-strong) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     <ScrollText size={13} aria-hidden="true" />
                                                     Terms &amp; Conditions
@@ -903,16 +906,16 @@ const ProfileSettings: React.FC = () => {
                                     icon={<UserIcon size={15} />}
                                 >
                                     {/* Full Name */}
-                                    <div className="rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
+                                    <div className="rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
                                         <div className="mb-2 flex items-center justify-between gap-3">
-                                            <label htmlFor="ps-fullname" className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">
+                                            <label htmlFor="ps-fullname" className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">
                                                 Full Name
                                             </label>
                                             {!editingName && (
                                                 <button
                                                     type="button"
                                                     onClick={openNameEdit}
-                                                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-[color:var(--bc-accent-strong)] transition-colors hover:bg-[color:var(--bc-surface)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-(--bc-accent-strong) transition-colors hover:bg-(--bc-surface) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     <Pencil size={12} />
                                                     Edit
@@ -933,7 +936,7 @@ const ProfileSettings: React.FC = () => {
                                                     disabled={updatingName}
                                                     aria-invalid={Boolean(nameError)}
                                                     aria-describedby={nameError ? "ps-name-error" : undefined}
-                                                    className={`${inputShell} ${nameError ? "border-[color:var(--bc-danger)]" : ""}`}
+                                                    className={`${inputShell} ${nameError ? "border-(--bc-danger)" : ""}`}
                                                     placeholder="Your full name"
                                                     onKeyDown={(e) => {
                                                         if (e.key === "Enter") { e.preventDefault(); void saveName(); }
@@ -941,7 +944,7 @@ const ProfileSettings: React.FC = () => {
                                                     }}
                                                 />
                                                 {nameError && (
-                                                    <p id="ps-name-error" className="mt-1.5 flex items-center gap-1 text-xs text-[color:var(--bc-danger)]" role="alert">
+                                                    <p id="ps-name-error" className="mt-1.5 flex items-center gap-1 text-xs text-(--bc-danger)" role="alert">
                                                         <AlertTriangle size={11} />
                                                         {nameError}
                                                     </p>
@@ -951,7 +954,7 @@ const ProfileSettings: React.FC = () => {
                                                         type="button"
                                                         onClick={cancelNameEdit}
                                                         disabled={updatingName}
-                                                        className="rounded-lg border border-[color:var(--bc-border)] px-3 py-1.5 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-ink)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                        className="rounded-lg border border-(--bc-border) px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                     >
                                                         Cancel
                                                     </button>
@@ -960,7 +963,7 @@ const ProfileSettings: React.FC = () => {
                                                         onClick={() => void saveName()}
                                                         disabled={updatingName}
                                                         aria-busy={updatingName}
-                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--bc-accent-strong)] px-3.5 py-1.5 text-xs font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-3.5 py-1.5 text-xs font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                     >
                                                         {updatingName ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                                                         {updatingName ? "Saving..." : "Save"}
@@ -968,23 +971,23 @@ const ProfileSettings: React.FC = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p id="ps-fullname" className="truncate text-sm font-medium text-[color:var(--bc-ink)]">
-                                                {user?.fullname || <span className="text-[color:var(--bc-ink-faint)]">Not set — tap Edit to add one.</span>}
+                                            <p id="ps-fullname" className="truncate text-sm font-medium text-(--bc-ink)">
+                                                {user?.fullname || <span className="text-(--bc-ink-faint)">Not set — tap Edit to add one.</span>}
                                             </p>
                                         )}
                                     </div>
 
                                     {/* Username */}
-                                    <div className="mt-3 rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
+                                    <div className="mt-3 rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
                                         <div className="mb-2 flex items-center justify-between gap-3">
-                                            <label htmlFor="ps-username" className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">
+                                            <label htmlFor="ps-username" className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">
                                                 Username
                                             </label>
                                             {!editingUsername && (
                                                 <button
                                                     type="button"
                                                     onClick={openUsernameEdit}
-                                                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-[color:var(--bc-accent-strong)] transition-colors hover:bg-[color:var(--bc-surface)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-(--bc-accent-strong) transition-colors hover:bg-(--bc-surface) focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                 >
                                                     <Pencil size={12} />
                                                     Edit
@@ -994,10 +997,10 @@ const ProfileSettings: React.FC = () => {
                                         {editingUsername ? (
                                             <div className="pfs-rise">
                                                 <div
-                                                    className={`flex items-stretch overflow-hidden rounded-lg border bg-[color:var(--bc-surface-2)] focus-within:border-[color:var(--bc-accent)] focus-within:ring-2 focus-within:ring-[color:var(--bc-accent)]/20 ${usernameError ? "border-[color:var(--bc-danger)]" : "border-[color:var(--bc-border)]"
+                                                    className={`flex items-stretch overflow-hidden rounded-lg border bg-(--bc-surface-2) focus-within:border-(--bc-accent) focus-within:ring-2 focus-within:ring-(--bc-accent)/20 ${usernameError ? "border-(--bc-danger)" : "border-(--bc-border)"
                                                         }`}
                                                 >
-                                                    <span className="flex items-center justify-center border-r border-[color:var(--bc-border)] bg-[color:var(--bc-surface)] px-3 text-sm font-semibold text-[color:var(--bc-accent-strong)]">
+                                                    <span className="flex items-center justify-center border-r border-(--bc-border) bg-(--bc-surface) px-3 text-sm font-semibold text-(--bc-accent-strong)">
                                                         @
                                                     </span>
                                                     <input
@@ -1012,7 +1015,7 @@ const ProfileSettings: React.FC = () => {
                                                         disabled={updatingUsername}
                                                         aria-invalid={Boolean(usernameError)}
                                                         aria-describedby="ps-username-hint ps-username-error"
-                                                        className="min-w-0 flex-1 bg-transparent py-2.5 pr-3 text-sm text-[color:var(--bc-ink)] outline-none placeholder:text-[color:var(--bc-ink-faint)] disabled:opacity-60"
+                                                        className="min-w-0 flex-1 bg-transparent py-2.5 pr-3 text-sm text-(--bc-ink) outline-none placeholder:text-(--bc-ink-faint) disabled:opacity-60"
                                                         placeholder="your_username"
                                                         onKeyDown={(e) => {
                                                             if (e.key === "Enter") { e.preventDefault(); void saveUsername(); }
@@ -1020,11 +1023,11 @@ const ProfileSettings: React.FC = () => {
                                                         }}
                                                     />
                                                 </div>
-                                                <p id="ps-username-hint" className="mt-1.5 text-[11px] text-[color:var(--bc-ink-faint)]">
+                                                <p id="ps-username-hint" className="mt-1.5 text-[11px] text-(--bc-ink-faint)">
                                                     2–49 characters · letters, numbers, and underscores only.
                                                 </p>
                                                 {usernameError && (
-                                                    <p id="ps-username-error" className="mt-1 flex items-center gap-1 text-xs text-[color:var(--bc-danger)]" role="alert">
+                                                    <p id="ps-username-error" className="mt-1 flex items-center gap-1 text-xs text-(--bc-danger)" role="alert">
                                                         <AlertTriangle size={11} />
                                                         {usernameError}
                                                     </p>
@@ -1034,7 +1037,7 @@ const ProfileSettings: React.FC = () => {
                                                         type="button"
                                                         onClick={cancelUsernameEdit}
                                                         disabled={updatingUsername}
-                                                        className="rounded-lg border border-[color:var(--bc-border)] px-3 py-1.5 text-xs font-semibold text-[color:var(--bc-ink-soft)] transition-colors hover:text-[color:var(--bc-ink)] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                        className="rounded-lg border border-(--bc-border) px-3 py-1.5 text-xs font-semibold text-(--bc-ink-soft) transition-colors hover:text-(--bc-ink) disabled:opacity-50 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                     >
                                                         Cancel
                                                     </button>
@@ -1043,7 +1046,7 @@ const ProfileSettings: React.FC = () => {
                                                         onClick={() => void saveUsername()}
                                                         disabled={updatingUsername}
                                                         aria-busy={updatingUsername}
-                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--bc-accent-strong)] px-3.5 py-1.5 text-xs font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-(--bc-accent-strong) px-3.5 py-1.5 text-xs font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                                     >
                                                         {updatingUsername ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                                                         {updatingUsername ? "Saving..." : "Save"}
@@ -1051,27 +1054,27 @@ const ProfileSettings: React.FC = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p className="truncate text-sm font-medium text-[color:var(--bc-ink)]">
-                                                @{user?.username?.replace(/^@/, "") ?? <span className="text-[color:var(--bc-ink-faint)]">Not set</span>}
+                                            <p className="truncate text-sm font-medium text-(--bc-ink)">
+                                                @{user?.username?.replace(/^@/, "") ?? <span className="text-(--bc-ink-faint)">Not set</span>}
                                             </p>
                                         )}
                                     </div>
 
                                     {/* Email — read-only */}
-                                    <div className="mt-3 rounded-xl border border-[color:var(--bc-border)] bg-[color:var(--bc-surface-2)] p-4">
+                                    <div className="mt-3 rounded-xl border border-(--bc-border) bg-(--bc-surface-2) p-4">
                                         <div className="mb-2 flex items-center justify-between gap-3">
-                                            <label htmlFor="ps-email" className="text-[10px] font-bold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">
+                                            <label htmlFor="ps-email" className="text-[10px] font-bold uppercase tracking-[0.06em] text-(--bc-ink-faint)">
                                                 Email
                                             </label>
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-[color:var(--bc-ink-faint)]">
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-(--bc-ink-faint)">
                                                 <Lock size={10} aria-hidden="true" />
                                                 Read-only
                                             </span>
                                         </div>
-                                        <p id="ps-email" className="truncate text-sm font-medium text-[color:var(--bc-ink)]">
+                                        <p id="ps-email" className="truncate text-sm font-medium text-(--bc-ink)">
                                             {user?.email ?? "—"}
                                         </p>
-                                        <p className="mt-1 flex items-center gap-1.5 text-[11px] text-[color:var(--bc-ink-faint)]">
+                                        <p className="mt-1 flex items-center gap-1.5 text-[11px] text-(--bc-ink-faint)">
                                             <Info size={11} aria-hidden="true" />
                                             Email changes are currently unavailable.
                                         </p>
@@ -1136,7 +1139,7 @@ const ProfileSettings: React.FC = () => {
                                                 onClick={() => (hasPassword ? void submitChangePassword() : void submitSetPassword())}
                                                 disabled={hasPassword ? changingPassword : settingPassword}
                                                 aria-busy={hasPassword ? changingPassword : settingPassword}
-                                                className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--bc-accent-strong)] px-4 py-2.5 text-sm font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-accent)]"
+                                                className="inline-flex items-center gap-2 rounded-lg bg-(--bc-accent-strong) px-4 py-2.5 text-sm font-semibold text-[#F4FBF9] transition-opacity hover:opacity-90 disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-accent)"
                                             >
                                                 {(hasPassword ? changingPassword : settingPassword) && (
                                                     <Loader2 size={14} className="animate-spin" />
@@ -1162,14 +1165,14 @@ const ProfileSettings: React.FC = () => {
                                     variant="danger"
                                 >
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <p className="text-xs leading-relaxed text-[color:var(--bc-ink-soft)]">
+                                        <p className="text-xs leading-relaxed text-(--bc-ink-soft)">
                                             Once deleted, your prediction and upload history cannot be recovered.
                                         </p>
                                         <button
                                             type="button"
                                             onClick={() => setDeleteOpen(true)}
                                             disabled={deletingAccount}
-                                            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[color:var(--bc-danger)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[color:var(--bc-danger)] transition-colors hover:bg-[color:var(--bc-danger-bg)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--bc-danger)]"
+                                            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-(--bc-danger) bg-transparent px-4 py-2.5 text-sm font-semibold text-(--bc-danger) transition-colors hover:bg-(--bc-danger-bg) disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-(--bc-danger)"
                                         >
                                             <Trash2 size={14} />
                                             Delete Account
@@ -1181,10 +1184,7 @@ const ProfileSettings: React.FC = () => {
                     )}
                 </main>
 
-                <footer className="px-5 pb-8 text-center text-xs text-[color:var(--bc-ink-faint)]">
-                    <strong className="font-semibold text-[color:var(--bc-ink-soft)]">{companyName}</strong> · Environmental
-                    intelligence, personally yours.
-                </footer>
+                <Footer/>
             </div>
 
             <DeleteModal

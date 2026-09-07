@@ -585,7 +585,7 @@ const Navbar: React.FC = () => {
                                             onClick={() => void navigate("/settings")}
                                         >
                                             <ArrowRight size={15} />
-                                            go to settings
+                                            Go to Settings
                                         </button>
                                     </div>
                                 ) : (
