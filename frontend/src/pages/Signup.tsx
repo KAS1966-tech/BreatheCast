@@ -23,8 +23,9 @@ import { companyName } from "../core/config";
 import { useSEO } from "../utils/useSeo";
 import { useGoogleFont } from "../utils/useGoogleFont";
 import Navbar from "../components/Navbar";
-import { getPasswordStrength, normalizeUsername,signupValidate as validate } from "../utils/auth.utlis";
+import { getPasswordStrength, normalizeUsername, signupValidate as validate } from "../utils/auth.utlis";
 import type { FormErrors, FormValues, Stage } from "../hooks/types/auth.type";
+import Footer from "../components/Footer";
 
 const Signup: React.FC = () => {
     const navigate = useNavigate();
@@ -378,8 +379,8 @@ const Signup: React.FC = () => {
         }
         `}</style>
             <header className="sticky top-0 z-40 border-b border-(--bc-border) bg-[color-mix(in_srgb,var(--bc-bg)_72%,transparent)] backdrop-blur-md">
-        <Navbar/>
-      </header>
+                <Navbar />
+            </header>
             <main className="min-h-screen grid grid-cols-1 bg-[var(--bc-bg)] text-[var(--bc-ink)] transition-colors duration-400 min-[960px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)]">
                 {/* ---------------- Form side ---------------- */}
                 <div className="order-2 flex flex-col bg-[var(--bc-bg)] px-5 pt-7 pb-10 sm:px-12 sm:pt-10 sm:pb-14 min-[960px]:order-1 min-[960px]:justify-center min-[960px]:px-18 min-[960px]:py-12">
@@ -953,6 +954,7 @@ const Signup: React.FC = () => {
                     </div>
                 </div>
             </main>
+            <Footer/>
         </div>
     );
 };

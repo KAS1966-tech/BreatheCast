@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, Wind, ArrowRight } from "lucide-react";
+import { Mail, Phone, ArrowRight } from "lucide-react";
 import Animated from "./Animated"; // Adjust path if needed
 import { companyName, PRIVACY_EMAIL } from "../core/config";
 import { useAppSelector } from "../app/redux";
+import { AqiMark } from "../hooks/font/aqiLogo";
 
 /* ---------------------------------------------------------------------------
 Utility
@@ -192,7 +193,7 @@ const Footer = () => {
                                         ui.brandMarkText
                                     )}
                                 >
-                                    <Wind size={16} strokeWidth={2.25} aria-hidden="true" />
+                                <AqiMark/>
                                 </span>
                                 <span className="font-display text-lg font-semibold tracking-[0.01em]">
                                     {companyName}
@@ -243,7 +244,7 @@ const Footer = () => {
                             </p>
                             <div className="flex flex-col gap-3">
                                 {displayQuickLinks.map((link, idx) => (
-                                    <Animated key={link.name} delay={0.15 + idx * 0.05}>
+                                    <Animated key={link.name} delay={idx * 0.5}>
                                         <Link
                                             to={link.href}
                                             className={cx(

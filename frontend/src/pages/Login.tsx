@@ -20,6 +20,7 @@ import { useGoogleFont } from "../utils/useGoogleFont";
 import { useAppDispatch, useAppSelector } from "../app/redux";
 import Navbar from "../components/Navbar";
 import { EMAIL_PATTERN } from "../constants/regex.constants";
+import Footer from "../components/Footer";
 // ---------------------------------------------------------------------------
 
 interface FieldErrors {
@@ -702,6 +703,7 @@ const Login: React.FC = () => {
                     </div>
                 </div>
             </main>
+            <Footer/>
         </div>
     );
 };

@@ -2,6 +2,8 @@
 node_modules/
 .pnpm-store/
 .yarn/
+package-lock.json
+
 
 # Local Environment Files (Security risk if included)
 .env
