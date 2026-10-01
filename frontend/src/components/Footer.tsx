@@ -193,7 +193,7 @@ const Footer = () => {
                                         ui.brandMarkText
                                     )}
                                 >
-                                <AqiMark/>
+                                    <AqiMark />
                                 </span>
                                 <span className="font-display text-lg font-semibold tracking-[0.01em]">
                                     {companyName}
@@ -273,20 +273,24 @@ const Footer = () => {
                                 Legal & Sitemap
                             </p>
                             <div className="flex flex-col gap-3">
-                                {sitemapLinks.map((link, idx) => (
-                                    <Animated key={link.name} delay={0.25 + idx * 0.05}>
-                                        <Link
-                                            to={link.href}
-                                            className={cx(
-                                                "text-sm font-medium transition-colors duration-200",
-                                                ui.textSoft,
-                                                ui.linkHover
-                                            )}
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    </Animated>
-                                ))}
+                                {sitemapLinks.map((link, idx) => {
+                                    if (link.name === "Settings" && !isAuthenticated) {
+                                        return null; // Skip rendering the "Settings" link for unauthenticated users
+                                    }
+                                    return (
+                                        <Animated key={link.name} delay={0.25 + idx * 0.05}>
+                                            <Link
+                                                to={link.href}
+                                                className={cx(
+                                                    "text-sm font-medium transition-colors duration-200",
+                                                    ui.textSoft,
+                                                    ui.linkHover
+                                                )}
+                                            >
+                                                {link.name}
+                                            </Link>
+                                        </Animated>)
+                                })}
                             </div>
                         </div>
                     </Animated>
