@@ -27,6 +27,7 @@ brevo-python==5.0.2
 kagglehub==1.0.2
 numpy==2.3.1
 pandas==2.3.1
+polars
 
 # Machine learning and saved model support
 scikit-learn==1.8.0
