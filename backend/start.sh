@@ -1,27 +1,24 @@
 #!/bin/sh
 set -e
 
-echo "Waiting for PostgreSQL to be completely initialized and ready..."
-# This script uses python's psycopg/psycopg2 driver to test a real connection
+DB_HOST=${DATABASE_HOST:-db}
+DB_PORT=${DATABASE_PORT:-5432}
+APP_PORT=${PORT:-8000}
+
+echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT to be ready..."
 python -c "
-import socket
-import time
+import os, socket, time
+
+host = os.getenv('DATABASE_HOST', 'db')
+port = int(os.getenv('DATABASE_PORT', 5432))
 
 while True:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2)
-        s.connect(('db', 5432))
+        s.connect((host, port))
         s.close()
-        
-        # Port is open. Now sleep 4 seconds to outlast the database initial dual-boot sequence
-        time.sleep(4)
-        
-        # Verify it remains open and didn't crash/restart
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(2)
-        s.connect(('db', 5432))
-        s.close()
+        time.sleep(2)
         break
     except socket.error:
         time.sleep(1)
@@ -31,5 +28,5 @@ echo "PostgreSQL is completely ready!"
 echo "Running Alembic migrations..."
 alembic upgrade head
 
-echo "Starting FastAPI app..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+echo "Starting FastAPI app on port $APP_PORT..."
+exec uvicorn app.main:app --host 0.0.0.0 --port $APP_PORT
