@@ -1,7 +1,7 @@
 .vscode
-**/*.ipynb
+# **/*.ipynb
 **.*ps1
-**.*csv
+# **.*csv
 
 # Python
 
@@ -14,11 +14,6 @@
 venv/
 .venv/
 env/
-
-# Jupyter
-
-.ipynb_checkpoints/
-**/*.ipynb
 
 # Environment Variables
 
@@ -76,4 +71,5 @@ dist-ssr
 *.sw?
 
 # env 
-.env.development
+.env.developmentnotebook/
+frontend/.env.development

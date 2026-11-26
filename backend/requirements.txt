@@ -1,34 +1,40 @@
-alembic==1.18.4
+# BreatheCast: backend, machine learning, and notebook dependencies
+# Python 3.12 recommended
+# Install with: python -m pip install -r requirements.txt
 
-argon2-cffi==25.1.0
-pwdlib==0.3.0
-
+# FastAPI backend and validation
 fastapi==0.116.1
-uvicorn==0.35.0
-watchfiles==1.2.0
-
+uvicorn[standard]==0.35.0
 pydantic==2.11.7
 pydantic-settings==2.14.2
-python-dotenv==1.2.2
-python-multipart==0.0.32
 email-validator==2.3.0
+python-multipart==0.0.32
+python-dotenv==1.2.2
 
+# Database and migrations
 SQLAlchemy==2.0.51
-psycopg==3.3.4
-psycopg-binary==3.3.4
+alembic==1.18.4
+psycopg[binary]==3.3.4
 
+# Authentication and external services
 PyJWT==2.13.0
-cryptography==50.0.0
-
+pwdlib[argon2]==0.3.0
 google-auth==2.56.3
-
 requests==2.32.5
+brevo-python==5.0.2
 
+# Dataset download and data processing
+kagglehub==1.0.2
 numpy==2.3.1
 pandas==2.3.1
-polars==1.43.2
+
+# Machine learning and saved model support
 scikit-learn==1.8.0
-scipy==1.18.0
-joblib==1.5.1
 xgboost==3.2.0
-brevo-python==5.0.2
+joblib==1.5.1
+
+# Notebook visualizations
+matplotlib==3.11.2
+seaborn==0.13.2
+plotly==7.1.0
+ipykernel==7.4.0

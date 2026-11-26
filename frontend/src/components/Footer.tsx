@@ -55,7 +55,6 @@ const socialLinks = [
     },
     {
         name: "Fiverr",
-        href: "https://fiverr.com",
         icon: (
             <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13.5 1.584A6 6 0 0 0 6.5 7.5v2.5H4v4h2.5v8.5h4.5v-8.5h3.5v-4H11v-2.5a1.5 1.5 0 0 1 2.5-1.118z M15.5 10h4.5v12.5h-4.5z M17.75 2.5a2.25 2.25 0 0 0 0 4.5 2.25 2.25 0 0 0 0-4.5z" />

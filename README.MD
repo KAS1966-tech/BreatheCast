@@ -1,843 +1,591 @@
-# BreatheCast
+# 🌍 BreatheCast
 
-BreatheCast is a full-stack **Air Quality Index (AQI) prediction application**. It combines a trained machine learning model with a modern web application so users can provide environmental and weather-related information through a simple interface and receive an AQI prediction.
+**BreatheCast is a full-stack Air Quality Index (AQI) prediction web application that combines machine learning with a modern web stack.**
 
-The project combines **Machine Learning + FastAPI + React + TypeScript + Redux Toolkit + PostgreSQL + SQLAlchemy + authentication + email OTP + Google OAuth + Docker** into one application.
+It allows authenticated users to enter environmental and weather-related information, receive an AQI prediction from an XGBoost regression model, save prediction history, and perform batch predictions using CSV files.
 
 ---
 
-## 🌍 What is BreatheCast?
+## ✨ Features
 
-BreatheCast turns an AQI machine learning model into a complete web application.
+### 🤖 Machine Learning
+- AQI prediction using an **XGBoost Regressor**
+- Yeo–Johnson transformation of the regression target
+- Feature-specific preprocessing
+- One-hot encoding for categorical inputs
+- Quantile transformation for selected environmental features
+- Joblib model artifact
+- Backend-side model inference
+- Pydantic input validation
+- Individual and batch prediction support
 
-Instead of requiring users to run a Python notebook or machine learning script manually, the application provides a web interface where users can enter prediction data and receive the result through the browser.
+### 🔐 Authentication
+- Email/password signup
+- Email OTP verification
+- Google OAuth authentication
+- JWT access and refresh tokens
+- HTTP-only authentication cookies
+- Refresh-token persistence and rotation
+- Password hashing with `pwdlib`
+- OTP hashing, expiration, and attempt limits
 
-### Application Flow
+### 👤 User Management
+- User profiles
+- Update full name
+- Update username
+- Set password
+- Change password
+- Delete account
+
+### 📊 Prediction & History
+- Individual AQI predictions
+- User-specific prediction history
+- History deletion
+- History CSV download
+- CSV batch prediction
+- Uploaded-file history
+- File-history management
+
+### 🗄️ Backend & Database
+- FastAPI REST API
+- PostgreSQL
+- SQLAlchemy ORM
+- Alembic migrations
+- Versioned API under `/api/v1`
+- Structured validation and service layers
+
+### 🐳 Development
+- Docker
+- Docker Compose
+- Python 3.12
+- React
+- TypeScript
+- Vite
+- Axios
+- Tailwind CSS
+- ESLint
+
+---
+
+# 📑 Table of Contents
+
+- [Machine Learning](#-machine-learning)
+- [Training Dataset](#-training-dataset)
+- [Prediction Features](#-prediction-features)
+- [Model Performance](#-model-performance)
+- [Architecture](#-architecture)
+- [Tech Stack](#️-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Third-Party Credentials Setup](#-third-party-credentials-setup)
+- [Environment Variables](#-environment-variables)
+- [Authentication](#-authentication)
+- [API](#-api)
+- [Database](#-database)
+- [Docker](#-docker)
+- [Testing](#-testing)
+- [Deployment Status](#-deployment-status)
+- [Limitations](#️-current-limitations)
+- [Roadmap](#️-roadmap)
+
+---
+
+# 🧠 Machine Learning
+
+BreatheCast uses an **XGBoost regression model** to predict a numerical AQI value.
+
+The cleaned training notebook is `notebook/main.ipynb`.
+
+## Training workflow
 
 ```text
-User
-  │
-  ▼
-React + TypeScript Frontend
-  │
-  │ HTTP / JSON
-  ▼
-FastAPI Backend
-  │
-  ├── Authentication
-  │     ├── Regular Signup
-  │     ├── Email OTP Verification
-  │     └── Google Authentication
-  │
-  ├── Request Validation
-  ├── Prediction Service
-  └── Database Operations
-  │
-  ├──────────────► PostgreSQL
-  │
-  ▼
-Trained AQI Machine Learning Model
-  │
-  ▼
-AQI Prediction
-  │
-  ▼
-Frontend
+AQI Dataset
+    │
+    ▼
+Select model features
+    │
+    ▼
+Convert day/month to categorical values
+    │
+    ▼
+80/20 train-test split
+    │
+    ▼
+Feature-specific preprocessing
+    │
+    ├── Power Transform
+    │      ├── Temperature_C
+    │      └── WindSpeed_kmh
+    │
+    ├── No distribution transform
+    │      ├── Rainfall_mm
+    │      ├── SolarRadiation_Wm2
+    │      ├── Pressure_hPa
+    │      ├── Humidity_pct
+    │      └── WindDirection_deg
+    │
+    ├── Quantile Transform
+    │      ├── TrafficDensityIndex
+    │      └── ProximityIndustrialZone_km
+    │
+    └── One-Hot Encoding
+           ├── DayOfWeek
+           ├── Month
+           └── IsWeekend
+    │
+    ▼
+Yeo–Johnson transformed target
+    │
+    ▼
+XGBoost Regressor
+    │
+    ▼
+Evaluation
+    │
+    ▼
+Joblib Artifact
+```
+
+## Model configuration
+
+| Parameter | Value |
+|---|---:|
+| Algorithm | XGBoost Regressor |
+| Task | Regression |
+| `n_estimators` | 500 |
+| `learning_rate` | 0.05 |
+| `max_depth` | 6 |
+| `subsample` | 0.8 |
+| `colsample_bytree` | 0.8 |
+| Objective | `reg:squarederror` |
+| Random state | 42 |
+| Parallel jobs | `-1` |
+| Target transformation | Yeo–Johnson |
+| Train/test split | 80/20 |
+
+The final trained pipeline is stored as:
+
+```text
+backend/app/models/aqi_artifact.pkl
+```
+
+The notebook exports an artifact containing:
+
+```python
+{
+    "model": pipeline,
+    "metadata": {
+        "task": "Regression",
+        "features": [...],
+        "target": "AQI_Value",
+        "metrics": {...},
+        "model_name": "XGBRegressor"
+    }
+}
 ```
 
 ---
 
-# ✨ Main Features
+# 📥 Prediction Features
 
-- AQI prediction using a trained machine learning model
-- Machine learning model trained using environmental/weather data
-- React frontend with TypeScript
-- Redux Toolkit (RTK) for frontend state management
-- FastAPI backend
-- PostgreSQL database
-- SQLAlchemy ORM
-- Alembic database migrations
-- JWT-based authentication
-- Access and refresh token support
-- Regular email/password signup
-- Email OTP verification for regular signup
-- Google authentication
-- Email delivery through Brevo
-- Docker and Docker Compose support
-- Structured frontend and backend architecture
-- Python 3.12 backend environment
-- Python dependency versions maintained in `requirements.txt`
+The final model expects 12 input features:
+
+| Feature | Description |
+|---|---|
+| `DayOfWeek` | Day of the week |
+| `Month` | Month |
+| `IsWeekend` | Derived weekend indicator |
+| `Temperature_C` | Temperature in °C |
+| `Humidity_pct` | Relative humidity |
+| `WindSpeed_kmh` | Wind speed |
+| `WindDirection_deg` | Wind direction |
+| `Pressure_hPa` | Atmospheric pressure |
+| `SolarRadiation_Wm2` | Solar radiation |
+| `Rainfall_mm` | Rainfall |
+| `TrafficDensityIndex` | Traffic density index |
+| `ProximityIndustrialZone_km` | Distance from an industrial zone |
+
+`IsWeekend` is calculated from `DayOfWeek` by the BreatheCast backend.
 
 ---
 
-# 🛠️ Technology Stack
 
-## Frontend
+---
 
-| Technology | Purpose |
+# 🧪 Training Dataset
+
+The dataset used to train the BreatheCast model is published on Kaggle:
+
+**Dataset:** [Synthetic AQI Prediction Dataset](https://www.kaggle.com/datasets/khawajazainali/synthetic-aqi-prediction-dataset)  
+**Kaggle dataset ID:** `khawajazainali/synthetic-aqi-prediction-dataset`  
+**CSV file:** `weather_aqi_data.csv`
+
+The dataset is **synthetic / fictional data generated with AI assistance** and shared through Kaggle for machine-learning experiments and project development. Kaggle is the distribution and download source; the data should not be mistaken for observations collected from real-world air-quality monitoring stations.
+
+## Download the dataset with Python
+
+Install the required packages if they are not already installed:
+
+```bash
+pip install kagglehub pandas
+```
+
+Then download the dataset and load the CSV:
+
+```python
+import os
+import kagglehub
+import pandas as pd
+
+path = kagglehub.dataset_download(
+    "khawajazainali/synthetic-aqi-prediction-dataset"
+)
+
+dataset = pd.read_csv(os.path.join(path, "weather_aqi_data.csv"))
+```
+
+`kagglehub.dataset_download()` downloads the dataset and returns the local directory containing its files. The code above reads `weather_aqi_data.csv` into a pandas DataFrame named `dataset`.
+
+### Important note about synthetic data
+
+This dataset is **not a collection of real-world AQI measurements**.
+
+- It is intended for machine-learning practice, application development, and demonstration.
+- The model metrics below describe performance on this synthetic dataset.
+- These metrics should **not** be interpreted as proof of real-world AQI forecasting accuracy.
+- A production-quality system should be trained and validated on reliable real-world measurements from an appropriate source.
+
+# 📈 Model Performance
+
+The original final training run produced the following **held-out test-set** results:
+
+| Metric | Score |
+|---|---:|
+| MAE | **6.0728** |
+| MSE | **66.0523** |
+| RMSE | **8.1273** |
+| R² | **0.9677** |
+
+### 5-fold cross-validation on the training split
+
+| Metric | Score |
+|---|---:|
+| MAE | 6.0673 |
+| MSE | 65.9577 |
+| RMSE | 8.1214 |
+
+### Training-set result
+
+| Metric | Score |
+|---|---:|
+| MAE | 5.9884 |
+| MSE | 64.2839 |
+| RMSE | 8.0177 |
+
+These results describe the model produced by the current training notebook. Performance can change if the dataset, dependency versions, preprocessing, or model configuration changes.
+
+---
+
+# 🏗️ Architecture
+
+```text
+                         ┌───────────────────┐
+                         │       User        │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │ React + TypeScript│
+                         │      + Vite       │
+                         └─────────┬─────────┘
+                                   │
+                              HTTP / JSON
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │      FastAPI      │
+                         │      /api/v1      │
+                         └──────┬──────┬─────┘
+                                │      │
+                    ┌───────────┘      └────────────┐
+                    ▼                               ▼
+          ┌──────────────────┐            ┌──────────────────┐
+          │ Authentication   │            │ Prediction       │
+          │ & User Services  │            │ Service          │
+          └────────┬─────────┘            └────────┬─────────┘
+                   │                               │
+                   ▼                               ▼
+          ┌──────────────────┐            ┌──────────────────┐
+          │    PostgreSQL    │            │ XGBoost Model    │
+          │   + SQLAlchemy   │            │ + Joblib Artifact│
+          └──────────────────┘            └──────────────────┘
+```
+
+## External services
+
+- **Google OAuth** — authentication
+- **Brevo** — OTP email delivery
+- **PostgreSQL** — persistent application storage
+
+---
+
+# 🛠️ Tech Stack
+
+| Layer | Technology |
 |---|---|
-| React | User interface |
-| TypeScript | Type-safe frontend development |
-| Redux Toolkit (RTK) | State management |
-| Vite | Frontend development and build tooling |
-
-## Backend
-
-| Technology | Purpose |
-|---|---|
-| Python 3.12 | Backend programming language |
-| FastAPI | REST API framework |
-| Pydantic | Request and response validation |
-| SQLAlchemy | Database ORM |
-| Alembic | Database migrations |
-| JWT | Authentication and session security |
-
-## Database
-
-| Technology | Purpose |
-|---|---|
-| PostgreSQL | Persistent data storage |
-
-## Email & Authentication
-
-| Technology | Purpose |
-|---|---|
-| Brevo | Email delivery |
-| Google OAuth | Google authentication |
-| OTP | Email verification during regular signup |
-
-## Development
-
-| Technology | Purpose |
-|---|---|
-| Docker | Containerization |
-| Docker Compose | Running services together |
-| Git | Source-code version control |
+| Frontend | React |
+| Language | TypeScript |
+| Build tool | Vite |
+| HTTP client | Axios |
+| Routing | React Router |
+| Styling | Tailwind CSS |
+| Backend | FastAPI |
+| Validation | Pydantic |
+| Database | PostgreSQL |
+| ORM | SQLAlchemy |
+| Migrations | Alembic |
+| Authentication | JWT + HTTP-only Cookies |
+| OAuth | Google OAuth |
+| Email | Brevo |
+| ML | XGBoost |
+| Model serialization | Joblib |
+| Containers | Docker + Docker Compose |
 
 ---
 
 # 📁 Project Structure
 
-A simplified structure looks like this:
-
 ```text
 BreatheCast/
 │
+├── .gitignore
+├── LICENSE
+├── README.MD
+├── main_clean.ipynb
+│
 ├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── core/
-│   │   ├── db/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   └── ...
+│   ├── .dockerignore
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── requirements.txt
+│   ├── start.sh
+│   ├── alembic.ini
 │   │
 │   ├── alembic/
-│   ├── .env.example
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── ...
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── store/
-│   │   ├── services/
-│   │   └── ...
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── versions/
 │   │
-│   ├── .env.development
-│   ├── package.json
-│   └── ...
+│   └── app/
+│       ├── api/
+│       │   ├── health.py
+│       │   └── routes.py
+│       ├── core/
+│       │   ├── artifact.py
+│       │   ├── config.py
+│       │   └── logger.py
+│       ├── database/
+│       │   ├── connection.py
+│       │   ├── crud_db.py
+│       │   └── database.py
+│       ├── models/
+│       ├── schemas/
+│       │   ├── input_schemas.py
+│       │   └── output_schemas.py
+│       ├── services/
+│       │   ├── email_service.py
+│       │   ├── otp.py
+│       │   ├── predictor.py
+│       │   └── security.py
+│       └── main.py
 │
-├── docker-compose.yaml
-└── README.md
+└── frontend/
+    ├── Dockerfile
+    ├── package.json
+    ├── package-lock.json
+    ├── vite.config.ts
+    ├── tsconfig.json
+    ├── eslint.config.js
+    ├── index.html
+    └── src/
+        ├── api/
+        ├── app/
+        ├── components/
+        ├── constants/
+        ├── core/
+        ├── hooks/
+        ├── pages/
+        ├── utils/
+        ├── App.tsx
+        ├── main.tsx
+        └── index.css
 ```
-
-> The exact folder names can change as the project evolves. The important idea is that frontend, backend, database, and machine learning responsibilities remain separated.
 
 ---
 
 # 🚀 Getting Started
 
+BreatheCast can be run in **two ways**:
+
+| Method | Best for |
+|---|---|
+| 🧑‍💻 Manual Development | Development, debugging, and working directly with the frontend/backend |
+| 🐳 Docker Compose | Running the backend and PostgreSQL in containers with a simpler setup |
+
+> **Frontend:** React + Vite  
+> **Backend:** FastAPI  
+> **Database:** PostgreSQL  
+> **Python:** 3.12
+
+---
+
 ## Prerequisites
 
-Install the following before running BreatheCast:
+### Required for both methods
 
 - Git
-- Docker Desktop
 - Node.js and npm
+- Google OAuth client credentials
+- Brevo API key and sender email
+- The trained model artifact at `backend/app/models/aqi_artifact.pkl`
+
+### Additional for Manual Development
+
 - Python 3.12
-- A Google OAuth Client ID if Google Sign-In is enabled
-- A Brevo account/API key
+- PostgreSQL installed and running locally, or an accessible PostgreSQL server
 
-Docker is the recommended way to run the complete application because the backend and PostgreSQL database can run together in a consistent environment.
+### Additional for Docker
 
----
-
-# ⚙️ 1. Configure the Backend
-
-Go into the backend directory:
-
-```bash
-cd backend
-```
-
-Find:
-
-```text
-.env.example
-```
-
-Create a new file:
-
-```text
-.env
-```
-
-Copy the configuration from `.env.example` into `.env`.
-
-A typical development configuration is:
-
-```env
-
-SECRET_KEY=
-
-GOOGLE_CLIENT_ID= # Your Google OAuth Client ID credentials
-
-DATABASE_USER=postgres
-DATABASE_PASSWORD= # your strong password
-DATABASE_DB=breathecast
-DATABASE_PORT=5432
-DATABASE_HOST=db # or admin if you are running the database on your local machine
-
-ACCESS_TOKEN_EXPIRY_MINUTES=30
-REFRESH_TOKEN_EXPIRY_DAYS=7
-
-DEBUG=False
-ENVIRONMENT=development
-
-ALLOWED_ORIGINS=
-
-BREVO_API_KEY=
-BREVO_SENDER_EMAIL=someone@gmail.com
-```
+- Docker Desktop
+- Docker Compose
+- **Docker Desktop must be running before starting the containers**
 
 ---
 
-# 🔐 Backend Environment Variables
+# 🧑‍💻 Method 1 — Manual Development
 
-## Required Configuration
+Manual mode runs the FastAPI backend and React frontend directly on your machine.
 
-These values are required and should be filled in.
-
-### `SECRET_KEY`
-
-Application security key used for JWT-related security operations.
-
-```env
-SECRET_KEY=your-secret-key
-```
-
-Use a long, unpredictable value and keep it private.
-
-**Never commit your real secret key to GitHub.**
-
-### `GOOGLE_CLIENT_ID`
-
-Google OAuth Client ID used for Google Sign-In.
-
-```env
-GOOGLE_CLIENT_ID=your-google-client-id
-```
-
-The frontend should use the matching Google Client ID.
-
----
-
-# 🗄️ Database Configuration
-
-### `DATABASE_USER`
-
-PostgreSQL username:
-
-```env
-DATABASE_USER=postgres
-```
-
-### `DATABASE_PASSWORD`
-
-PostgreSQL password:
-
-```env
-DATABASE_PASSWORD=your-password
-```
-
-### `DATABASE_DB`
-
-Database name:
-
-```env
-DATABASE_DB=breathecast
-```
-
-### `DATABASE_PORT`
-
-PostgreSQL port:
-
-```env
-DATABASE_PORT=5432
-```
-
-### `DATABASE_HOST`
-
-PostgreSQL hostname:
-
-```env
-DATABASE_HOST=db
-```
-
-When PostgreSQL is running through Docker Compose, `db` is normally the database service name.
-
-When PostgreSQL is running outside Docker, this can instead be:
-
-```env
-DATABASE_HOST=localhost
-```
-
-or another appropriate hostname.
-
----
-
-# 🔑 Token Expiration
-
-### `ACCESS_TOKEN_EXPIRY_MINUTES`
-
-Controls how long an access token remains valid.
-
-```env
-ACCESS_TOKEN_EXPIRY_MINUTES=30
-```
-
-### `REFRESH_TOKEN_EXPIRY_DAYS`
-
-Controls how long a refresh token remains valid.
-
-```env
-REFRESH_TOKEN_EXPIRY_DAYS=7
-```
-
-The shorter-lived access token is used for authenticated requests, while the refresh token can help maintain the user's session.
-
----
-
-# 🌐 Environment Configuration
-
-### `DEBUG`
-
-Controls debug mode:
-
-```env
-DEBUG=False
-```
-
-Keeping debug mode disabled is recommended for normal usage and production.
-
-### `ENVIRONMENT`
-
-For local development:
-
-```env
-ENVIRONMENT=development
-```
-
-Use the production value expected by your deployment configuration when deploying publicly.
-
----
-
-# 🌍 CORS Configuration
-
-### `ALLOWED_ORIGINS`
-
-Specifies which frontend origins can communicate with the backend.
-
-For a Vite development server, an example is:
-
-```env
-ALLOWED_ORIGINS=["http://localhost:5173"]
-```
-
-If multiple origins are supported by the backend configuration, they can be supplied in the expected comma-separated format:
-
-```env
-ALLOWED_ORIGINS=["http://localhost:5173,http://localhost:3000"]
-```
-
-Make sure the configured origin matches the URL used by the frontend.
-
----
-
-# 📧 Email OTP Configuration
-
-BreatheCast supports regular signup with **email OTP verification**.
-
-The signup flow is:
-
-```text
-User enters signup details
-          │
-          ▼
-Backend starts verification
-          │
-          ▼
-OTP is sent through Brevo
-          │
-          ▼
-User enters OTP
-          │
-          ▼
-Backend verifies OTP
-          │
-          ▼
-Verified account
-```
-
-### `BREVO_API_KEY`
-
-API key used to send emails through Brevo:
-
-```env
-BREVO_API_KEY=your-brevo-api-key
-```
-
-### `BREVO_SENDER_EMAIL`
-
-Email address used as the sender:
-
-```env
-BREVO_SENDER_EMAIL=someone@gmail.com
-```
-
-The sender should be configured correctly in your Brevo account.
-
-> Never commit your real Brevo API key to the repository.
-
----
-
-# 🌐 2. Configure the Frontend
-
-Go into the frontend directory:
-
-```bash
-cd frontend
-```
-
-Create:
-
-```text
-.env.development
-```
-
-Add:
-
-```env
-VITE_BACKEND_API=http://localhost:8000
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-```
-
-## Frontend Environment Variables
-
-### `VITE_BACKEND_API`
-
-Base URL of the FastAPI backend.
-
-For local development:
-
-```env
-VITE_BACKEND_API=http://localhost:8000
-```
-
-If the frontend code already appends `/api/v1`, do not add `/api/v1` to this variable.
-
-### `VITE_GOOGLE_CLIENT_ID`
-
-Google OAuth Client ID:
-
-```env
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-```
-
-It should match:
-
-```env
-GOOGLE_CLIENT_ID=your-google-client-id
-```
-
-in the backend.
-
----
-
-# 🐳 3. Run BreatheCast with Docker
-
-From the **project**, first run:
-
-```bash
-cd backend
-```
-then
-```bash
-docker compose up --build
-```
-
-This builds the required containers and starts the application.
-
-The logs will remain attached to the terminal.
-
----
-
-## Run in Background
-
-To run the application without keeping the terminal attached to logs:
-
-```bash
-docker compose up --build -d
-```
-
-View logs later with:
-
-```bash
-docker compose logs -f
-```
-
-Stop the application with:
-
-```bash
-docker compose down
-```
-
----
-
-# 🗃️ 4. Database Migrations
-
-BreatheCast uses **Alembic** to manage changes to the PostgreSQL database schema.
-
-Migrations are important when you change things such as:
-
-- table names
-- columns
-- relationships
-- constraints
-- indexes
-- other database structure
-
-After a database-related change, apply the latest migration:
-
-```bash
-docker compose exec backend alembic upgrade head
-```
-
-This upgrades the database to the latest migration available in the project.
-
-### Migration Workflow
-
-After making database model/schema changes:
-
-```bash
-docker compose exec backend alembic upgrade head
-```
-
-If the project requires creating a new migration before applying it, create the migration according to the configured Alembic workflow and then run:
-
-```bash
-docker compose exec backend alembic upgrade head
-```
-
-Using Alembic keeps database changes organized and reproducible.
-
----
-
-# 🔐 Authentication
-
-BreatheCast supports both regular account authentication and Google authentication.
-
-## Regular Signup + Email OTP
-
-The regular signup process includes email verification:
-
-```text
-Signup
-  │
-  ▼
-OTP sent to email
-  │
-  ▼
-User enters OTP
-  │
-  ▼
-Email verified
-  │
-  ▼
-Account completed
-  │
-  ▼
-Login
-```
-
-This provides an additional verification step for regular email/password accounts.
-
-## Google Authentication
-
-Users can also sign in using Google OAuth.
-
-The backend uses:
-
-```env
-GOOGLE_CLIENT_ID=...
-```
-
-while the frontend uses:
-
-```env
-VITE_GOOGLE_CLIENT_ID=...
-```
-
-These values should correspond to the same Google OAuth application.
-
----
-
-# 🤖 AQI Prediction Workflow
-
-BreatheCast's prediction process is:
-
-```text
-User Input
-    │
-    ▼
-Frontend Validation
-    │
-    ▼
-FastAPI Prediction Endpoint
-    │
-    ▼
-Backend Validation / Preprocessing
-    │
-    ▼
-Trained AQI Model
-    │
-    ▼
-AQI Prediction
-    │
-    ▼
-API Response
-    │
-    ▼
-React UI
-```
-
-This keeps model inference inside the backend and allows the frontend to focus on the user experience.
-
----
-
-# 🔌 Backend API
-
-BreatheCast uses FastAPI to provide REST APIs.
-
-The API is versioned under:
-
-```text
-/api/v1
-```
-
-During local development, the backend is commonly available at:
-
-```text
-http://localhost:8000
-```
-
-FastAPI's interactive API documentation is available at:
-
-```text
-http://localhost:8000/docs
-```
-
-The Swagger UI can be used to inspect and test available endpoints.
-
-A health endpoint is also available under the versioned API route.
-
----
-
-# 🗄️ PostgreSQL + SQLAlchemy
-
-BreatheCast uses PostgreSQL for persistent application data.
-
-SQLAlchemy provides the ORM layer between Python and PostgreSQL.
-
-The relationship is:
-
-```text
-FastAPI
-   │
-   ▼
-SQLAlchemy
-   │
-   ▼
-PostgreSQL
-```
-
-SQLAlchemy models define the application's database structure, while Alembic manages schema migrations.
-
----
-
-# 🎨 Frontend
-
-The frontend uses:
-
-- React
-- TypeScript
-- Redux Toolkit
-- Vite
-
-The frontend handles:
-
-- AQI prediction input
-- prediction result display
-- user authentication
-- signup and OTP verification
-- Google Sign-In
-- application state
-- communication with the FastAPI backend
-
-The backend handles the core business logic, secure authentication, database operations, validation, and model inference.
-
----
-
-# 📦 Python Dependencies
-
-The backend Python dependencies are listed in:
-
-```text
-backend/requirements.txt
-```
-
-The file contains the Python packages required by the backend and machine learning components, along with their versions.
-
-For local Python development using Python 3.12:
-
-```bash
-pip install -r requirements.txt
-```
-
-When running with Docker, the Docker configuration handles the Python environment inside the container.
-
----
-
-# 🧠 Why Docker?
-
-Without Docker, you may need to manually configure:
-
-```text
-Python
-PostgreSQL
-Python packages
-Database connection
-Environment variables
-```
-
-Docker Compose allows the main services to run together in a predictable environment:
-
-```text
-┌──────────────────────────────┐
-│        Docker Compose        │
-│                              │
-│  ┌───────────┐ ┌──────────┐ │
-│  │  Backend  │ │ Database │ │
-│  │  FastAPI  │ │PostgreSQL│ │
-│  └───────────┘ └──────────┘ │
-└──────────────────────────────┘
-```
-
-This makes BreatheCast easier to set up and reproduce on different machines.
-
----
-
-# 🧪 Recommended Development Workflow
-
-### 1. Clone the repository
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/KAS1966-tech/BreatheCast.git
 cd BreatheCast
 ```
 
-### 2. Configure the backend
+---
 
-Create:
+## 2. Choose a running method
 
-```text
-backend/.env
+BreatheCast can be started in **two ways**:
+
+- **Manual Development** — install and run the backend/frontend directly on your machine.
+- **Docker Compose** — run the backend and PostgreSQL in containers.
+
+> **Recommendation:** Docker Compose is usually the easier first-time setup because it reduces the number of local dependencies you need to configure. Manual development gives you more direct control for development and debugging.
+
+---
+
+## 3. Configure the backend
+
+Move into the backend:
+
+```bash
+cd backend
 ```
 
-using:
+Create `.env` from `.env.example`.
 
-```text
-backend/.env.example
+### Bash / Git Bash / WSL
+
+```bash
+cat .env.example > .env
 ```
 
-Fill in the important credentials:
+### PowerShell
+
+```powershell
+Get-Content .env.example | Set-Content .env
+```
+
+### Windows Command Prompt
+
+```cmd
+type .env.example > .env
+```
+
+Then edit `.env` and configure your PostgreSQL, Google OAuth, Brevo, JWT, and CORS values.
+
+For a manually running PostgreSQL server, the database host is typically:
 
 ```env
-SECRET_KEY=your-secret-key
-GOOGLE_CLIENT_ID=your-google-client-id
-DATABASE_PASSWORD=your-database-password
-BREVO_API_KEY=your-brevo-api-key
-BREVO_SENDER_EMAIL=someone@gmail.com
+DATABASE_HOST=localhost
 ```
 
-### 3. Configure the frontend
+---
 
-Create:
+## 4. Create the Python virtual environment
 
-```text
-frontend/.env.development
+From the `backend/` directory:
+
+> **Important:** You must activate the virtual environment before installing packages and running the backend manually. If you open a new terminal later, activate `.venv` again before using the backend.
+
+
+```powershell
+py -3.12 -m venv .venv
 ```
 
-and add:
+Activate it on Windows PowerShell:
 
-```env
-VITE_BACKEND_API=http://localhost:8000
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
-### 4. Start the application
+Or in Command Prompt:
 
-From the project root:
+```cmd
+.venv\Scripts\activate
+```
+
+After activation, your terminal should show `(.venv)`.
+
+---
+
+## 5. Install backend dependencies
+
+You can use **uv** or regular **pip**.
+
+### Option A — With uv
+
+Install `uv` first if it is not already installed, then:
 
 ```bash
-docker compose up --build
+uv pip install -r requirements.txt
 ```
 
-Or:
+Run the backend with:
 
 ```bash
-docker compose up --build -d
+uvicorn app.main:app --reload
 ```
 
-### 5. Apply database migrations when needed
+### Option B — Without uv
 
 ```bash
-docker compose exec backend alembic upgrade head
+py -3.12 -m pip install -r requirements.txt
 ```
 
-### 6. Open the application
+Run the backend with:
 
-The frontend is commonly available at:
-
-```text
-http://localhost:5173
+```bash
+uvicorn app.main:app --reload
 ```
 
-The backend is commonly available at:
+Keep this terminal running.
+
+The backend will normally be available at:
 
 ```text
 http://localhost:8000
@@ -851,287 +599,53 @@ http://localhost:8000/docs
 
 ---
 
-# 🧯 Common Issues
+## 6. Run database migrations
 
-## Backend cannot connect to PostgreSQL
+Make sure PostgreSQL is running and your `DATABASE_*` settings in `backend/.env` are correct.
 
-When PostgreSQL is running inside Docker Compose, check that:
+Then, from `backend/`:
 
-```env
-DATABASE_HOST=db
+```bash
+alembic upgrade head
 ```
 
-and verify:
-
-```env
-DATABASE_USER=postgres
-DATABASE_PASSWORD=...
-DATABASE_DB=breathecast
-DATABASE_PORT=5432
-```
-
-If PostgreSQL is outside Docker, use the correct external hostname such as `localhost`.
+> If your local setup requires a different PostgreSQL configuration, update `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, and `DATABASE_DB` accordingly.
 
 ---
 
-## Frontend cannot communicate with backend
+## 7. Configure the frontend
 
-Check:
+Open a **second terminal**.
 
-```env
-VITE_BACKEND_API=http://localhost:8000
-```
-
-Also make sure the frontend origin is allowed by:
-
-```env
-ALLOWED_ORIGINS=["http://localhost:5173"]
-```
-
-The frontend URL and backend CORS configuration must match.
-
----
-
-## Google Sign-In is not working
-
-Verify that:
-
-```env
-GOOGLE_CLIENT_ID=...
-```
-
-and:
-
-```env
-VITE_GOOGLE_CLIENT_ID=...
-```
-
-contain the same Google Client ID.
-
-Also verify that the frontend URL is configured correctly in Google OAuth settings.
-
----
-
-## OTP email is not being received
-
-Check:
-
-```env
-BREVO_API_KEY=...
-BREVO_SENDER_EMAIL=someone@gmail.com
-```
-
-Verify the sender configuration in Brevo.
-
-Then inspect the backend logs:
+From the project root:
 
 ```bash
-docker compose logs -f backend
+cd frontend
 ```
 
----
+Create `.env.development`.
 
-## Database changes are not visible
+If a frontend `.env.example` exists in your working copy:
 
-Run:
+### Bash / Git Bash / WSL
 
 ```bash
-docker compose exec backend alembic upgrade head
+cat .env.example > .env.development
 ```
 
----
+### PowerShell
 
-## Containers are running but the application is not responding
-
-Check service status:
-
-```bash
-docker compose ps
+```powershell
+Get-Content .env.example | Set-Content .env.development
 ```
 
-Then inspect logs:
+### Windows Command Prompt
 
-```bash
-docker compose logs -f
+```cmd
+type .env.example > .env.development
 ```
 
-For backend-specific logs:
-
-```bash
-docker compose logs -f backend
-```
-
----
-
-# 🔒 Security Notes
-
-Do not commit sensitive credentials to GitHub.
-
-Keep values such as these private:
-
-```text
-SECRET_KEY
-DATABASE_PASSWORD
-BREVO_API_KEY
-```
-
-The repository should contain:
-
-```text
-.env.example
-```
-
-instead of the real `.env`.
-
-Also note that frontend variables beginning with `VITE_` are exposed to the browser. They should never contain secrets that are intended to remain private.
-
----
-
-# 🏭 Production Considerations
-
-The project supports Docker-based development, but production deployments should use appropriate security and infrastructure settings.
-
-Before deploying publicly, review:
-
-- `DEBUG`
-- `ENVIRONMENT`
-- `SECRET_KEY`
-- database credentials
-- `ALLOWED_ORIGINS`
-- Google OAuth configuration
-- Brevo credentials
-- HTTPS
-- PostgreSQL security
-- database backups
-- secret management
-- logging
-- monitoring
-- container security
-
-Never use development credentials as production credentials.
-
----
-
-# 📜 Useful Docker Commands
-
-### Build and start
-
-```bash
-docker compose up --build
-```
-
-### Build and start in background
-
-```bash
-docker compose up --build -d
-```
-
-### Stop containers
-
-```bash
-docker compose down
-```
-
-### View logs
-
-```bash
-docker compose logs -f
-```
-
-### View service status
-
-```bash
-docker compose ps
-```
-
-### View backend logs
-
-```bash
-docker compose logs -f backend
-```
-
-### Apply Alembic migrations
-
-```bash
-docker compose exec backend alembic upgrade head
-```
-
----
-
-# 🧭 Architecture at a Glance
-
-```text
-                         ┌─────────────────────┐
-                         │        User         │
-                         └──────────┬──────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │ React + TypeScript  │
-                         │ Redux Toolkit + Vite│
-                         └──────────┬──────────┘
-                                    │
-                              HTTP / JSON
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │       FastAPI       │
-                         │       /api/v1       │
-                         └──────┬──────┬───────┘
-                                │      │
-                    ┌───────────┘      └─────────────┐
-                    ▼                                ▼
-          ┌──────────────────┐             ┌──────────────────┐
-          │ SQLAlchemy       │             │ AQI Prediction   │
-          │ Database Layer   │             │ Service / Model  │
-          └────────┬─────────┘             └──────────────────┘
-                   │
-                   ▼
-          ┌──────────────────┐
-          │   PostgreSQL     │
-          │     Database     │
-          └──────────────────┘
-
-       Authentication Services
-       ├── JWT Access Tokens
-       ├── Refresh Tokens
-       ├── Email OTP
-       └── Google OAuth
-```
-
----
-
-# ✅ Quick Start
-
-For the fastest setup:
-
-### Backend
-
-Create:
-
-```text
-backend/.env
-```
-
-from:
-
-```text
-backend/.env.example
-```
-
-Fill in the required values:
-
-```env
-SECRET_KEY=your-secret-key
-GOOGLE_CLIENT_ID=your-google-client-id
-DATABASE_PASSWORD=your-database-password
-BREVO_API_KEY=your-brevo-api-key
-BREVO_SENDER_EMAIL=someone@gmail.com
-```
-
-### Frontend
-
-Create:
+The current repository does not contain a committed frontend `.env.example`. In that case, create:
 
 ```text
 frontend/.env.development
@@ -1144,40 +658,913 @@ VITE_BACKEND_API=http://localhost:8000
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
-### Start
+---
 
-From the project root:
-
-```bash
-docker compose up --build
-```
-
-Or:
+## 8. Install frontend dependencies
 
 ```bash
-docker compose up --build -d
+npm install
 ```
 
-### Apply migrations
+---
+
+## 9. Start the frontend
 
 ```bash
-docker compose exec backend alembic upgrade head
+npm run dev
 ```
 
-Then open the frontend, commonly at:
+The Vite development server will normally be available at:
 
 ```text
 http://localhost:5173
 ```
 
+At this point you should have:
+
+```text
+Terminal 1 → FastAPI backend → http://localhost:8000
+Terminal 2 → React frontend  → http://localhost:5173
+PostgreSQL → Running locally / externally
+```
+
 ---
 
-# 🌱 Project Purpose
+# 🐳 Method 2 — Docker Compose
 
-BreatheCast demonstrates how an environmental machine learning model can be transformed into a complete software product.
+Docker mode runs the containerized backend and PostgreSQL services together.
 
-It brings together:
+## 1. Start Docker Desktop
 
-**Machine Learning + FastAPI + React + TypeScript + Redux Toolkit + PostgreSQL + SQLAlchemy + JWT Authentication + Email OTP + Google OAuth + Docker**
+Make sure **Docker Desktop is open and running** before executing Docker commands.
 
-into a single application designed to make AQI prediction accessible through a user-friendly web interface.
+---
+
+## 3. Configure the backend
+
+From the project root:
+
+```bash
+cd backend
+```
+
+Create `.env` from `.env.example`.
+
+### Bash / Git Bash / WSL
+
+```bash
+cat .env.example > .env
+```
+
+### PowerShell
+
+```powershell
+Get-Content .env.example | Set-Content .env
+```
+
+### Windows Command Prompt
+
+```cmd
+type .env.example > .env
+```
+
+Fill in the required credentials and configuration.
+
+> When PostgreSQL is running through Docker Compose, `DATABASE_HOST` is normally the Compose database service name, such as `db`, rather than `localhost`.
+
+---
+
+## 3. Start the application
+
+From `backend/`:
+
+```bash
+docker compose up --build
+```
+
+This keeps the containers attached to the terminal so you can see logs.
+
+### Run in the background
+
+```bash
+docker compose up --build -d
+```
+
+When using `-d`, Docker runs the containers in the background.
+
+---
+
+## 4. Apply database migrations
+
+After the backend container is running:
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+---
+
+## 5. Frontend environment
+
+The frontend still needs:
+
+```text
+frontend/.env.development
+```
+
+with:
+
+```env
+VITE_BACKEND_API=http://localhost:8000
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+For a Docker-based frontend setup, use the frontend configuration expected by the included Dockerfile/build process.
+
+---
+
+## 6. Useful Docker commands
+
+### Stop containers
+
+```bash
+docker compose down
+```
+
+### View all logs
+
+```bash
+docker compose logs -f
+```
+
+### View backend logs
+
+```bash
+docker compose logs -f backend
+```
+
+### View running services
+
+```bash
+docker compose ps
+```
+
+---
+
+## 📝 Manual Development vs Docker
+
+The **manual method can sometimes require additional troubleshooting** depending on your operating system, Python installation, PostgreSQL configuration, PATH settings, package versions, environment variables, or other local configuration.
+
+If something does not work on the first attempt, you may need to use an AI assistant to help debug the specific error. Manual development is excellent when you are comfortable debugging and have some patience while setting up the environment.
+
+If you prefer a simpler first-run experience, **Docker Compose is recommended**. With Docker Desktop running and the environment values filled in correctly, the project can run in containers with fewer local configuration differences. This is one of the main reasons Docker is useful for making development environments more consistent across different machines.
+
+> Docker reduces environment-related problems, but it cannot prevent every possible error. Correct `.env` configuration is still required.
+
+---
+
+## 🌐 Open the BreatheCast Web App
+
+After the application starts successfully, open the frontend in your browser:
+
+```text
+http://localhost:5173
+```
+
+This is the **BreatheCast web application** where you can interact with the UI, create/login to an account, enter AQI prediction data, view results, and use the available application features.
+
+The backend API is normally available at:
+
+```text
+http://localhost:8000
+```
+
+FastAPI interactive documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+> **After successful startup, open `http://localhost:5173` in your browser to view and interact with the BreatheCast web application.**
+
+---
+
+## 🔀 Which method should I use?
+
+### Choose Manual Development when you want to:
+
+- Debug backend code directly
+- Debug frontend code directly
+- Work inside a Python `.venv`
+- Quickly restart only one part of the application
+- Develop with `uvicorn --reload` and Vite hot reload
+
+### Choose Docker Compose when you want to:
+
+- Start backend + PostgreSQL together
+- Avoid manually installing PostgreSQL
+- Keep the backend environment containerized
+- Reproduce the project's containerized development environment
+
+---
+
+## ✅ Quick Command Summary
+
+### Manual
+
+**Backend**
+
+```bash
+cd backend
+py -3.12 -m venv .venv
+```
+
+Activate the virtual environment, then choose:
+
+```bash
+uv pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+or:
+
+```bash
+python -m pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+**Frontend — second terminal**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Database**
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+---
+
+### Docker
+
+**Backend + PostgreSQL**
+
+```bash
+cd backend
+docker compose up --build
+```
+
+or:
+
+```bash
+docker compose up --build -d
+```
+
+**Migration**
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+> For Docker mode, make sure Docker Desktop is running first.
+
+---
+
+# 🔑 Third-Party Credentials Setup
+
+> ⚠️ **Important: provider setup instructions can change over time.**
+>
+> Google Cloud Console and Brevo may change their dashboard layout, menu names, URLs, verification requirements, or credential-creation process. The instructions below are based on the current provider interfaces, but they may look different in the future.
+>
+> If you cannot find an option mentioned in this README, or the steps no longer match what you see:
+>
+> 1. Check the latest **official Google or Brevo documentation**.
+> 2. Search for the current setup process for the specific credential you need.
+> 3. You can also ask an AI assistant to search the web for the **latest official instructions** and guide you through the updated interface.
+>
+> Do not assume BreatheCast is broken simply because a provider changed its dashboard. The important part is obtaining the required credential and placing it in the correct environment variable.
+
+
+BreatheCast uses **Google OAuth** for Google Sign-In and **Brevo** for sending signup OTP emails.
+
+You need to create these credentials before the corresponding authentication/email features can work.
+
+---
+
+## 🔵 Google OAuth — Get `GOOGLE_CLIENT_ID`
+
+Google currently manages OAuth applications through the **Google Auth Platform** in Google Cloud Console. The exact menu names can change over time, but the flow is generally:
+
+### 1. Open Google Cloud Console
+
+Go to:
+
+**https://console.cloud.google.com/**
+
+Sign in with your Google account.
+
+### 2. Create a Google Cloud project
+
+From the project selector:
+
+1. Click **New Project**.
+2. Give the project a name, for example:
+
+```text
+BreatheCast
+```
+
+3. Create the project.
+4. Make sure the new BreatheCast project is selected.
+
+### 3. Open Google Auth Platform
+
+In Google Cloud Console, open:
+
+```text
+Google Auth Platform
+```
+
+Then use **Get Started** if the application has not been configured yet.
+
+Google may ask you to configure the application's branding and audience before creating an OAuth client. See the [Google Auth Platform setup guide](https://support.google.com/cloud/answer/15544987).
+
+### 4. Configure the application
+
+Provide the requested application information, including:
+
+- **App name:** `BreatheCast`
+- **User support email:** an email address you can monitor
+- **Audience:** normally **External** for an application that should allow users outside your Google organization
+
+For a development project using an External audience, Google can keep the application in testing and allow you to add specific test users. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
+
+### 5. Create the OAuth Client
+
+Go to:
+
+```text
+Google Auth Platform → Clients
+```
+
+Then:
+
+1. Click **Create Client**.
+2. Select **Web application**.
+3. Give the client a name, for example:
+
+```text
+BreatheCast Web Client
+```
+
+4. Under **Authorized JavaScript origins**, add:
+
+```text
+http://localhost:5173
+```
+
+This is the local frontend origin used by BreatheCast during Vite development.
+
+Browser-based applications must register their JavaScript origins, and localhost is supported for local development. See [Google's OAuth client documentation](https://support.google.com/cloud/answer/15549257).
+
+5. Create the client.
+
+Google will provide a **Client ID** that looks similar to:
+
+```text
+1234567890-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
+```
+
+See [Google's current OAuth client documentation](https://support.google.com/cloud/answer/15549257) for the Web application client flow.
+
+### 6. Add the Client ID to BreatheCast
+
+Use the same client ID in both places:
+
+**Backend**
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+**Frontend**
+
+```env
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+### 7. Development testing users
+
+If your Google app is configured as an External app and remains in testing, add the Google accounts you want to use for development/testing to the app's **test users** configuration. External apps in testing can be limited to listed test users. See [Google's audience documentation](https://support.google.com/cloud/answer/15549945).
+
+### Google credential security
+
+The BreatheCast frontend needs the client ID, so `VITE_GOOGLE_CLIENT_ID` is intentionally public.
+
+Do **not** put private credentials or API keys in frontend `VITE_*` variables.
+
+For this BreatheCast flow, the backend verifies the Google credential received from the frontend using the configured client ID.
+
+---
+
+## ✉️ Brevo — Get `BREVO_API_KEY`
+
+BreatheCast uses Brevo to send signup OTP emails.
+
+### 1. Create a Brevo account
+
+Go to:
+
+**https://www.brevo.com/**
+
+Create an account and sign in.
+
+### 2. Open API key settings
+
+In Brevo, go to your account settings and open:
+
+```text
+SMTP & API → API Keys
+```
+
+Brevo's current documentation uses the **SMTP & API settings** area for API key management. See [Brevo API key authentication](https://developers.brevo.com/docs/api-key-authentication).
+
+### 3. Generate the API key
+
+Under the **API Keys** tab:
+
+1. Click **Generate a new API key**.
+2. Give it a descriptive name, for example:
+
+```text
+BreatheCast Development
+```
+
+3. Generate the key.
+4. **Copy it immediately and store it securely.**
+
+Brevo shows the full API key when it is generated, so copy it at that time. Treat it like a password and never commit it to source control. See [Brevo API key authentication](https://developers.brevo.com/docs/api-key-authentication).
+
+Add it to:
+
+```env
+BREVO_API_KEY=your-brevo-api-key
+```
+
+### 4. Configure the sender email
+
+BreatheCast also uses:
+
+```env
+BREVO_SENDER_EMAIL=your-sender@example.com
+```
+
+In Brevo, create and verify the sender you want to use:
+
+```text
+Settings → Senders, Domains, IPs → Senders
+```
+
+Then:
+
+1. Click **Add a sender**.
+2. Enter the sender name.
+3. Enter the sender email address.
+4. Save it.
+5. Complete Brevo's email verification step if requested.
+
+The sender used for transactional email must be registered/verified. See [Brevo's sender setup guide](https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email).
+
+For better deliverability, Brevo recommends authenticating your sending domain. See [Brevo's sender/domain guidance](https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email).
+
+Then configure:
+
+```env
+BREVO_SENDER_EMAIL=the-verified-sender@example.com
+```
+
+### Brevo setup summary
+
+```env
+BREVO_API_KEY=your-generated-api-key
+BREVO_SENDER_EMAIL=your-verified-sender@example.com
+```
+
+---
+
+## 🔐 Generate the BreatheCast `SECRET_KEY`
+
+You can generate a strong 64-character URL-safe secret with Python.
+
+From a Python terminal:
+
+```python
+import secrets
+
+secret_key = secrets.token_urlsafe(48)
+print(secret_key)
+```
+
+`48` random bytes produce a 64-character URL-safe value.
+
+Copy the generated value into:
+
+```env
+SECRET_KEY=your-generated-secret-key
+```
+
+Example:
+
+```env
+SECRET_KEY=PASTE_THE_GENERATED_VALUE_HERE
+```
+
+> Never commit the real `SECRET_KEY` to GitHub.
+
+---
+
+### 🔎 When provider instructions change
+
+Provider websites are external to BreatheCast and can change independently of this project. Menu names, OAuth setup screens, API-key pages, verification requirements, and URLs may be different in the future.
+
+When that happens, use the latest official documentation rather than relying on an old screenshot or third-party tutorial. You can search for:
+
+- **Google:** `Google Auth Platform OAuth client ID`
+- **Brevo:** `Brevo API key` and `Brevo sender verification`
+
+You can also give the exact screen/error you are seeing to an AI assistant and ask it to search the current official documentation.
+
+---
+
+# 🔑 Environment Variables
+
+## Backend
+
+```env
+SECRET_KEY=
+GOOGLE_CLIENT_ID=
+
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_DB=
+DATABASE_PORT=5432
+DATABASE_HOST=
+
+ACCESS_TOKEN_EXPIRY_MINUTES=30
+REFRESH_TOKEN_EXPIRY_DAYS=7
+
+DEBUG=False
+ENVIRONMENT=production
+
+ALLOWED_ORIGINS=
+
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+
+OTP_EXPIRE_MINUTES=5
+OTP_MAX_ATTEMPTS=5
+MAX_UPLOAD_SIZE_MB=10
+```
+
+Application defaults also include:
+
+```text
+API_VERSION
+API_TITLE
+APP_NAME
+```
+
+### Security
+
+Never commit real credentials.
+
+Keep these private:
+
+```text
+SECRET_KEY
+DATABASE_PASSWORD
+BREVO_API_KEY
+```
+
+Frontend variables beginning with `VITE_` are exposed to the browser and must not contain private secrets.
+
+---
+
+# 🔐 Authentication
+
+BreatheCast supports email/password authentication and Google OAuth.
+
+## Signup + OTP
+
+```text
+Signup
+  │
+  ▼
+Validate signup
+  │
+  ▼
+Pending signup created
+  │
+  ▼
+6-digit OTP generated
+  │
+  ▼
+OTP hashed and stored
+  │
+  ▼
+Brevo sends OTP
+  │
+  ▼
+User verifies OTP
+  │
+  ▼
+Account created
+  │
+  ▼
+Access + refresh cookies issued
+```
+
+### Authentication security
+
+- Passwords are hashed with `pwdlib`
+- OTPs are hashed before storage
+- OTP expiration is configurable
+- OTP attempts are limited to 5 by default
+- Access tokens expire after 30 minutes by default
+- Refresh tokens expire after 7 days by default
+- Tokens use HTTP-only cookies
+- Refresh tokens are persisted in the database
+- Protected routes validate the access token
+- User history is scoped to the authenticated user
+- Production cookies use secure settings
+- CORS is controlled through `ALLOWED_ORIGINS`
+
+---
+
+# 🔌 API
+
+The API is versioned under:
+
+```text
+/api/v1
+```
+
+## Health
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/v1/health` | Health check |
+
+## Authentication
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/signup` | Start signup and send OTP |
+| POST | `/api/v1/auth/verify-signup-otp` | Verify signup OTP |
+| POST | `/api/v1/auth/google` | Google authentication |
+| POST | `/api/v1/login` | Email/password login |
+| POST | `/api/v1/refresh` | Refresh access token |
+| POST | `/api/v1/logout` | Logout |
+
+## User & Profile
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/v1/me` | Get current user |
+| DELETE | `/api/v1/me` | Delete account |
+| GET | `/api/v1/profile` | Get profile summary |
+| PATCH | `/api/v1/profile/name` | Update full name |
+| PATCH | `/api/v1/profile/username` | Update username |
+| POST | `/api/v1/password/set` | Set password |
+| PATCH | `/api/v1/password/change` | Change password |
+
+## Prediction & History
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/predict` | Make AQI prediction |
+| GET | `/api/v1/metrics` | Return model metadata/metrics |
+| GET | `/api/v1/history` | Retrieve prediction history |
+| DELETE | `/api/v1/history` | Clear prediction history |
+| GET | `/api/v1/history/download` | Download history |
+| DELETE | `/api/v1/history/all` | Delete prediction and file history |
+
+## Batch Files
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/v1/fileupload` | Upload CSV and run batch prediction |
+| GET | `/api/v1/filehistory` | Retrieve upload history |
+| DELETE | `/api/v1/filehistory/{file_id}` | Delete an uploaded-file record |
+| GET | `/api/v1/files/download` | Download file metadata |
+| DELETE | `/api/v1/file-history` | Clear file history |
+
+---
+
+# 📡 Prediction Example
+
+### Request
+
+```http
+POST /api/v1/predict
+```
+
+```json
+{
+  "Temperature_C": 28.4,
+  "Humidity_pct": 56.0,
+  "WindSpeed_kmh": 18.5,
+  "WindDirection_deg": 120.0,
+  "Pressure_hPa": 1012.3,
+  "SolarRadiation_Wm2": 340.0,
+  "Rainfall_mm": 0.2,
+  "TrafficDensityIndex": 48.1,
+  "ProximityIndustrialZone_km": 5.0,
+  "DayOfWeek": "Monday",
+  "Month": "June"
+}
+```
+
+`IsWeekend` is derived by the backend.
+
+### Response
+
+```json
+{
+  "prediction": 126
+}
+```
+
+The current backend returns the numerical prediction as a rounded value.
+
+The current implementation does not map the result to categories such as `Good`, `Moderate`, or `Unhealthy`.
+
+---
+
+# 🗄️ Database
+
+BreatheCast uses PostgreSQL with SQLAlchemy.
+
+## Models
+
+- `Authentication`
+- `History`
+- `UploadedFile`
+- `RefreshToken`
+- `EmailOTP`
+- `PendingSignup`
+
+## Tables
+
+```text
+accounts
+aqi_history
+refresh_tokens
+uploaded_files
+email_otps
+pending_signups
+```
+
+Alembic manages schema migrations.
+
+---
+
+# 🐳 Docker
+
+## Start
+
+From `backend/`:
+
+```bash
+docker compose up --build
+```
+
+## Start in background
+
+```bash
+docker compose up --build -d
+```
+
+## Stop
+
+```bash
+docker compose down
+```
+
+## Logs
+
+```bash
+docker compose logs -f
+```
+
+## Backend logs
+
+```bash
+docker compose logs -f backend
+```
+
+## Migrations
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+---
+
+# 🧪 Testing
+
+The repository currently does not contain a dedicated automated test suite.
+
+No verified test suite currently covers:
+
+- Authentication
+- OTP verification
+- Google OAuth
+- Prediction
+- Batch CSV prediction
+- Database constraints
+- CI validation
+
+Adding automated tests is a planned improvement.
+
+---
+
+# 🚢 Deployment Status
+
+The repository currently supports Docker-based local/containerized development.
+
+A complete production deployment configuration is not included.
+
+Before public deployment, review:
+
+- production environment variables
+- HTTPS
+- PostgreSQL security and backups
+- exact CORS origins
+- secure cookies
+- Google OAuth production settings
+- Brevo credentials
+- authentication rate limiting
+- logging and monitoring
+- automated tests
+- CI/CD
+
+---
+
+# ⚠️ Current Limitations
+
+The repository does not currently include:
+
+- Automated ML training pipeline beyond the notebook
+- Production deployment configuration
+- Automated test suite
+- CI/CD workflow
+- AQI category mapping
+- Real-time AQI sensor/feed integration
+- Model explainability or feature-importance documentation
+
+The README documents the Kaggle dataset source and download method, as well as the dataset's synthetic nature. The training notebook documents the preprocessing and model configuration used to create the current artifact.
+
+---
+
+# 🛣️ Roadmap
+
+- [x] AQI prediction
+- [x] XGBoost regression model
+- [x] Email/password authentication
+- [x] Email OTP verification
+- [x] Google OAuth
+- [x] Prediction history
+- [x] Batch CSV prediction
+- [x] PostgreSQL persistence
+- [x] Docker support
+- [x] Clean ML training notebook
+- [ ] Add automated backend tests
+- [ ] Add frontend tests
+- [ ] Add GitHub Actions CI
+- [x] Document dataset source and synthetic-data limitations
+- [ ] Add model explainability
+- [ ] Add AQI category mapping
+- [ ] Add production deployment configuration
+- [ ] Add real-time AQI data integration
+
+---
+
+# 📜 License
+
+This project includes a `LICENSE` file.
+
+See `LICENSE` for the applicable terms.
+
+---
+
+## 👨‍💻 BreatheCast
+
+BreatheCast demonstrates how a machine learning regression model can be integrated into a complete web application using:
+
+**XGBoost + Python + FastAPI + React + TypeScript + PostgreSQL + SQLAlchemy + JWT + Google OAuth + Email OTP + Docker**
