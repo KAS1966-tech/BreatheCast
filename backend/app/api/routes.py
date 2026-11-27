@@ -2,6 +2,7 @@
 # 1. Standard Library & Third-Party Core Modules
 # =====================================================================
 import io
+from typing import cast
 import csv
 import pandas as pd
 import polars as pl
@@ -526,82 +527,6 @@ def google_login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error,
         )
-    
-@router.post("/refresh")
-def refresh(
-    request: Request,
-    response: Response,
-    db: Session = Depends(get_db),
-):
-
-    old_token = request.cookies.get("refresh_token")
-
-    if not old_token:
-        raise HTTPException(
-            status_code=401,
-            detail="Refresh token missing"
-        )
-
-
-    stored = get_refresh_token(
-        db,
-        old_token
-    )
-
-    if not stored:
-        raise HTTPException(
-            status_code=401,
-            detail="Refresh token revoked"
-        )
-
-    payload = decode_refresh_token(old_token)
-
-
-
-    user = get_user_by_id(
-        db,
-        int(payload["sub"])
-    )
-
-    if not user:
-        raise HTTPException(
-        status_code=401,
-        detail="User not found"
-    )
-
-    delete_refresh_token(db,old_token)
-
-    access_token, refresh_token = generate_user_tokens(
-        db,
-        user
-    )
-
-
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=settings.IS_PROD,
-        samesite="lax" if not settings.IS_PROD else "none",
-        max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
-        path="/",
-    )
-
-
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        secure=settings.IS_PROD,
-        samesite="lax" if not settings.IS_PROD else "none",
-        max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
-        path="/",
-    )
-
-
-    return {
-        "message": "Token refreshed"
-    }
 
 @router.post("/logout")
 def logout(
@@ -1156,7 +1081,8 @@ async def upload_file(
         # ==========================
         # Required columns
         # ==========================
-        required_columns = set(modelService.model_artifact_info("features"))
+        features = cast(list[str], modelService.model_artifact_info("features"))
+        required_columns = set(features)
         computed_features = {"IsWeekend"}
         required_input_columns = required_columns - computed_features
         uploaded_columns = set(df.columns)

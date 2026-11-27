@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import Field,computed_field,EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from sqlalchemy.engine import URL
 
 class Settings(BaseSettings):
     # Load .env automatically
@@ -62,7 +62,14 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def DATABASE_URL(self)->str:
-        return f"postgresql+psycopg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB}"
+        return URL.create(
+        drivername="postgresql+psycopg",
+        username=self.DATABASE_USER,
+        password=self.DATABASE_PASSWORD,
+        host=self.DATABASE_HOST,
+        port=self.DATABASE_PORT,
+        database=self.DATABASE_DB,
+    ).render_as_string(hide_password=False)
 
     TABLE_NAME_AUTH: str = "accounts"
     TABLE_NAME_HISTORY: str = "aqi_history"
@@ -100,4 +107,4 @@ class Settings(BaseSettings):
         return self.ENVIRONMENT.lower() == "production"
 
 
-settings = Settings()
+settings = Settings() # type: ignore[call-arg]

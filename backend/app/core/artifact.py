@@ -59,21 +59,19 @@ class ModelService:
     def load_artifact(self) -> Artifact:
         """
         Load and cache the serialized model artifact from disk.
-
-        Returns:
-            Artifact: The loaded artifact containing the trained model and metadata.
-
-        Raises:
-            Exception: If the artifact cannot be loaded.
         """
-        if self._artifact is None:
+        artifact = self._artifact
+
+        if artifact is None:
             try:
-                self._artifact = joblib.load(settings.ARTIFACT_PATH)
+                artifact = joblib.load(settings.ARTIFACT_PATH)
             except Exception:
                 logger.exception("Failed to load artifact")
                 raise
 
-        return self._artifact
+            self._artifact = artifact
+
+        return artifact
 
     def load_model(self)-> BaseEstimator:
         """
@@ -87,6 +85,11 @@ class ModelService:
         """
         if self._model is None:
             artifact = self.load_artifact()
+            if artifact is None:
+                error = "Failed to load artifact."
+                logger.exception(error)
+                raise ValueError(error if settings.DEBUG else settings.ERROR_MESSAGE)
+
             if "model" not in artifact:
                 error = "Artifact does not contain a model."
                 logger.exception(error)
