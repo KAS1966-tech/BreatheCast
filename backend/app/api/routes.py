@@ -169,7 +169,7 @@ def verify_signup_otp(
             key="access_token",
             value=access_token,
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
             path="/",
@@ -179,7 +179,7 @@ def verify_signup_otp(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
             path="/",
@@ -354,7 +354,7 @@ def refresh(
             value=access_token,
             httponly=True,
             secure=settings.IS_PROD,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
             path="/",
         )
@@ -364,7 +364,7 @@ def refresh(
             value=refresh_token,
             httponly=True,
             secure=settings.IS_PROD,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
             path="/",
         )
@@ -399,7 +399,7 @@ def login(response : Response,formdata:LoginRequest,db:Session = Depends(get_db)
             key="access_token",
             value=user_credientials["access_token"],
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
             path="/"
@@ -409,7 +409,7 @@ def login(response : Response,formdata:LoginRequest,db:Session = Depends(get_db)
             key="refresh_token",
             value=user_credientials["refresh_token"],
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
             path="/"
@@ -474,7 +474,7 @@ def google_login(
             key="access_token",
             value=access_token,
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
             path="/",
@@ -484,7 +484,7 @@ def google_login(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            samesite="lax",
+            samesite="lax" if not settings.IS_PROD else "none",
             secure=settings.IS_PROD,
             max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
             path="/",
@@ -582,7 +582,7 @@ def refresh(
         value=access_token,
         httponly=True,
         secure=settings.IS_PROD,
-        samesite="lax",
+        samesite="lax" if not settings.IS_PROD else "none",
         max_age=settings.ACCESS_TOKEN_EXPIRY_MINUTES * 60,
         path="/",
     )
@@ -593,7 +593,7 @@ def refresh(
         value=refresh_token,
         httponly=True,
         secure=settings.IS_PROD,
-        samesite="lax",
+        samesite="lax" if not settings.IS_PROD else "none",
         max_age=settings.REFRESH_TOKEN_EXPIRY_DAYS * 86400,
         path="/",
     )
@@ -620,7 +620,7 @@ def logout(
     cookie_kwargs = {
         "httponly": True,
         "secure": settings.IS_PROD,
-        "samesite": "lax",
+        "samesite": "lax" if not settings.IS_PROD else "none",
         "path": "/",
     }
 
