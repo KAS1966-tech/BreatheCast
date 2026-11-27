@@ -309,7 +309,7 @@ const Footer = () => {
                             <div className="flex flex-col gap-4">
                                 <Animated delay={0.35}>
                                     <a
-                                        href={`mailto:${PRIVACY_EMAIL}`}
+                                        href={`mailto:${PRIVACY_EMAIL}?subject=${encodeURIComponent("Privacy & Support Inquiry — BreatheCast")}&body=${encodeURIComponent("Hi BreatheCast Team,\n\nI am reaching out regarding...")}`}
                                         className={cx(
                                             "flex items-center gap-2.5 text-sm font-medium transition-colors duration-200",
                                             ui.textSoft,
@@ -322,10 +322,11 @@ const Footer = () => {
                                         />
                                         {PRIVACY_EMAIL}
                                     </a>
+
                                 </Animated>
                                 <Animated delay={0.4}>
                                     <a
-                                        href="tel:+923021234567"
+                                        href="tel:+923213057585"
                                         className={cx(
                                             "flex items-center gap-2.5 text-sm font-medium transition-colors duration-200",
                                             ui.textSoft,
@@ -336,7 +337,7 @@ const Footer = () => {
                                             size={16}
                                             className={cx("shrink-0", ui.accent)}
                                         />
-                                        +92-302-1234567
+                                        +92-321-3057585
                                     </a>
                                 </Animated>
                             </div>
