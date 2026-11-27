@@ -20,7 +20,6 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Upload,
-  Wind,
 } from "lucide-react";
 
 // TODO: adjust to your project's actual paths -----------------------------
